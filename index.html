@@ -532,9 +532,28 @@ body::before{content:'';position:fixed;inset:0;background:
       <div class="card-title">🔗 Integração com Google Sheets</div>
       <div class="afield">
         <label>URL do Google Apps Script</label>
-        <input type="text" id="cfg-url" placeholder="https://script.google.com/...">
+        <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/...">
       </div>
-      <button class="btn-sync" onclick="saveCfgUrl()">💾 Salvar URL</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sync" style="flex:1" onclick="saveCfgUrl()">💾 Salvar URL</button>
+        <button class="btn-sync" style="flex:1" onclick="testCloudConnection()">🔌 Testar Conexão</button>
+      </div>
+      <div id="conn-status" style="margin-top:10px;font-size:12px;color:var(--muted2);display:none"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Como configurar o Google Sheets</div>
+      <div style="font-size:12px;color:var(--muted2);line-height:1.8">
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">1.</strong> Abra sua planilha no Google Sheets</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">2.</strong> Menu <strong style="color:var(--blue)">Extensões → Apps Script</strong></div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">3.</strong> Apague o código existente e cole o conteúdo do arquivo <strong style="color:var(--green)">Code.gs</strong> fornecido</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">4.</strong> Clique em <strong style="color:var(--blue)">Implantar → Nova implantação</strong></div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">5.</strong> Tipo: <strong style="color:var(--amber)">App da Web</strong> · Acesso: <strong style="color:var(--amber)">Qualquer pessoa</strong></div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">6.</strong> Copie a URL gerada e cole no campo acima</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">7.</strong> As abas <strong style="color:var(--green)">Registros, Funcionários, Turnos, Locais</strong> serão criadas automaticamente</div>
+        <div style="padding:10px;background:var(--amber-dim);border:1px solid rgba(251,191,36,.3);border-radius:8px;color:var(--amber);margin-top:8px">
+          ⚠️ Após salvar a URL, clique em <strong>Sincronizar</strong> no Dashboard para carregar os dados existentes da planilha.
+        </div>
+      </div>
     </div>
     <div class="card">
       <div class="card-title">🔒 Segurança</div>
@@ -961,19 +980,30 @@ async function doPunch(force=false) {
       synced: false
     };
 
-    const ok = await sendToCloud(rec, 3);
-    if (ok) {
+    // SÓ exibe e salva localmente após confirmação da planilha
+    setStatus('checking', `📡 Enviando para a planilha...`);
+    const cloudResult = await callCloud({ action: 'addRecord', record: rec }, 3);
+    if (cloudResult.ok && !cloudResult.local) {
+      // Planilha confirmou — agora salva e exibe
       rec.synced = true;
       records.unshift(rec);
       saveAll();
-      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)}`);
-      toast('✅ Ponto registrado!','success');
+      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} e salvo na planilha`);
+      toast('✅ Ponto registrado na planilha!','success');
+    } else if (cloudResult.local) {
+      // Sem URL configurada — salva só localmente
+      rec.synced = false;
+      records.unshift(rec);
+      saveAll();
+      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} (sem integração com planilha)`);
+      toast('✅ Ponto registrado localmente','success');
     } else {
+      // Falha real — guarda para reenvio, NÃO exibe como registrado
       pendingRetry = rec;
       pending.push(rec);
       saveAll();
-      setStatus('warn', `⚠️ Falha na rede. Horário ${rec.time.slice(0,5)} guardado. Clique para reenviar.`);
-      toast('❌ Não foi possível enviar. Ponto guardado.','error');
+      setStatus('warn', `⚠️ Planilha não respondeu. Horário ${rec.time.slice(0,5)} guardado — clique Reenviar.`);
+      toast('❌ Falha ao enviar. Ponto guardado para reenvio.','error');
     }
     updatePunchBtn(); updateSlots();
   } catch(e) { handleGeoErr(e); }
@@ -1007,48 +1037,141 @@ async function retryPunch() {
   isSending = false; btn.disabled = false;
 }
 
-async function sendToCloud(data, tries) {
+// ─────────────────────────────────────
+// CLOUD COMMUNICATION — CORRIGIDO
+// Toda comunicação com o Apps Script passa por aqui.
+// Não usamos mode:'no-cors' para poder ler a resposta e confirmar.
+// ─────────────────────────────────────
+
+// Envia qualquer payload ao Apps Script e retorna { ok, data }
+async function callCloud(payload, tries=3) {
   const url = settings.googleUrl;
-  if (!url) return true; // sem integração = ok local
+  if (!url) return { ok: true, local: true };
   for (let i=0; i<tries; i++) {
     try {
-      await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'add',records:[data]}) });
-      return true;
-    } catch(e) { await sleep(2000); }
+      const res  = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      });
+      const text = await res.text();
+      let json = {};
+      try { json = JSON.parse(text); } catch(e) {}
+      return { ok: true, data: json };
+    } catch(e) {
+      if (i < tries-1) await sleep(2000);
+    }
   }
-  return false;
+  return { ok: false };
 }
 
+// Atalho legado para compatibilidade com retryPunch
+async function sendToCloud(data, tries=3) {
+  const result = await callCloud({ action:'addRecord', record: data }, tries);
+  return result.ok;
+}
+
+// Busca TUDO da planilha: config, employees, shifts, locations, records
 async function syncCloud(manual=false) {
   const url = settings.googleUrl;
-  if (!url) return;
+  if (!url) { if(manual) toast('⚠️ URL do Apps Script não configurada','warn'); return; }
   if (!navigator.onLine) { if(manual) toast('❌ Sem internet','error'); return; }
-  if (manual) toast('🔄 Sincronizando...','info');
+  if (manual) toast('🔄 Sincronizando com a planilha...','info');
   try {
-    const res  = await fetch(url, { method:'GET', redirect:'follow' });
+    const res  = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' });
     const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch(e) { return; }
-    if (data?.records?.length) {
-      let changed = false;
+    let data;
+    try { data = JSON.parse(text); } catch(e) { if(manual) toast('❌ Resposta inválida da planilha','error'); return; }
+
+    let changed = false;
+
+    // 1. Config legada (babaName/secName etc) — retrocompatível
+    if (data?.config && !data.config.error) {
+      const c = data.config;
+      if (c.pw) settings.pw = String(c.pw).trim();
+      if (c.radius) settings.defaultRadius = parseInt(c.radius);
+      SS('pd_settings', settings);
+    }
+
+    // 2. Funcionários vindos da planilha
+    if (Array.isArray(data?.employees) && data.employees.length) {
+      data.employees.forEach(ce => {
+        if (!ce.id) return;
+        const idx = employees.findIndex(e => e.id === ce.id);
+        if (idx >= 0) { employees[idx] = { ...employees[idx], ...ce }; }
+        else { employees.push(ce); }
+        changed = true;
+      });
+      SS('pd_employees', employees);
+    }
+
+    // 3. Turnos vindos da planilha
+    if (Array.isArray(data?.shifts) && data.shifts.length) {
+      data.shifts.forEach(cs => {
+        if (!cs.id) return;
+        const idx = shifts.findIndex(s => s.id === cs.id);
+        if (idx >= 0) { shifts[idx] = { ...shifts[idx], ...cs }; }
+        else { shifts.push(cs); }
+        changed = true;
+      });
+      SS('pd_shifts', shifts);
+    }
+
+    // 4. Locais vindos da planilha
+    if (Array.isArray(data?.locations) && data.locations.length) {
+      data.locations.forEach(cl => {
+        if (!cl.id) return;
+        const idx = locations.findIndex(l => l.id === cl.id);
+        if (idx >= 0) { locations[idx] = { ...locations[idx], ...cl }; }
+        else { locations.push(cl); }
+        changed = true;
+      });
+      SS('pd_locations', locations);
+    }
+
+    // 5. Registros de ponto vindos da planilha
+    if (Array.isArray(data?.records) && data.records.length) {
       data.records.forEach(cr => {
         if (!cr.id) return;
-        if (!records.find(r => String(r.id)===String(cr.id))) {
-          const emp = employees.find(e => e.name === cr.empName) || employees.find(e => e.id === cr.empId);
-          const empId = emp?.id || cr.empId || '';
-          let dtIso = new Date().toISOString();
-          if (cr.date && cr.time) {
-            const [d,m,y] = cr.date.split('/'); const [h,mn,s] = cr.time.split(':');
-            dtIso = new Date(y,m-1,d,h,mn,s||0).toISOString();
-          }
-          records.push({ id:cr.id, empId, empName:cr.empName||'', slot:cr.slot, type:cr.type, datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true });
-          changed = true;
+        if (records.find(r => String(r.id) === String(cr.id))) return; // já existe
+        // Resolve empId pelo nome caso venha só o nome
+        let empId = cr.empId || '';
+        if (!empId && cr.empName) {
+          const emp = employees.find(e => e.name === cr.empName);
+          empId = emp?.id || '';
         }
+        let dtIso = new Date().toISOString();
+        if (cr.date && cr.time) {
+          const [d,m,y] = cr.date.split('/');
+          const [h,mn,s] = (cr.time||'00:00:00').split(':');
+          dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), parseInt(h), parseInt(mn), parseInt(s||0)).toISOString();
+        }
+        records.push({ id:cr.id, empId, empName:cr.empName||'', slot:cr.slot, type:cr.type,
+          datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true });
+        changed = true;
       });
-      if (changed) { records.sort((a,b) => new Date(b.datetime)-new Date(a.datetime)); saveAll(); }
+      if (changed) records.sort((a,b) => new Date(b.datetime)-new Date(a.datetime));
+      SS('pd_records', records);
     }
-    if (manual) toast('✅ Sincronizado!','success');
-    if (document.getElementById('s-admin').classList.contains('active')) { renderDash(); renderRecords(); }
-  } catch(e) {}
+
+    if (changed) {
+      buildChooseGrid();
+      if (document.getElementById('s-admin').classList.contains('active')) {
+        renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords();
+      }
+    }
+    if (manual) toast('✅ Dados sincronizados!','success');
+  } catch(e) {
+    if (manual) toast('❌ Falha ao conectar com a planilha','error');
+  }
+}
+
+// Envia funcionário/turno/local para a planilha
+async function pushConfigToCloud(action, payload) {
+  if (!settings.googleUrl) return true; // sem URL = só local
+  const result = await callCloud({ action, payload });
+  return result.ok;
 }
 
 // ─────────────────────────────────────
@@ -1203,14 +1326,21 @@ function saveEmployee() {
   } else {
     employees.push({ id:'emp_'+Date.now(), name, role, emoji, shiftId, locId });
   }
-  saveAll(); closeModal('emp-modal'); renderEmpList(); toast('✅ Funcionário salvo','success');
+  saveAll(); renderEmpList(); toast('💾 Salvando na planilha...','info');
+  pushConfigToCloud('saveEmployee', employees.find(e => e.id === (editId || employees[employees.length-1].id)))
+    .then(ok => {
+      if (ok) toast('✅ Funcionário salvo e sincronizado!','success');
+      else toast('⚠️ Salvo localmente — sincronize manualmente','warn');
+    });
+  closeModal('emp-modal');
 }
 
 function confirmDeleteEmp(id) {
   openDelModal(`Excluir funcionário e todos os seus registros de ponto?`, () => {
     employees = employees.filter(e=>e.id!==id);
     records   = records.filter(r=>r.empId!==id);
-    saveAll(); renderEmpList(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
+    saveAll(); renderEmpList(); renderRecords(); renderDash();
+    pushConfigToCloud('deleteEmployee', {id}).then(ok => toast(ok?'🗑️ Excluído da planilha':'🗑️ Excluído localmente','success'));
   });
 }
 
@@ -1265,14 +1395,22 @@ function saveShift() {
   } else {
     shifts.push({ id:'shift_'+Date.now(), name, hours, mins, color:selectedColor });
   }
-  saveAll(); closeModal('shift-modal'); renderShiftList(); toast('✅ Turno salvo','success');
+  const savedShift = editId ? shifts.find(s=>s.id===editId) : shifts[shifts.length-1];
+  saveAll(); renderShiftList(); toast('💾 Salvando na planilha...','info');
+  pushConfigToCloud('saveShift', savedShift)
+    .then(ok => {
+      if (ok) toast('✅ Turno salvo e sincronizado!','success');
+      else toast('⚠️ Salvo localmente — sincronize manualmente','warn');
+    });
+  closeModal('shift-modal');
 }
 
 function confirmDeleteShift(id) {
   openDelModal('Excluir turno? Funcionárias vinculadas ficarão sem turno.', () => {
     shifts = shifts.filter(s=>s.id!==id);
     employees.forEach(e => { if(e.shiftId===id) e.shiftId=''; });
-    saveAll(); renderShiftList(); renderEmpList(); toast('🗑️ Excluído','success');
+    saveAll(); renderShiftList(); renderEmpList();
+    pushConfigToCloud('deleteShift', {id}).then(ok => toast(ok?'🗑️ Excluído da planilha':'🗑️ Excluído localmente','success'));
   });
 }
 
@@ -1325,14 +1463,22 @@ function saveLocation() {
   } else {
     locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius });
   }
-  saveAll(); closeModal('loc-modal'); renderLocList(); toast('✅ Local salvo','success');
+  const savedLoc = editId ? locations.find(l=>l.id===editId) : locations[locations.length-1];
+  saveAll(); renderLocList(); toast('💾 Salvando na planilha...','info');
+  pushConfigToCloud('saveLocation', savedLoc)
+    .then(ok => {
+      if (ok) toast('✅ Local salvo e sincronizado!','success');
+      else toast('⚠️ Salvo localmente — sincronize manualmente','warn');
+    });
+  closeModal('loc-modal');
 }
 
 function confirmDeleteLoc(id) {
   openDelModal('Excluir local? Funcionárias vinculadas ficarão sem local de trabalho.', () => {
     locations = locations.filter(l=>l.id!==id);
     employees.forEach(e => { if(e.locId===id) e.locId=''; });
-    saveAll(); renderLocList(); renderEmpList(); toast('🗑️ Excluído','success');
+    saveAll(); renderLocList(); renderEmpList();
+    pushConfigToCloud('deleteLocation', {id}).then(ok => toast(ok?'🗑️ Excluído da planilha':'🗑️ Excluído localmente','success'));
   });
 }
 
@@ -1422,14 +1568,14 @@ function savePunchEdit() {
   records[i].datetime = new Date(y,m-1,d,h,mn,s||0).toISOString();
   saveAll(); closeModal('edit-modal'); renderRecords(); renderDash();
   toast('✅ Ponto atualizado','success');
-  if (settings.googleUrl) fetch(settings.googleUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'edit',record:records[i]})});
+  if (settings.googleUrl) callCloud({action:'editRecord', record: records[i]});
 }
 
 function deletePunch(id) {
   openDelModal('Excluir este registro de ponto?', () => {
     records = records.filter(r=>r.id!==id);
     saveAll(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
-    if (settings.googleUrl) fetch(settings.googleUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'delete',id})});
+    if (settings.googleUrl) callCloud({action:'deleteRecord', id});
   });
 }
 
@@ -1460,6 +1606,33 @@ function exportCSV() {
 function saveCfgUrl() {
   settings.googleUrl = document.getElementById('cfg-url').value.trim();
   saveAll(); toast('✅ URL salva','success');
+}
+async function testCloudConnection() {
+  const url = settings.googleUrl;
+  const el = document.getElementById('conn-status');
+  if (!url) { toast('⚠️ Insira a URL primeiro','warn'); return; }
+  if (!navigator.onLine) { toast('❌ Sem internet','error'); return; }
+  el.style.display = 'block';
+  el.style.color = 'var(--muted2)';
+  el.textContent = '🔌 Testando conexão...';
+  try {
+    const res  = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch(e) { data = null; }
+    if (data && !data.error) {
+      const empCount = data.employees?.length || 0;
+      const recCount = data.records?.length || 0;
+      el.style.color = 'var(--green)';
+      el.textContent = `✅ Conectado! ${empCount} funcionário(s), ${recCount} registro(s) na planilha.`;
+      toast('✅ Conexão OK!','success');
+    } else {
+      el.style.color = 'var(--red)';
+      el.textContent = '❌ Planilha respondeu mas retornou erro: ' + (data?.error || 'resposta inválida');
+    }
+  } catch(e) {
+    el.style.color = 'var(--red)';
+    el.textContent = '❌ Falha: ' + e.message;
+  }
 }
 function savePassword() {
   const pw = document.getElementById('cfg-pw').value.trim();
@@ -1525,7 +1698,15 @@ const sleep = ms => new Promise(r => setTimeout(r,ms));
 // ─────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────
-window.onload = () => { buildChooseGrid(); setTimeout(()=>syncCloud(false),800); initReportSelects(); };
+window.onload = async () => {
+  initReportSelects();
+  buildChooseGrid(); // mostra dados locais imediatamente
+  if (settings.googleUrl && navigator.onLine) {
+    // Busca tudo da planilha antes de liberar a tela
+    await syncCloud(false);
+    buildChooseGrid(); // re-renderiza com dados atualizados
+  }
+};
 
 // ─────────────────────────────────────
 // REPORT
