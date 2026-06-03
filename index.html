@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>PontoDigital Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg: #080b12;
+  --surface: #0f1421;
+  --surface2: #161c2d;
+  --surface3: #1d2540;
+  --border: #1e2a42;
+  --border2: #27344f;
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,.12);
+  --green-glow: rgba(52,211,153,.25);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,.12);
+  --amber: #fbbf24;
+  --amber-dim: rgba(251,191,36,.12);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,.12);
+  --purple: #c084fc;
+  --text: #e2e8f5;
+  --muted: #4a5878;
+  --muted2: #7888a8;
+  --r: 14px;
+  --r2: 20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── BACKGROUND ── */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 60% 55% at 5% -5%,rgba(52,211,153,.07) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 50% at 95% 100%,rgba(96,165,250,.06) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+
+/* ── LAYOUT ── */
+.screen{position:relative;z-index:1;display:none}
+.screen.active{display:flex;flex-direction:column;min-height:100vh}
+
+/* ═══════════════════════════════════════════
+   SCREEN: CHOOSE
+═══════════════════════════════════════════ */
+#s-choose{align-items:center;justify-content:center;padding:32px 20px}
+.choose-wrap{width:100%;max-width:400px}
+
+.brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green-glow)}
+.brand-name{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.brand-name span{color:var(--green)}
+.brand-sub{text-align:center;font-size:12px;color:var(--muted2);margin-bottom:36px}
+
+.emp-grid{display:grid;gap:10px;margin-bottom:24px}
+.emp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r2);padding:20px 18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden}
+.emp-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02),transparent);pointer-events:none}
+.emp-card:hover{border-color:var(--green);transform:translateY(-2px);background:rgba(52,211,153,.04)}
+.emp-avatar-sm{width:52px;height:52px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:1.5px solid var(--border2)}
+.emp-card-info{flex:1}
+.emp-card-name{font-size:16px;font-weight:600;letter-spacing:-.3px}
+.emp-card-role{font-size:11px;color:var(--muted2);margin-top:3px}
+.emp-card-badge{font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--muted2);display:inline-block;margin-top:6px}
+.emp-card-badge.on{border-color:rgba(52,211,153,.4);color:var(--green);background:var(--green-dim)}
+.emp-card-arrow{color:var(--muted);font-size:18px}
+
+.choose-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:11px}
+.choose-divider::before,.choose-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.btn-admin{width:100%;background:var(--surface);border:1.5px solid var(--border2);border-radius:12px;padding:14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-admin:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+
+/* ═══════════════════════════════════════════
+   SCREEN: EMPLOYEE PUNCH
+═══════════════════════════════════════════ */
+#s-punch{padding:0}
+.punch-topbar{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center}
+.btn-back{background:none;border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.btn-back:hover{color:var(--text);border-color:var(--border2)}
+.live-clock{text-align:right}
+.live-clock .lc-time{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:1px}
+.live-clock .lc-date{font-size:11px;color:var(--muted2);margin-top:2px}
+
+.punch-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px 40px;max-width:420px;margin:0 auto;width:100%}
+
+.punch-profile{text-align:center;margin-bottom:28px}
+.punch-avatar{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;background:var(--surface);border:2px solid var(--border2);margin:0 auto 14px;position:relative}
+.punch-status-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--bg);box-shadow:0 0 8px var(--green-glow)}
+.punch-name{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.punch-role{font-size:13px;color:var(--muted2);margin-top:4px}
+.punch-shift-badge{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--muted2);margin-top:10px}
+.punch-shift-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+/* Slot progress */
+.slot-track{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
+.slot-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;transition:all .3s}
+.slot-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.slot-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--muted);padding:4px 2px;border-radius:6px}
+.slot-item.done{border-color:rgba(52,211,153,.3);background:var(--green-dim)}
+.slot-item.done .slot-val{color:var(--green)}
+.slot-item.next{border-color:rgba(251,191,36,.4);background:var(--amber-dim);animation:pulse-border 2s ease infinite}
+.slot-item.next .slot-val{color:var(--amber)}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.3)}50%{box-shadow:0 0 0 5px rgba(251,191,36,0)}}
+
+/* Big button */
+.punch-btn{width:100%;border:none;border-radius:var(--r2);padding:22px;font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:-.3px;position:relative;overflow:hidden;margin-bottom:12px}
+.punch-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent)}
+.punch-btn.in{background:linear-gradient(135deg,#065f46,#34d399);color:#022c22;box-shadow:0 8px 32px rgba(52,211,153,.3)}
+.punch-btn.out{background:linear-gradient(135deg,#78350f,#fbbf24);color:#1c0a00;box-shadow:0 8px 32px rgba(251,191,36,.3)}
+.punch-btn.retry{background:linear-gradient(135deg,#1e3a5f,#60a5fa);color:#030d1a;box-shadow:0 8px 32px rgba(96,165,250,.3)}
+.punch-btn:disabled{background:var(--surface2)!important;color:var(--muted)!important;cursor:not-allowed!important;box-shadow:none!important}
+.punch-btn:not(:disabled):hover{transform:translateY(-2px);filter:brightness(1.07)}
+.punch-btn:not(:disabled):active{transform:scale(.98)}
+
+.btn-override{width:100%;background:transparent;border:1px dashed rgba(251,191,36,.4);color:var(--amber);border-radius:12px;padding:13px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:12px;transition:all .2s;display:none}
+.btn-override:hover{background:var(--amber-dim)}
+
+.status-bar{width:100%;min-height:44px;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.4;transition:all .3s}
+.status-bar.idle{background:transparent;color:var(--muted2)}
+.status-bar.checking{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);color:var(--blue)}
+.status-bar.ok{background:var(--green-dim);border:1px solid rgba(52,211,153,.2);color:var(--green)}
+.status-bar.far{background:var(--red-dim);border:1px solid rgba(248,113,113,.2);color:var(--red)}
+.status-bar.warn{background:var(--amber-dim);border:1px solid rgba(251,191,36,.2);color:var(--amber)}
+
+/* ═══════════════════════════════════════════
+   SCREEN: ADMIN LOGIN
+═══════════════════════════════════════════ */
+#s-login{align-items:center;justify-content:center;padding:32px 20px}
+.login-card{width:100%;max-width:340px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:32px 24px}
+.login-icon{font-size:36px;text-align:center;margin-bottom:16px}
+.login-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--muted2);text-align:center;margin-bottom:28px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;color:var(--muted2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.6px}
+.field input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--blue)}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--blue),#3b82f6);border:none;border-radius:12px;padding:15px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:6px}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.login-err{color:var(--red);font-size:12px;text-align:center;margin-top:10px;display:none}
+.btn-link{display:block;margin-top:18px;text-align:center;background:none;border:none;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;text-decoration:underline}
+
+/* ═══════════════════════════════════════════
+   SCREEN: ADMIN PANEL
+═══════════════════════════════════════════ */
+#s-admin{padding:0;background:var(--bg)}
+.admin-nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 4px;position:sticky;top:0;z-index:50;overflow-x:auto;scrollbar-width:none}
+.admin-nav::-webkit-scrollbar{display:none}
+.nav-tab{flex-shrink:0;padding:14px 16px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--green)}
+.nav-tab:hover:not(.active){color:var(--text)}
+.nav-exit{margin-left:auto;padding:14px 16px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;transition:color .2s}
+.nav-exit:hover{color:var(--red)}
+
+.tab-content{display:none;padding:20px 16px 60px;max-width:560px;margin:0 auto}
+.tab-content.active{display:block}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title-icon{font-size:14px}
+
+/* ── TAB: DASHBOARD ── */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.stat-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.stat-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:500}
+.stat-value.green{color:var(--green)}
+.stat-value.amber{color:var(--amber)}
+.stat-value.blue{color:var(--blue)}
+.stat-value.red{color:var(--red)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:4px}
+
+.worker-summary{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.worker-summary:last-child{border-bottom:none;padding-bottom:0}
+.ws-avatar{font-size:26px;width:44px;height:44px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ws-info{flex:1}
+.ws-name{font-size:14px;font-weight:600}
+.ws-role{font-size:11px;color:var(--muted2);margin-top:2px}
+.ws-bars{margin-top:8px}
+.ws-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ws-bar-label{font-size:10px;color:var(--muted);width:36px;flex-shrink:0}
+.ws-bar-track{flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.ws-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.ws-bar-fill.green{background:var(--green)}
+.ws-bar-fill.amber{background:var(--amber)}
+.ws-time{font-family:'DM Mono',monospace;font-size:12px;color:var(--blue);flex-shrink:0;width:60px;text-align:right}
+
+/* ── TAB: EMPLOYEES ── */
+.emp-list-item{display:flex;align-items:center;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;margin-bottom:8px}
+.eli-avatar{font-size:24px;width:42px;height:42px;background:var(--surface3);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.eli-info{flex:1}
+.eli-name{font-size:14px;font-weight:600}
+.eli-meta{font-size:11px;color:var(--muted2);margin-top:3px}
+.eli-actions{display:flex;gap:6px}
+.btn-icon{background:var(--surface3);border:1px solid var(--border2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px;color:var(--muted2)}
+.btn-icon:hover{border-color:var(--blue);color:var(--blue)}
+.btn-icon.danger:hover{border-color:var(--red);color:var(--red)}
+
+.btn-add{width:100%;background:var(--green-dim);border:1.5px dashed rgba(52,211,153,.4);border-radius:12px;padding:13px;color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.btn-add:hover{background:rgba(52,211,153,.2)}
+
+/* ── EMPLOYEE FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-grid.full{grid-template-columns:1fr}
+.afield{margin-bottom:12px}
+.afield label{display:block;font-size:11px;color:var(--muted2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.afield input,.afield select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.afield input:focus,.afield select:focus{border-color:var(--blue)}
+.afield select option{background:var(--surface2)}
+.afield input:disabled{opacity:.5;cursor:not-allowed}
+.color-row{display:flex;gap:8px;flex-wrap:wrap}
+.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s}
+.color-dot.selected{border-color:#fff}
+
+/* ── TAB: SHIFTS ── */
+.shift-item{background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px}
+.shift-color{width:6px;height:36px;border-radius:3px;flex-shrink:0}
+.shift-info{flex:1}
+.shift-name{font-size:14px;font-weight:600}
+.shift-hours{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);margin-top:3px}
+.shift-journey{font-size:10px;color:var(--amber);margin-top:2px}
+
+/* ── TAB: LOCATIONS ── */
+.loc-item{background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:8px}
+.loc-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.loc-pin{font-size:22px}
+.loc-name{font-size:14px;font-weight:600;flex:1}
+.loc-coords{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.coord-box{background:var(--surface3);border-radius:8px;padding:8px 10px}
+.coord-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.coord-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--blue)}
+
+/* ── TAB: RECORDS ── */
+.rec-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
+.filter-chip.active{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+
+.day-card{background:var(--surface2);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.day-card-header{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.day-worker{font-weight:600;font-size:14px}
+.day-date{font-size:11px;color:var(--muted2);margin-top:2px}
+.day-meta{text-align:right}
+.day-worked{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--blue)}
+.day-ot{font-size:10px;margin-top:2px}
+.day-ot.pos{color:var(--amber)}
+.day-ot.neg{color:var(--red)}
+.day-ot.zero{color:var(--muted)}
+.day-card-punches{padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px}
+.punch-tag{display:flex;align-items:center;gap:6px;background:var(--surface3);border-radius:8px;padding:6px 10px;font-size:12px}
+.punch-tag .type{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.punch-tag .type.in{background:var(--green-dim);color:var(--green)}
+.punch-tag .type.out{background:var(--amber-dim);color:var(--amber)}
+.punch-tag .ptime{font-family:'DM Mono',monospace;font-weight:500}
+.punch-tag .pdist{font-size:10px;color:var(--muted)}
+.punch-tag-actions{display:flex;gap:4px;margin-left:4px}
+.punch-tag-actions button{background:none;border:none;cursor:pointer;font-size:11px;opacity:.4;transition:opacity .2s;padding:0}
+.punch-tag-actions button:hover{opacity:1}
+
+.btn-export-full{width:100%;background:var(--green-dim);border:1px solid rgba(52,211,153,.3);border-radius:12px;padding:13px;color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.btn-export-full:hover{background:rgba(52,211,153,.2)}
+
+/* ── TAB: SETTINGS ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:14px;font-weight:500}
+.setting-desc{font-size:11px;color:var(--muted2);margin-top:3px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--surface3);border-radius:12px;cursor:pointer;transition:background .2s}
+.toggle input:checked + .toggle-track{background:var(--green)}
+.toggle-knob{position:absolute;width:18px;height:18px;top:3px;left:3px;background:#fff;border-radius:50%;transition:left .2s;pointer-events:none}
+.toggle input:checked ~ .toggle-knob{left:23px}
+
+/* ── SYNC BTN ── */
+.btn-sync{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:10px;padding:9px 14px;color:var(--blue);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;width:100%}
+.btn-sync:hover{background:rgba(96,165,250,.2)}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:200;padding:0}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 24px}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted2);margin-bottom:24px;line-height:1.5}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.btn-cancel{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-cancel:hover{color:var(--text)}
+.btn-confirm{flex:2;background:linear-gradient(135deg,#065f46,#34d399);border:none;border-radius:12px;padding:14px;color:#022c22;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-confirm:hover{filter:brightness(1.07)}
+.btn-danger-confirm{flex:2;background:linear-gradient(135deg,#7f1d1d,#f87171);border:none;border-radius:12px;padding:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:9999;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{border-color:var(--green);color:var(--green)}
+#toast.error{border-color:var(--red);color:var(--red)}
+#toast.warn{border-color:var(--amber);color:var(--amber)}
+#toast.info{border-color:var(--blue);color:var(--blue)}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:40px 0;color:var(--muted)}
+.empty .eicon{font-size:32px;opacity:.3;margin-bottom:10px}
+.empty p{font-size:13px}
+.section-gap{height:6px}
+.perm-modal-box{border-radius:24px!important}
+
+/* GPS permission modal */
+#gps-modal .modal-box{border-radius:24px;margin:24px;max-width:380px;align-self:center}
+
+/* ── REPORT ── */
+.report-wrap{background:#fff;color:#111;border-radius:var(--r2);overflow:hidden;margin-top:4px}
+.report-header-block{background:linear-gradient(135deg,#0f1421,#1d2540);color:#e2e8f5;padding:28px 28px 22px;border-bottom:3px solid #34d399}
+.rh-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.rh-brand{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#34d399}
+.rh-brand-sub{font-size:11px;color:#4a5878;margin-top:2px}
+.rh-period{text-align:right}
+.rh-period-title{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.rh-period-sub{font-size:11px;color:#7888a8;margin-top:3px}
+.rh-meta{display:flex;gap:20px;font-size:11px;color:#7888a8;flex-wrap:wrap}
+.rep-emp-section{padding:0 0 20px;border-bottom:2px solid #e2e8f0}
+.rep-emp-section:last-child{border-bottom:none;padding-bottom:0}
+.rep-emp-header{display:flex;align-items:center;gap:12px;padding:20px 24px 14px;border-bottom:1px solid #e8edf5}
+.rep-emp-avatar{font-size:26px;width:46px;height:46px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.rep-emp-name{font-size:17px;font-weight:700;color:#0f1421}
+.rep-emp-meta{font-size:12px;color:#64748b;margin-top:2px}
+.rep-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 24px;background:#f8fafc;border-bottom:1px solid #e8edf5}
+.rep-sum-box{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:11px 12px}
+.rsb-label{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.rsb-val{font-size:17px;font-weight:700;color:#0f1421;font-family:'DM Mono',monospace}
+.rsb-val.green{color:#059669}.rsb-val.amber{color:#d97706}.rsb-val.red{color:#dc2626}.rsb-val.blue{color:#2563eb}
+.rep-table-wrap{padding:0 24px 20px;overflow-x:auto}
+.rep-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px;min-width:580px}
+.rep-table thead th{background:#0f1421;color:#e2e8f5;padding:9px 10px;text-align:center;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.rep-table thead th:first-child{text-align:left;padding-left:14px;min-width:100px}
+.rep-table tbody tr:nth-child(even){background:#f8fafc}
+.rep-table tbody td{padding:8px 10px;text-align:center;border-bottom:1px solid #e8edf5;color:#334155;white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px}
+.rep-table tbody td:first-child{text-align:left;padding-left:14px;font-family:'DM Sans',sans-serif;font-weight:600;color:#0f1421;font-size:12px}
+.rep-table .td-empty{color:#cbd5e1;font-family:'DM Sans',sans-serif;font-size:11px}
+.rep-table .td-ot-pos{color:#d97706;font-weight:700}
+.rep-table .td-ot-neg{color:#dc2626;font-weight:700}
+.rep-table .td-ot-zero{color:#94a3b8}
+.rep-table .td-weekend td{color:#94a3b8!important;background:#fafafa!important}
+.rep-table .td-weekend td:first-child{color:#94a3b8!important}
+.rep-table tfoot td{background:#0f1421;color:#e2e8f5;font-weight:700;padding:10px 10px;font-family:'DM Mono',monospace;font-size:12px}
+.rep-table tfoot td:first-child{text-align:left;padding-left:14px;font-family:'DM Sans',sans-serif;font-size:12px}
+.ot-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.ot-badge.pos{background:#fef3c7;color:#92400e}
+.ot-badge.neg{background:#fee2e2;color:#991b1b}
+.ot-badge.zero{background:#f1f5f9;color:#64748b}
+.rep-footer{padding:14px 24px;background:#f8fafc;border-top:1px solid #e8edf5;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+@media print{
+  body *{visibility:hidden!important}
+  #print-area,#print-area *{visibility:visible!important}
+  #print-area{position:fixed;top:0;left:0;width:100%;background:#fff;z-index:99999}
+  .report-wrap{border-radius:0!important}
+  .rep-table tbody tr:hover{background:transparent!important}
+}</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SCREEN: CHOOSE EMPLOYEE
+══════════════════════════════════════ -->
+<div class="screen active" id="s-choose">
+  <div class="choose-wrap">
+    <div class="brand"><div class="brand-dot"></div><div class="brand-name">Ponto<span>Digital</span></div></div>
+    <div class="brand-sub" id="choose-sub">Quem está registrando o ponto?</div>
+    <div class="emp-grid" id="emp-grid"><!-- dinâmico --></div>
+    <div class="choose-divider">área restrita</div>
+    <button class="btn-admin" onclick="goLogin()">🔒 Painel Administrativo</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: PUNCH
+══════════════════════════════════════ -->
+<div class="screen" id="s-punch">
+  <div class="punch-topbar">
+    <button class="btn-back" onclick="goChoose()">← Voltar</button>
+    <div class="live-clock">
+      <div class="lc-time" id="lc-time">--:--</div>
+      <div class="lc-date" id="lc-date">---</div>
+    </div>
+  </div>
+  <div class="punch-body">
+    <div class="punch-profile">
+      <div class="punch-avatar" id="p-avatar">
+        👤
+        <div class="punch-status-dot"></div>
+      </div>
+      <div class="punch-name" id="p-name">--</div>
+      <div class="punch-role" id="p-role">--</div>
+      <div class="punch-shift-badge">
+        <div class="dot"></div>
+        <span id="p-shift">Turno --</span>
+      </div>
+    </div>
+
+    <div class="slot-track" id="slot-track">
+      <div class="slot-item" id="si-e1"><div class="slot-label">Entrada 1</div><div class="slot-val">--:--</div></div>
+      <div class="slot-item" id="si-s1"><div class="slot-label">Saída 1</div><div class="slot-val">--:--</div></div>
+      <div class="slot-item" id="si-e2"><div class="slot-label">Entrada 2</div><div class="slot-val">--:--</div></div>
+      <div class="slot-item" id="si-s2"><div class="slot-label">Saída 2</div><div class="slot-val">--:--</div></div>
+    </div>
+
+    <button class="punch-btn in" id="main-btn" onclick="doPunch(false)">✅ Registrar Entrada</button>
+    <button class="btn-override" id="btn-override" onclick="doPunch(true)">⚠️ Registrar fora do local (justificado)</button>
+    <div class="status-bar idle" id="punch-status">📍 Clique para registrar — verificaremos sua localização</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: ADMIN LOGIN
+══════════════════════════════════════ -->
+<div class="screen" id="s-login">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Área Administrativa</div>
+    <div class="login-sub">Digite a senha de acesso</div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    <div class="login-err" id="login-err">Senha incorreta</div>
+    <button class="btn-link" onclick="goChoose()">← Voltar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: ADMIN
+══════════════════════════════════════ -->
+<div class="screen" id="s-admin">
+  <nav class="admin-nav">
+    <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
+    <button class="nav-tab" onclick="showTab('t-emp',this)">👥 Funcionários</button>
+    <button class="nav-tab" onclick="showTab('t-shift',this)">🕐 Turnos</button>
+    <button class="nav-tab" onclick="showTab('t-loc',this)">📍 Locais</button>
+    <button class="nav-tab" onclick="showTab('t-rec',this)">📋 Registros</button>
+    <button class="nav-tab" onclick="showTab('t-cfg',this)">⚙️ Config</button>
+    <button class="nav-tab" onclick="showTab('t-report',this);buildReport()">📄 Relatório</button>
+    <button class="nav-exit" onclick="goChoose()">Sair ×</button>
+  </nav>
+
+  <!-- ── DASHBOARD ── -->
+  <div class="tab-content active" id="t-dash">
+    <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div>
+      <div id="today-summary"><!-- dinâmico --></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">📈</span> Horas Extras Acumuladas</div>
+      <div id="ot-summary"><!-- dinâmico --></div>
+    </div>
+    <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
+  </div>
+
+  <!-- ── EMPLOYEES ── -->
+  <div class="tab-content" id="t-emp">
+    <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionário</button>
+    <div id="emp-list"><!-- dinâmico --></div>
+  </div>
+
+  <!-- ── SHIFTS ── -->
+  <div class="tab-content" id="t-shift">
+    <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
+    <div id="shift-list"><!-- dinâmico --></div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">ℹ️ O que é um turno?</div>
+      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
+        O turno define a <strong>carga horária diária</strong> de uma funcionária — usada para calcular horas extras. Ex: "CLT 44h" = 8h48m/dia. O turno é atribuído a cada funcionária individualmente na aba <strong>Funcionários</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── LOCATIONS ── -->
+  <div class="tab-content" id="t-loc">
+    <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
+    <div id="loc-list"><!-- dinâmico --></div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">📡 Como obter coordenadas</div>
+      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
+        Acesse <strong>maps.google.com</strong>, clique com botão direito no local exato e copie as coordenadas que aparecem. O raio define quantos metros de tolerância a funcionária pode estar do ponto central para bater o ponto.
+      </p>
+      <button class="btn-sync" style="margin-top:12px" onclick="detectMyLoc()">📍 Usar minha localização atual</button>
+    </div>
+  </div>
+
+  <!-- ── RECORDS ── -->
+  <div class="tab-content" id="t-rec">
+    <button class="btn-export-full" onclick="exportCSV()">📊 Exportar CSV Completo</button>
+    <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
+    <div id="rec-list"><!-- dinâmico --></div>
+  </div>
+
+  <!-- ── RELATÓRIO ── -->
+  <div class="tab-content" id="t-report">
+    <div class="card">
+      <div class="card-title">📄 Relatório Mensal de Ponto</div>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="afield">
+          <label>Mês</label>
+          <select id="rep-month"></select>
+        </div>
+        <div class="afield">
+          <label>Ano</label>
+          <select id="rep-year"></select>
+        </div>
+      </div>
+      <div class="afield">
+        <label>Funcionária</label>
+        <select id="rep-emp"><option value="all">Todas</option></select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-sync" style="flex:1" onclick="buildReport()">🔍 Gerar Relatório</button>
+        <button class="btn-export-full" style="flex:1;margin-bottom:0" onclick="printReport()">🖨️ Imprimir / PDF</button>
+      </div>
+    </div>
+    <div id="report-preview"></div>
+  </div>
+
+  <!-- ── CONFIG ── -->
+  <div class="tab-content" id="t-cfg">
+    <div class="card">
+      <div class="card-title">🔗 Integração com Google Sheets</div>
+      <div class="afield">
+        <label>URL do Google Apps Script</label>
+        <input type="text" id="cfg-url" placeholder="https://script.google.com/...">
+      </div>
+      <button class="btn-sync" onclick="saveCfgUrl()">💾 Salvar URL</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🔒 Segurança</div>
+      <div class="afield">
+        <label>Nova Senha Administrativa</label>
+        <input type="password" id="cfg-pw" placeholder="mínimo 6 caracteres">
+      </div>
+      <button class="btn-sync" onclick="savePassword()">💾 Alterar Senha</button>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Comportamento</div>
+      <div class="setting-row">
+        <div><div class="setting-label">Registro forçado</div><div class="setting-desc">Permitir bater ponto fora do raio (com aviso)</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg-override" onchange="saveBoolCfg('allowOverride',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Mostrar distância</div><div class="setting-desc">Exibir distância do local ao funcionário</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg-showdist" checked onchange="saveBoolCfg('showDist',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🗑️ Dados</div>
+      <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">
+        Apagar todos os registros de ponto
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+<!-- GPS permission -->
+<div class="modal-overlay" id="gps-modal">
+  <div class="modal-box" style="border-radius:24px;margin:24px;max-width:380px;align-self:center">
+    <div style="font-size:40px;text-align:center;margin-bottom:14px">🔒</div>
+    <div class="modal-title" style="text-align:center">Localização bloqueada</div>
+    <div class="modal-sub" style="text-align:center">O acesso à localização foi negado. Verifique as permissões do navegador.</div>
+    <button class="btn-cancel" style="width:100%" onclick="closeModal('gps-modal')">Fechar</button>
+  </div>
+</div>
+
+<!-- Employee modal -->
+<div class="modal-overlay" id="emp-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="emp-modal-title">Novo Funcionário</div>
+    <div class="modal-sub">Preencha as informações da funcionária</div>
+    <input type="hidden" id="emp-id-edit">
+    <div class="form-grid">
+      <div class="afield"><label>Nome</label><input type="text" id="emp-name-inp" placeholder="Ex: Maria Silva"></div>
+      <div class="afield"><label>Cargo / Função</label><input type="text" id="emp-role-inp" placeholder="Ex: Cuidadora"></div>
+    </div>
+    <div class="form-grid">
+      <div class="afield">
+        <label>Turno</label>
+        <select id="emp-shift-sel"><!-- dinâmico --></select>
+      </div>
+      <div class="afield">
+        <label>Local de Trabalho</label>
+        <select id="emp-loc-sel"><!-- dinâmico --></select>
+      </div>
+    </div>
+    <div class="afield">
+      <label>Emoji / Avatar</label>
+      <input type="text" id="emp-emoji-inp" placeholder="Ex: 👩‍⚕️" maxlength="4" style="font-size:24px;text-align:center">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('emp-modal')">Cancelar</button>
+      <button class="btn-confirm" onclick="saveEmployee()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shift modal -->
+<div class="modal-overlay" id="shift-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="shift-modal-title">Novo Turno</div>
+    <div class="modal-sub">Defina nome, jornada diária e cor identificadora</div>
+    <input type="hidden" id="shift-id-edit">
+    <div class="afield"><label>Nome do Turno</label><input type="text" id="shift-name-inp" placeholder="Ex: CLT 44h"></div>
+    <div class="form-grid">
+      <div class="afield"><label>Jornada (h/dia)</label><input type="number" id="shift-hours-inp" min="1" max="24" step="0.5" placeholder="8"></div>
+      <div class="afield"><label>Minutos extra</label><input type="number" id="shift-mins-inp" min="0" max="59" placeholder="0"></div>
+    </div>
+    <div class="afield">
+      <label>Cor</label>
+      <div class="color-row" id="color-row">
+        <div class="color-dot selected" data-color="#34d399" style="background:#34d399" onclick="selectColor(this)"></div>
+        <div class="color-dot" data-color="#60a5fa" style="background:#60a5fa" onclick="selectColor(this)"></div>
+        <div class="color-dot" data-color="#fbbf24" style="background:#fbbf24" onclick="selectColor(this)"></div>
+        <div class="color-dot" data-color="#f87171" style="background:#f87171" onclick="selectColor(this)"></div>
+        <div class="color-dot" data-color="#c084fc" style="background:#c084fc" onclick="selectColor(this)"></div>
+        <div class="color-dot" data-color="#fb923c" style="background:#fb923c" onclick="selectColor(this)"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('shift-modal')">Cancelar</button>
+      <button class="btn-confirm" onclick="saveShift()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Location modal -->
+<div class="modal-overlay" id="loc-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="loc-modal-title">Novo Local</div>
+    <div class="modal-sub">Informe nome, coordenadas e raio da cerca eletrônica</div>
+    <input type="hidden" id="loc-id-edit">
+    <div class="form-grid">
+      <div class="afield"><label>Nome do Local</label><input type="text" id="loc-name-inp" placeholder="Ex: Casa da Ana"></div>
+      <div class="afield"><label>Emoji</label><input type="text" id="loc-emoji-inp" placeholder="🏠" maxlength="4" style="font-size:22px;text-align:center"></div>
+    </div>
+    <div class="form-grid">
+      <div class="afield"><label>Latitude</label><input type="number" id="loc-lat-inp" step="0.000001" placeholder="-23.561414"></div>
+      <div class="afield"><label>Longitude</label><input type="number" id="loc-lng-inp" step="0.000001" placeholder="-46.656361"></div>
+    </div>
+    <div class="afield"><label>Raio da Cerca (metros)</label><input type="number" id="loc-radius-inp" min="10" max="5000" value="150" placeholder="150"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('loc-modal')">Cancelar</button>
+      <button class="btn-confirm" onclick="saveLocation()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit punch modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Editar Ponto</div>
+    <div class="modal-sub">A edição fica registrada no histórico</div>
+    <input type="hidden" id="edit-punch-id">
+    <div class="form-grid">
+      <div class="afield"><label>Data (DD/MM/AAAA)</label><input type="text" id="edit-date-inp"></div>
+      <div class="afield"><label>Hora (HH:MM:SS)</label><input type="text" id="edit-time-inp"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancelar</button>
+      <button class="btn-confirm" onclick="savePunchEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete modal -->
+<div class="modal-overlay" id="del-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Confirmar exclusão</div>
+    <div class="modal-sub" id="del-modal-sub">Tem certeza?</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('del-modal')">Cancelar</button>
+      <button class="btn-danger-confirm" id="del-confirm-btn">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────
+// STATE & DEFAULTS
+// ─────────────────────────────────────
+const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
+const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+let employees  = LS('pd_employees')  || [
+  { id:'emp_1', name:'Hanna',       role:'Cuidadora',     emoji:'👶', shiftId:'shift_1', locId:'loc_1' },
+  { id:'emp_2', name:'Maria Júlia', role:'Administrativa', emoji:'💼', shiftId:'shift_2', locId:'loc_2' }
+];
+let shifts     = LS('pd_shifts')     || [
+  { id:'shift_1', name:'Diarista',   hours:8,  mins:0,  color:'#34d399' },
+  { id:'shift_2', name:'CLT 44h',    hours:8,  mins:48, color:'#60a5fa' }
+];
+let locations  = LS('pd_locations')  || [
+  { id:'loc_1', name:'Casa (Baba)',   emoji:'🏠', lat:-22.981132, lng:-45.541034, radius:150 },
+  { id:'loc_2', name:'Escritório',    emoji:'🏢', lat:-22.816895, lng:-45.200503, radius:150 }
+];
+let records    = LS('pd_records')    || [];
+let pending    = LS('pd_pending')    || [];
+let settings   = LS('pd_settings')  || { pw:'685974', googleUrl:'', allowOverride:true, showDist:true };
+
+let currentEmpId = null;
+let pendingRetry  = null;
+let isSending     = false;
+let clockTimer    = null;
+let recFilterEmp  = 'all';
+
+// ─────────────────────────────────────
+// PERSIST HELPERS
+// ─────────────────────────────────────
+const saveAll = () => {
+  SS('pd_employees', employees);
+  SS('pd_shifts', shifts);
+  SS('pd_locations', locations);
+  SS('pd_records', records);
+  SS('pd_pending', pending);
+  SS('pd_settings', settings);
+};
+
+// ─────────────────────────────────────
+// NAV
+// ─────────────────────────────────────
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+function goChoose() {
+  clearInterval(clockTimer);
+  buildChooseGrid();
+  showScreen('s-choose');
+  currentEmpId = null;
+}
+
+function goLogin() {
+  document.getElementById('pw-input').value = '';
+  document.getElementById('login-err').style.display = 'none';
+  showScreen('s-login');
+}
+
+function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === String(settings.pw)) {
+    document.getElementById('login-err').style.display = 'none';
+    goAdmin();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function goAdmin() {
+  showScreen('s-admin');
+  renderDash();
+  renderEmpList();
+  renderShiftList();
+  renderLocList();
+  renderRecords();
+  document.getElementById('cfg-url').value  = settings.googleUrl || '';
+  document.getElementById('cfg-override').checked = settings.allowOverride !== false;
+  document.getElementById('cfg-showdist').checked  = settings.showDist !== false;
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─────────────────────────────────────
+// CHOOSE SCREEN
+// ─────────────────────────────────────
+function buildChooseGrid() {
+  const grid = document.getElementById('emp-grid');
+  if (!employees.length) {
+    grid.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário cadastrado.<br>Acesse o painel admin para adicionar.</p></div>';
+    return;
+  }
+  grid.innerHTML = employees.map(emp => {
+    const today = new Date().toLocaleDateString('pt-BR');
+    const todayRecs = records.filter(r => r.empId === emp.id && r.date === today);
+    const next = nextSlot(emp.id);
+    const shift = shifts.find(s => s.id === emp.shiftId);
+    const statusTxt = !next ? 'Todos os pontos ✓' : (next.includes('entrada') ? 'Aguardando entrada' : 'Aguardando saída');
+    const isActive = todayRecs.some(r => r.slot === 'entrada1') && !todayRecs.some(r => r.slot === 'saida2');
+    return `<div class="emp-card" onclick="goEmployee('${emp.id}')">
+      <div class="emp-avatar-sm">${emp.emoji || '👤'}</div>
+      <div class="emp-card-info">
+        <div class="emp-card-name">${emp.name}</div>
+        <div class="emp-card-role">${emp.role}</div>
+        <div class="emp-card-badge ${isActive ? 'on' : ''}">${statusTxt}</div>
+      </div>
+      <div class="emp-card-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────
+// EMPLOYEE SCREEN
+// ─────────────────────────────────────
+function goEmployee(empId) {
+  currentEmpId = empId;
+  const emp = employees.find(e => e.id === empId);
+  if (!emp) return;
+  const shift = shifts.find(s => s.id === emp.shiftId) || {};
+  const loc   = locations.find(l => l.id === emp.locId) || {};
+
+  document.getElementById('p-avatar').childNodes[0].nodeValue = emp.emoji || '👤';
+  document.getElementById('p-name').textContent  = emp.name;
+  document.getElementById('p-role').textContent  = emp.role;
+  document.getElementById('p-shift').textContent = shift.name ? `${shift.name} — ${loc.name || '?'}` : 'Turno não definido';
+
+  pendingRetry = pending.find(p => p.empId === empId) || null;
+  updatePunchBtn();
+  updateSlots();
+
+  if (pendingRetry) setStatus('warn', `⚠️ Ponto pendente das ${pendingRetry.time.slice(0,5)} — clique para reenviar`);
+  else setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
+
+  startClock();
+  showScreen('s-punch');
+  syncCloud(false);
+}
+
+function startClock() {
+  clearInterval(clockTimer);
+  const tick = () => {
+    const now = new Date();
+    const te = document.getElementById('lc-time');
+    const de = document.getElementById('lc-date');
+    if (te) te.textContent = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    if (de) de.textContent = now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
+  };
+  tick();
+  clockTimer = setInterval(tick, 1000);
+}
+
+const SLOTS = ['entrada1','saida1','entrada2','saida2'];
+function todayRecs(empId) {
+  const today = new Date().toLocaleDateString('pt-BR');
+  return records.filter(r => r.empId === empId && r.date === today).sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+}
+function nextSlot(empId) {
+  const done = todayRecs(empId).map(r => r.slot);
+  return SLOTS.find(s => !done.includes(s)) || null;
+}
+
+function updateSlots() {
+  if (!currentEmpId) return;
+  const today = todayRecs(currentEmpId);
+  const next  = nextSlot(currentEmpId);
+  const ids   = ['si-e1','si-s1','si-e2','si-s2'];
+  SLOTS.forEach((sk, i) => {
+    const el  = document.getElementById(ids[i]);
+    const hit = today.find(r => r.slot === sk);
+    const vEl = el.querySelector('.slot-val');
+    el.className = 'slot-item';
+    if (hit)           { vEl.textContent = hit.time.slice(0,5); el.classList.add('done'); }
+    else if (sk===next && !pendingRetry) { vEl.textContent = '→'; el.classList.add('next'); }
+    else               { vEl.textContent = '--:--'; }
+  });
+}
+
+function updatePunchBtn() {
+  const btn      = document.getElementById('main-btn');
+  const override = document.getElementById('btn-override');
+  if (!currentEmpId || !btn) return;
+  override.style.display = 'none';
+
+  if (pendingRetry) {
+    btn.textContent = `🔄 Reenviar das ${pendingRetry.time.slice(0,5)}`;
+    btn.className   = 'punch-btn retry';
+    btn.disabled    = false;
+    btn.onclick     = () => retryPunch();
+    return;
+  }
+  if (!navigator.onLine) {
+    btn.textContent = '❌ Sem conexão';
+    btn.className   = 'punch-btn';
+    btn.disabled    = true;
+    btn.onclick     = null;
+    setStatus('far','Conecte-se à internet para registrar o ponto.');
+    return;
+  }
+  const next = nextSlot(currentEmpId);
+  if (!next) {
+    btn.textContent = '✅ Todos os pontos registrados hoje';
+    btn.className   = 'punch-btn in';
+    btn.disabled    = true;
+    btn.onclick     = null;
+    return;
+  }
+  btn.disabled = false;
+  const labels = { entrada1:'✅ Registrar Entrada 1', saida1:'🏁 Registrar Saída 1', entrada2:'✅ Registrar Entrada 2', saida2:'🏁 Registrar Saída 2' };
+  btn.textContent = labels[next];
+  btn.className   = next.includes('entrada') ? 'punch-btn in' : 'punch-btn out';
+  btn.onclick     = () => doPunch(false);
+}
+
+// ─────────────────────────────────────
+// PUNCH LOGIC
+// ─────────────────────────────────────
+async function doPunch(force=false) {
+  if (isSending || pendingRetry) return;
+  if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
+  if (!currentEmpId) return;
+  const next = nextSlot(currentEmpId);
+  if (!next) return;
+
+  const emp = employees.find(e => e.id === currentEmpId);
+  const loc = locations.find(l => l.id === emp.locId);
+  if (!loc) { toast('⚠️ Local não definido para este funcionário','warn'); return; }
+
+  isSending = true;
+  const btn = document.getElementById('main-btn');
+  btn.disabled = true;
+  document.getElementById('btn-override').style.display = 'none';
+  setStatus('checking','📡 Verificando GPS...');
+
+  try {
+    const pos  = await getPos();
+    const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
+
+    if (dist > loc.radius && !force) {
+      setStatus('far', `🚫 Você está a ${Math.round(dist)}m do local. Raio: ${loc.radius}m.`);
+      if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
+      isSending = false; btn.disabled = false; return;
+    }
+
+    const now = new Date();
+    const rec = {
+      id: Date.now(), empId: currentEmpId, empName: emp.name,
+      slot: next, type: next.includes('entrada') ? 'entrada' : 'saida',
+      datetime: now.toISOString(),
+      date: now.toLocaleDateString('pt-BR'),
+      time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+      lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
+      dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
+      synced: false
+    };
+
+    const ok = await sendToCloud(rec, 3);
+    if (ok) {
+      rec.synced = true;
+      records.unshift(rec);
+      saveAll();
+      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)}`);
+      toast('✅ Ponto registrado!','success');
+    } else {
+      pendingRetry = rec;
+      pending.push(rec);
+      saveAll();
+      setStatus('warn', `⚠️ Falha na rede. Horário ${rec.time.slice(0,5)} guardado. Clique para reenviar.`);
+      toast('❌ Não foi possível enviar. Ponto guardado.','error');
+    }
+    updatePunchBtn(); updateSlots();
+  } catch(e) { handleGeoErr(e); }
+  isSending = false;
+  if (!pendingRetry) btn.disabled = false;
+}
+
+async function retryPunch() {
+  if (isSending || !pendingRetry) return;
+  if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
+  isSending = true;
+  const btn = document.getElementById('main-btn');
+  btn.disabled = true;
+  setStatus('checking',`📡 Reenviando ponto das ${pendingRetry.time.slice(0,5)}...`);
+  const ok = await sendToCloud(pendingRetry, 3);
+  if (ok) {
+    pendingRetry.synced = true;
+    records.unshift(pendingRetry);
+    pending = pending.filter(p => p.id !== pendingRetry.id);
+    const t = pendingRetry.time.slice(0,5);
+    pendingRetry = null;
+    saveAll();
+    setStatus('ok', `✅ Ponto das ${t} registrado com sucesso!`);
+    toast('✅ Reenvio concluído!','success');
+    updatePunchBtn(); updateSlots();
+  } else {
+    setStatus('far', `⚠️ Ainda sem resposta. Tente novamente.`);
+    toast('❌ Falha no reenvio.','error');
+    updatePunchBtn();
+  }
+  isSending = false; btn.disabled = false;
+}
+
+async function sendToCloud(data, tries) {
+  const url = settings.googleUrl;
+  if (!url) return true; // sem integração = ok local
+  for (let i=0; i<tries; i++) {
+    try {
+      await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'add',records:[data]}) });
+      return true;
+    } catch(e) { await sleep(2000); }
+  }
+  return false;
+}
+
+async function syncCloud(manual=false) {
+  const url = settings.googleUrl;
+  if (!url) return;
+  if (!navigator.onLine) { if(manual) toast('❌ Sem internet','error'); return; }
+  if (manual) toast('🔄 Sincronizando...','info');
+  try {
+    const res  = await fetch(url, { method:'GET', redirect:'follow' });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch(e) { return; }
+    if (data?.records?.length) {
+      let changed = false;
+      data.records.forEach(cr => {
+        if (!cr.id) return;
+        if (!records.find(r => String(r.id)===String(cr.id))) {
+          const emp = employees.find(e => e.name === cr.empName) || employees.find(e => e.id === cr.empId);
+          const empId = emp?.id || cr.empId || '';
+          let dtIso = new Date().toISOString();
+          if (cr.date && cr.time) {
+            const [d,m,y] = cr.date.split('/'); const [h,mn,s] = cr.time.split(':');
+            dtIso = new Date(y,m-1,d,h,mn,s||0).toISOString();
+          }
+          records.push({ id:cr.id, empId, empName:cr.empName||'', slot:cr.slot, type:cr.type, datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true });
+          changed = true;
+        }
+      });
+      if (changed) { records.sort((a,b) => new Date(b.datetime)-new Date(a.datetime)); saveAll(); }
+    }
+    if (manual) toast('✅ Sincronizado!','success');
+    if (document.getElementById('s-admin').classList.contains('active')) { renderDash(); renderRecords(); }
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────
+// GEOLOCATION
+// ─────────────────────────────────────
+const getPos = () => new Promise((res,rej) => { if (!navigator.geolocation) { const e=new Error('unsupported'); e.code=-1; rej(e); } else navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:15000,maximumAge:0}); });
+function handleGeoErr(e) {
+  if (e.code===1) document.getElementById('gps-modal').classList.add('show');
+  else if (e.code===2) toast('📡 GPS indisponível','error');
+  else if (e.code===3) toast('⏱ GPS demorou demais','warn');
+  else toast('❌ Erro de localização','error');
+  const btn = document.getElementById('main-btn');
+  if (btn) btn.disabled = false;
+  isSending = false;
+  setStatus('idle','📍 Tente novamente');
+}
+function calcDist(la1,ln1,la2,ln2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dN=(ln2-ln1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dN/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+
+const setStatus = (state,msg) => { const el=document.getElementById('punch-status'); if(el){el.className='status-bar '+state; el.textContent=msg||'';} };
+
+// ─────────────────────────────────────
+// ADMIN: DASHBOARD
+// ─────────────────────────────────────
+function fmtMin(m) { const h=Math.floor(m/60),mm=Math.floor(m%60); return `${h}h ${String(mm).padStart(2,'0')}m`; }
+function workedMin(empId, date) {
+  const day = records.filter(r => r.empId===empId && r.date===date).sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+  const e1=day.find(r=>r.slot==='entrada1'), s1=day.find(r=>r.slot==='saida1');
+  const e2=day.find(r=>r.slot==='entrada2'), s2=day.find(r=>r.slot==='saida2');
+  let m=0;
+  if(e1&&s1) m+=(new Date(s1.datetime)-new Date(e1.datetime))/60000;
+  if(e2&&s2) m+=(new Date(s2.datetime)-new Date(e2.datetime))/60000;
+  return Math.max(0,m);
+}
+function journeyMin(empId) {
+  const emp = employees.find(e=>e.id===empId);
+  if (!emp) return 480;
+  const shift = shifts.find(s=>s.id===emp.shiftId);
+  return shift ? (shift.hours*60 + (shift.mins||0)) : 480;
+}
+function totalOT(empId) {
+  const dates = [...new Set(records.filter(r=>r.empId===empId).map(r=>r.date))];
+  return dates.reduce((sum,d) => { const w=workedMin(empId,d),j=journeyMin(empId); return sum+Math.max(0,w-j); }, 0);
+}
+
+function renderDash() {
+  const today = new Date().toLocaleDateString('pt-BR');
+  // Stats
+  const totalWorking = employees.filter(emp => {
+    const tr = todayRecs(emp.id);
+    return tr.some(r=>r.slot==='entrada1') && !tr.some(r=>r.slot==='saida2');
+  }).length;
+  const totalPunches = records.filter(r=>r.date===today).length;
+  let totalOTToday = 0;
+  employees.forEach(emp => { const w=workedMin(emp.id,today),j=journeyMin(emp.id); totalOTToday+=Math.max(0,w-j); });
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-box"><div class="stat-label">Trabalhando agora</div><div class="stat-value green">${totalWorking}</div><div class="stat-sub">de ${employees.length} funcionário(s)</div></div>
+    <div class="stat-box"><div class="stat-label">Pontos hoje</div><div class="stat-value blue">${totalPunches}</div><div class="stat-sub">registros de hoje</div></div>
+    <div class="stat-box"><div class="stat-label">HE total hoje</div><div class="stat-value amber">${fmtMin(totalOTToday)}</div><div class="stat-sub">horas extras no dia</div></div>
+    <div class="stat-box"><div class="stat-label">Pendentes</div><div class="stat-value ${pending.length?'red':'green'}">${pending.length}</div><div class="stat-sub">envios na fila</div></div>
+  `;
+
+  // Today summary
+  document.getElementById('today-summary').innerHTML = employees.map(emp => {
+    const w = workedMin(emp.id,today);
+    const j = journeyMin(emp.id);
+    const pct = Math.min(100,w/j*100);
+    const ot = Math.max(0,w-j);
+    const shift = shifts.find(s=>s.id===emp.shiftId) || {};
+    const color = shift.color || '#34d399';
+    return `<div class="worker-summary">
+      <div class="ws-avatar">${emp.emoji||'👤'}</div>
+      <div class="ws-info">
+        <div class="ws-name">${emp.name}</div>
+        <div class="ws-role">${emp.role} · ${shift.name||'?'}</div>
+        <div class="ws-bars">
+          <div class="ws-bar-row">
+            <div class="ws-bar-label">Trab.</div>
+            <div class="ws-bar-track"><div class="ws-bar-fill green" style="width:${pct}%;background:${color}"></div></div>
+            <div class="ws-time">${fmtMin(w)}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário</p></div>';
+
+  // OT summary
+  document.getElementById('ot-summary').innerHTML = employees.map(emp => {
+    const ot = totalOT(emp.id);
+    const shift = shifts.find(s=>s.id===emp.shiftId) || {};
+    return `<div class="worker-summary">
+      <div class="ws-avatar">${emp.emoji||'👤'}</div>
+      <div class="ws-info">
+        <div class="ws-name">${emp.name}</div>
+        <div class="ws-role">Jornada: ${fmtMin(journeyMin(emp.id))}/dia</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:${ot>0?'var(--amber)':'var(--muted)'};flex-shrink:0">${fmtMin(ot)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────
+// ADMIN: EMPLOYEES
+// ─────────────────────────────────────
+function renderEmpList() {
+  const el = document.getElementById('emp-list');
+  if (!employees.length) { el.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário cadastrado</p></div>'; return; }
+  el.innerHTML = employees.map(emp => {
+    const shift = shifts.find(s=>s.id===emp.shiftId);
+    const loc   = locations.find(l=>l.id===emp.locId);
+    return `<div class="emp-list-item">
+      <div class="eli-avatar">${emp.emoji||'👤'}</div>
+      <div class="eli-info">
+        <div class="eli-name">${emp.name}</div>
+        <div class="eli-meta">${emp.role} · ${shift?.name||'Sem turno'} · ${loc?.name||'Sem local'}</div>
+      </div>
+      <div class="eli-actions">
+        <button class="btn-icon" onclick="openEmpModal('${emp.id}')">✏️</button>
+        <button class="btn-icon danger" onclick="confirmDeleteEmp('${emp.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEmpModal(id=null) {
+  document.getElementById('emp-modal-title').textContent = id ? 'Editar Funcionário' : 'Novo Funcionário';
+  document.getElementById('emp-id-edit').value = id || '';
+  const emp = id ? employees.find(e=>e.id===id) : null;
+  document.getElementById('emp-name-inp').value  = emp?.name  || '';
+  document.getElementById('emp-role-inp').value  = emp?.role  || '';
+  document.getElementById('emp-emoji-inp').value = emp?.emoji || '';
+
+  const shiftSel = document.getElementById('emp-shift-sel');
+  shiftSel.innerHTML = '<option value="">-- Selecione --</option>' + shifts.map(s=>`<option value="${s.id}" ${emp?.shiftId===s.id?'selected':''}>${s.name}</option>`).join('');
+  const locSel = document.getElementById('emp-loc-sel');
+  locSel.innerHTML = '<option value="">-- Selecione --</option>' + locations.map(l=>`<option value="${l.id}" ${emp?.locId===l.id?'selected':''}>${l.emoji||'📍'} ${l.name}</option>`).join('');
+
+  openModal('emp-modal');
+}
+
+function saveEmployee() {
+  const name  = document.getElementById('emp-name-inp').value.trim();
+  const role  = document.getElementById('emp-role-inp').value.trim();
+  const emoji = document.getElementById('emp-emoji-inp').value.trim();
+  const shiftId = document.getElementById('emp-shift-sel').value;
+  const locId   = document.getElementById('emp-loc-sel').value;
+  if (!name) { toast('⚠️ Nome obrigatório','warn'); return; }
+  const editId = document.getElementById('emp-id-edit').value;
+  if (editId) {
+    const i = employees.findIndex(e=>e.id===editId);
+    employees[i] = { ...employees[i], name, role, emoji, shiftId, locId };
+  } else {
+    employees.push({ id:'emp_'+Date.now(), name, role, emoji, shiftId, locId });
+  }
+  saveAll(); closeModal('emp-modal'); renderEmpList(); toast('✅ Funcionário salvo','success');
+}
+
+function confirmDeleteEmp(id) {
+  openDelModal(`Excluir funcionário e todos os seus registros de ponto?`, () => {
+    employees = employees.filter(e=>e.id!==id);
+    records   = records.filter(r=>r.empId!==id);
+    saveAll(); renderEmpList(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
+  });
+}
+
+// ─────────────────────────────────────
+// ADMIN: SHIFTS
+// ─────────────────────────────────────
+function renderShiftList() {
+  const el = document.getElementById('shift-list');
+  if (!shifts.length) { el.innerHTML = '<div class="empty"><div class="eicon">🕐</div><p>Nenhum turno cadastrado</p></div>'; return; }
+  el.innerHTML = shifts.map(s => `<div class="shift-item">
+    <div class="shift-color" style="background:${s.color}"></div>
+    <div class="shift-info">
+      <div class="shift-name">${s.name}</div>
+      <div class="shift-hours">${s.hours}h ${s.mins?s.mins+'m':''}/dia</div>
+      <div class="shift-journey">Jornada: ${fmtMin(s.hours*60+(s.mins||0))}</div>
+    </div>
+    <div class="eli-actions">
+      <button class="btn-icon" onclick="openShiftModal('${s.id}')">✏️</button>
+      <button class="btn-icon danger" onclick="confirmDeleteShift('${s.id}')">🗑️</button>
+    </div>
+  </div>`).join('');
+}
+
+let selectedColor = '#34d399';
+function selectColor(el) {
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedColor = el.dataset.color;
+}
+
+function openShiftModal(id=null) {
+  document.getElementById('shift-modal-title').textContent = id ? 'Editar Turno' : 'Novo Turno';
+  document.getElementById('shift-id-edit').value = id || '';
+  const s = id ? shifts.find(sh=>sh.id===id) : null;
+  document.getElementById('shift-name-inp').value  = s?.name  || '';
+  document.getElementById('shift-hours-inp').value = s?.hours || 8;
+  document.getElementById('shift-mins-inp').value  = s?.mins  || 0;
+  selectedColor = s?.color || '#34d399';
+  document.querySelectorAll('.color-dot').forEach(d => { d.classList.toggle('selected', d.dataset.color===selectedColor); });
+  openModal('shift-modal');
+}
+
+function saveShift() {
+  const name  = document.getElementById('shift-name-inp').value.trim();
+  const hours = parseFloat(document.getElementById('shift-hours-inp').value) || 8;
+  const mins  = parseInt(document.getElementById('shift-mins-inp').value) || 0;
+  if (!name) { toast('⚠️ Nome obrigatório','warn'); return; }
+  const editId = document.getElementById('shift-id-edit').value;
+  if (editId) {
+    const i = shifts.findIndex(s=>s.id===editId);
+    shifts[i] = { ...shifts[i], name, hours, mins, color:selectedColor };
+  } else {
+    shifts.push({ id:'shift_'+Date.now(), name, hours, mins, color:selectedColor });
+  }
+  saveAll(); closeModal('shift-modal'); renderShiftList(); toast('✅ Turno salvo','success');
+}
+
+function confirmDeleteShift(id) {
+  openDelModal('Excluir turno? Funcionárias vinculadas ficarão sem turno.', () => {
+    shifts = shifts.filter(s=>s.id!==id);
+    employees.forEach(e => { if(e.shiftId===id) e.shiftId=''; });
+    saveAll(); renderShiftList(); renderEmpList(); toast('🗑️ Excluído','success');
+  });
+}
+
+// ─────────────────────────────────────
+// ADMIN: LOCATIONS
+// ─────────────────────────────────────
+function renderLocList() {
+  const el = document.getElementById('loc-list');
+  if (!locations.length) { el.innerHTML = '<div class="empty"><div class="eicon">📍</div><p>Nenhum local cadastrado</p></div>'; return; }
+  el.innerHTML = locations.map(l => `<div class="loc-item">
+    <div class="loc-header">
+      <div class="loc-pin">${l.emoji||'📍'}</div>
+      <div class="loc-name">${l.name}</div>
+      <div class="eli-actions">
+        <button class="btn-icon" onclick="openLocModal('${l.id}')">✏️</button>
+        <button class="btn-icon danger" onclick="confirmDeleteLoc('${l.id}')">🗑️</button>
+      </div>
+    </div>
+    <div class="loc-coords">
+      <div class="coord-box"><div class="coord-label">Latitude</div><div class="coord-val">${l.lat}</div></div>
+      <div class="coord-box"><div class="coord-label">Longitude</div><div class="coord-val">${l.lng}</div></div>
+      <div class="coord-box"><div class="coord-label">Raio</div><div class="coord-val">${l.radius}m</div></div>
+    </div>
+  </div>`).join('');
+}
+
+function openLocModal(id=null) {
+  document.getElementById('loc-modal-title').textContent = id ? 'Editar Local' : 'Novo Local';
+  document.getElementById('loc-id-edit').value = id || '';
+  const l = id ? locations.find(lc=>lc.id===id) : null;
+  document.getElementById('loc-name-inp').value   = l?.name   || '';
+  document.getElementById('loc-emoji-inp').value  = l?.emoji  || '📍';
+  document.getElementById('loc-lat-inp').value    = l?.lat    || '';
+  document.getElementById('loc-lng-inp').value    = l?.lng    || '';
+  document.getElementById('loc-radius-inp').value = l?.radius || 150;
+  openModal('loc-modal');
+}
+
+function saveLocation() {
+  const name   = document.getElementById('loc-name-inp').value.trim();
+  const emoji  = document.getElementById('loc-emoji-inp').value.trim() || '📍';
+  const lat    = parseFloat(document.getElementById('loc-lat-inp').value);
+  const lng    = parseFloat(document.getElementById('loc-lng-inp').value);
+  const radius = parseInt(document.getElementById('loc-radius-inp').value) || 150;
+  if (!name || isNaN(lat) || isNaN(lng)) { toast('⚠️ Preencha nome e coordenadas','warn'); return; }
+  const editId = document.getElementById('loc-id-edit').value;
+  if (editId) {
+    const i = locations.findIndex(l=>l.id===editId);
+    locations[i] = { ...locations[i], name, emoji, lat, lng, radius };
+  } else {
+    locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius });
+  }
+  saveAll(); closeModal('loc-modal'); renderLocList(); toast('✅ Local salvo','success');
+}
+
+function confirmDeleteLoc(id) {
+  openDelModal('Excluir local? Funcionárias vinculadas ficarão sem local de trabalho.', () => {
+    locations = locations.filter(l=>l.id!==id);
+    employees.forEach(e => { if(e.locId===id) e.locId=''; });
+    saveAll(); renderLocList(); renderEmpList(); toast('🗑️ Excluído','success');
+  });
+}
+
+async function detectMyLoc() {
+  toast('📡 Detectando localização...','info');
+  try {
+    const pos = await getPos();
+    document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6);
+    document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6);
+    openLocModal();
+    setTimeout(() => {
+      document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6);
+    }, 50);
+  } catch(e) { handleGeoErr(e); }
+}
+
+// ─────────────────────────────────────
+// ADMIN: RECORDS
+// ─────────────────────────────────────
+function renderRecords() {
+  // Build filter chips
+  const fc = document.getElementById('rec-filters');
+  fc.innerHTML = `<button class="filter-chip ${recFilterEmp==='all'?'active':''}" onclick="setRecFilter('all',this)">Todos</button>` +
+    employees.map(e=>`<button class="filter-chip ${recFilterEmp===e.id?'active':''}" onclick="setRecFilter('${e.id}',this)">${e.emoji||''} ${e.name}</button>`).join('');
+
+  const filtered = recFilterEmp==='all' ? records : records.filter(r=>r.empId===recFilterEmp);
+  const el = document.getElementById('rec-list');
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="eicon">🗒️</div><p>Nenhum registro</p></div>'; return; }
+
+  const keys = [...new Set(filtered.map(r=>`${r.empId}__${r.date}`))];
+  const slotLabel = { entrada1:'E1', saida1:'S1', entrada2:'E2', saida2:'S2' };
+  el.innerHTML = keys.slice(0,60).map(k => {
+    const [empId, date] = k.split('__');
+    const emp  = employees.find(e=>e.id===empId);
+    const day  = filtered.filter(r=>r.empId===empId && r.date===date).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+    const w    = workedMin(empId,date);
+    const j    = journeyMin(empId);
+    const ot   = w - j;
+    const punches = day.map(r=>`<div class="punch-tag">
+      <span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span>
+      <span class="ptime">${r.time.slice(0,5)}</span>
+      ${settings.showDist!==false ? `<span class="pdist">📍${r.dist??'?'}m</span>` : ''}
+      ${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5">☁️</span>' : '<span title="Pendente" style="font-size:10px;opacity:.5">⏳</span>'}
+      <div class="punch-tag-actions">
+        <button onclick="openEditPunch(${r.id})">✏️</button>
+        <button onclick="deletePunch(${r.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+    return `<div class="day-card">
+      <div class="day-card-header">
+        <div><div class="day-worker">${emp?.name||empId}</div><div class="day-date">${date}</div></div>
+        <div class="day-meta">
+          <div class="day-worked">${fmtMin(w)} trab.</div>
+          <div class="day-ot ${ot>0?'pos':ot<0?'neg':'zero'}">${ot>0?'+'+fmtMin(ot):ot<0?'−'+fmtMin(-ot):'na jornada'}</div>
+        </div>
+      </div>
+      <div class="day-card-punches">${punches}</div>
+    </div>`;
+  }).join('');
+}
+
+function setRecFilter(id, btn) {
+  recFilterEmp = id;
+  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRecords();
+}
+
+function openEditPunch(id) {
+  const r = records.find(r=>r.id===id);
+  if (!r) return;
+  document.getElementById('edit-punch-id').value = id;
+  document.getElementById('edit-date-inp').value = r.date;
+  document.getElementById('edit-time-inp').value = r.time;
+  openModal('edit-modal');
+}
+
+function savePunchEdit() {
+  const id   = parseInt(document.getElementById('edit-punch-id').value);
+  const date = document.getElementById('edit-date-inp').value;
+  const time = document.getElementById('edit-time-inp').value;
+  const i    = records.findIndex(r=>r.id===id);
+  if (i===-1) return;
+  const [d,m,y] = date.split('/'); const [h,mn,s] = time.split(':');
+  records[i].date = date; records[i].time = time;
+  records[i].datetime = new Date(y,m-1,d,h,mn,s||0).toISOString();
+  saveAll(); closeModal('edit-modal'); renderRecords(); renderDash();
+  toast('✅ Ponto atualizado','success');
+  if (settings.googleUrl) fetch(settings.googleUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'edit',record:records[i]})});
+}
+
+function deletePunch(id) {
+  openDelModal('Excluir este registro de ponto?', () => {
+    records = records.filter(r=>r.id!==id);
+    saveAll(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
+    if (settings.googleUrl) fetch(settings.googleUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'delete',id})});
+  });
+}
+
+function exportCSV() {
+  if (!records.length) return;
+  const keys = [...new Set(records.map(r=>`${r.empId}__${r.date}`))];
+  const rows = [['Funcionária','Cargo','Turno','Data','Entrada 1','Saída 1','Entrada 2','Saída 2','Trabalhado','Jornada','HE(min)','Horas Extras']];
+  keys.forEach(k => {
+    const [empId,date] = k.split('__');
+    const emp   = employees.find(e=>e.id===empId);
+    const shift = shifts.find(s=>s.id===emp?.shiftId);
+    const day   = records.filter(r=>r.empId===empId && r.date===date);
+    const get   = s => (day.find(r=>r.slot===s)||{}).time || '';
+    const w     = workedMin(empId,date);
+    const j     = journeyMin(empId);
+    const ot    = Math.max(0,w-j);
+    rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, get('entrada1'), get('saida1'), get('entrada2'), get('saida2'), fmtMin(w), fmtMin(j), Math.round(ot), fmtMin(ot)]);
+  });
+  const csv  = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a'); a.href=url; a.download='ponto_export.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+// ─────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────
+function saveCfgUrl() {
+  settings.googleUrl = document.getElementById('cfg-url').value.trim();
+  saveAll(); toast('✅ URL salva','success');
+}
+function savePassword() {
+  const pw = document.getElementById('cfg-pw').value.trim();
+  if (pw.length < 6) { toast('⚠️ Mínimo 6 caracteres','warn'); return; }
+  settings.pw = pw; saveAll(); toast('✅ Senha alterada','success');
+}
+function saveBoolCfg(key, val) { settings[key]=val; saveAll(); }
+function confirmReset() {
+  openDelModal('Apagar TODOS os registros de ponto? Esta ação não pode ser desfeita.', () => {
+    records=[]; pending=[]; saveAll(); renderDash(); renderRecords(); toast('🗑️ Registros apagados','success');
+  });
+}
+
+// ─────────────────────────────────────
+// MODAL HELPERS
+// ─────────────────────────────────────
+const openModal  = id => document.getElementById(id).classList.add('show');
+const closeModal = id => document.getElementById(id).classList.remove('show');
+
+let delCallback = null;
+function openDelModal(msg, cb) {
+  document.getElementById('del-modal-sub').textContent = msg;
+  delCallback = cb;
+  openModal('del-modal');
+  document.getElementById('del-confirm-btn').onclick = () => { closeModal('del-modal'); if(delCallback) delCallback(); delCallback=null; };
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('show'); });
+});
+
+// ─────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────
+let _tt;
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ─────────────────────────────────────
+// ONLINE/OFFLINE
+// ─────────────────────────────────────
+window.addEventListener('online', async () => {
+  if (pending.length) {
+    for (const p of [...pending]) {
+      const ok = await sendToCloud(p,2);
+      if (ok) { p.synced=true; records.unshift(p); pending=pending.filter(x=>x.id!==p.id); saveAll(); }
+    }
+    if (currentEmpId) { pendingRetry=pending.find(p=>p.empId===currentEmpId)||null; updatePunchBtn(); updateSlots(); }
+  }
+  if (currentEmpId && !pendingRetry) { updatePunchBtn(); setStatus('idle','📍 Online — pronto para registrar'); }
+});
+window.addEventListener('offline', () => { if (currentEmpId) updatePunchBtn(); });
+
+// ─────────────────────────────────────
+// UTIL
+// ─────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r,ms));
+
+// ─────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────
+window.onload = () => { buildChooseGrid(); setTimeout(()=>syncCloud(false),800); initReportSelects(); };
+
+// ─────────────────────────────────────
+// REPORT
+// ─────────────────────────────────────
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const WEEK_PT   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function initReportSelects() {
+  const now = new Date();
+  const mSel = document.getElementById('rep-month');
+  const ySel = document.getElementById('rep-year');
+  if (!mSel || !ySel) return;
+  mSel.innerHTML = MONTHS_PT.map((m,i)=>`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`).join('');
+  const curY = now.getFullYear();
+  ySel.innerHTML = [curY-1,curY,curY+1].map(y=>`<option value="${y}" ${y===curY?'selected':''}>${y}</option>`).join('');
+}
+
+function populateReportEmpSelect() {
+  const sel = document.getElementById('rep-emp');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="all">Todas as funcionárias</option>' +
+    employees.map(e=>`<option value="${e.id}" ${cur===e.id?'selected':''}>${e.emoji||''} ${e.name}</option>`).join('');
+}
+
+function buildReport() {
+  populateReportEmpSelect();
+  const month  = parseInt(document.getElementById('rep-month').value);
+  const year   = parseInt(document.getElementById('rep-year').value);
+  const empSel = document.getElementById('rep-emp').value;
+  const empList = empSel === 'all' ? employees : employees.filter(e => e.id === empSel);
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const genAt = new Date().toLocaleString('pt-BR');
+  const totalRecords = records.filter(r => {
+    const [d,m,y] = (r.date||'').split('/');
+    return parseInt(m) === month && parseInt(y) === year;
+  }).length;
+
+  let html = `<div class="report-wrap" id="print-area">
+    <div class="report-header-block">
+      <div class="rh-top">
+        <div>
+          <div class="rh-brand">⏱ PontoDigital Pro</div>
+          <div class="rh-brand-sub">Relatório Oficial de Ponto</div>
+        </div>
+        <div class="rh-period">
+          <div class="rh-period-title">${MONTHS_PT[month-1]} / ${year}</div>
+          <div class="rh-period-sub">Gerado em ${genAt}</div>
+        </div>
+      </div>
+      <div class="rh-meta">
+        <span>📋 ${totalRecords} registros no período</span>
+        <span>👥 ${empList.length} funcionária(s)</span>
+        <span>📅 ${daysInMonth} dias no mês</span>
+      </div>
+    </div>`;
+
+  empList.forEach(emp => {
+    const shift    = shifts.find(s => s.id === emp.shiftId);
+    const journMin = shift ? (shift.hours * 60 + (shift.mins || 0)) : 480;
+    const shiftLbl = shift ? `${shift.name} — ${fmtMin(journMin)}/dia` : 'Turno não definido';
+
+    // Build per-day data
+    const dayData = [];
+    let totalWorked = 0, totalOT = 0, totalUnder = 0, daysWorked = 0;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dd   = String(d).padStart(2,'0');
+      const mm   = String(month).padStart(2,'0');
+      const date = `${dd}/${mm}/${year}`;
+      const dow  = new Date(year, month-1, d).getDay();
+      const isWE = dow === 0 || dow === 6;
+      const dayRecs = records.filter(r => r.empId === emp.id && r.date === date)
+                             .sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+
+      const get = slot => {
+        const r = dayRecs.find(r => r.slot === slot);
+        return r ? r.time.slice(0,5) : null;
+      };
+      const e1 = get('entrada1'), s1 = get('saida1'), e2 = get('entrada2'), s2 = get('saida2');
+      const w = workedMin(emp.id, date);
+      const ot = !isWE && (e1||e2) ? w - journMin : 0;
+      if (!isWE && (e1 || e2)) { daysWorked++; totalWorked += w; }
+      if (ot > 0) totalOT    += ot;
+      if (ot < 0) totalUnder += ot;
+      dayData.push({ d, date, dow, isWE, e1, s1, e2, s2, w, ot, hasAny: !!(e1||s1||e2||s2) });
+    }
+
+    // Summary boxes
+    const balance = totalOT + totalUnder;
+    html += `<div class="rep-emp-section">
+      <div class="rep-emp-header">
+        <div class="rep-emp-avatar">${emp.emoji||'👤'}</div>
+        <div>
+          <div class="rep-emp-name">${emp.name}</div>
+          <div class="rep-emp-meta">${emp.role} · ${shiftLbl}</div>
+        </div>
+      </div>
+      <div class="rep-summary">
+        <div class="rep-sum-box"><div class="rsb-label">Dias Trabalhados</div><div class="rsb-val blue">${daysWorked}</div></div>
+        <div class="rep-sum-box"><div class="rsb-label">Total Trabalhado</div><div class="rsb-val green">${fmtMin(totalWorked)}</div></div>
+        <div class="rep-sum-box"><div class="rsb-label">Horas Extras</div><div class="rsb-val ${totalOT>0?'amber':''}">+${fmtMin(totalOT)}</div></div>
+        <div class="rep-sum-box"><div class="rsb-label">Saldo do Mês</div><div class="rsb-val ${balance>0?'amber':balance<0?'red':''}">${balance>=0?'+':''}${fmtMin(balance)}</div></div>
+      </div>
+      <div class="rep-table-wrap">
+        <table class="rep-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Dia</th>
+              <th>Entrada 1</th>
+              <th>Saída 1</th>
+              <th>Entrada 2</th>
+              <th>Saída 2</th>
+              <th>Trabalhado</th>
+              <th>Jornada</th>
+              <th>Dif.</th>
+              <th>H. Extra</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+    dayData.forEach(day => {
+      const isWeekend = day.isWE;
+      const rowClass  = isWeekend ? ' class="td-weekend"' : '';
+      const worked    = day.hasAny ? fmtMin(day.w) : '—';
+      const jorn      = (!isWeekend && day.hasAny) ? fmtMin(journMin) : '—';
+      const ot        = day.ot;
+
+      let difCell, otCell;
+      if (!day.hasAny || isWeekend) {
+        difCell = `<td class="td-empty">—</td>`;
+        otCell  = `<td class="td-empty">—</td>`;
+      } else if (ot > 0) {
+        difCell = `<td class="td-ot-pos">+${fmtMin(ot)}</td>`;
+        otCell  = `<td><span class="ot-badge pos">+${fmtMin(ot)}</span></td>`;
+      } else if (ot < 0) {
+        difCell = `<td class="td-ot-neg">-${fmtMin(-ot)}</td>`;
+        otCell  = `<td><span class="ot-badge neg">-${fmtMin(-ot)}</span></td>`;
+      } else {
+        difCell = `<td class="td-ot-zero">0h 00m</td>`;
+        otCell  = `<td><span class="ot-badge zero">OK</span></td>`;
+      }
+
+      const e1c = day.e1 ? `<td>${day.e1}</td>` : `<td class="td-empty">—</td>`;
+      const s1c = day.s1 ? `<td>${day.s1}</td>` : `<td class="td-empty">—</td>`;
+      const e2c = day.e2 ? `<td>${day.e2}</td>` : `<td class="td-empty">—</td>`;
+      const s2c = day.s2 ? `<td>${day.s2}</td>` : `<td class="td-empty">—</td>`;
+
+      html += `<tr${rowClass}>
+        <td>${day.date}</td>
+        <td>${WEEK_PT[day.dow]}</td>
+        ${e1c}${s1c}${e2c}${s2c}
+        <td>${worked}</td>
+        <td>${jorn}</td>
+        ${difCell}
+        ${otCell}
+      </tr>`;
+    });
+
+    // Totals row
+    html += `</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">TOTAIS DO MÊS</td>
+              <td colspan="4"></td>
+              <td>${fmtMin(totalWorked)}</td>
+              <td>${fmtMin(journMin * daysWorked)}</td>
+              <td style="color:${balance>=0?'#34d399':'#f87171'}">${balance>=0?'+':''}${fmtMin(balance)}</td>
+              <td style="color:${totalOT>0?'#fbbf24':'#7888a8'}">${totalOT>0?'+'+fmtMin(totalOT):'—'}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="rep-footer">
+        <span>PontoDigital Pro · ${MONTHS_PT[month-1]} ${year}</span>
+        <span>Assinatura: ___________________________</span>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  document.getElementById('report-preview').innerHTML = html;
+}
+
+function printReport() {
+  const preview = document.getElementById('report-preview');
+  if (!preview || !preview.innerHTML.trim()) { toast('⚠️ Gere o relatório antes de imprimir','warn'); return; }
+  window.print();
+}
+
+</script>
+</body>
+</html>
