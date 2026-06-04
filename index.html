@@ -76,7 +76,7 @@ body::before{content:'';position:fixed;inset:0;background:
 .btn-admin:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
 
 /* ═══════════════════════════════════════════
-   SCREEN: EMPLOYEE PUNCH
+   SCREEN: EMPLOYEE PUNCH & CAMERA
 ═══════════════════════════════════════════ */
 #s-punch{padding:0}
 .punch-topbar{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center}
@@ -89,8 +89,10 @@ body::before{content:'';position:fixed;inset:0;background:
 .punch-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px 40px;max-width:420px;margin:0 auto;width:100%}
 
 .punch-profile{text-align:center;margin-bottom:28px}
-.punch-avatar{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;background:var(--surface);border:2px solid var(--border2);margin:0 auto 14px;position:relative}
-.punch-status-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--bg);box-shadow:0 0 8px var(--green-glow)}
+.punch-avatar{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;background:var(--surface);border:2px solid var(--border2);margin:0 auto 14px;position:relative;overflow:hidden}
+#cam-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none; z-index: 5; transform: scaleX(-1); }
+#p-emoji { z-index: 1; position: relative; }
+.punch-status-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--bg);box-shadow:0 0 8px var(--green-glow); z-index: 10;}
 .punch-name{font-size:24px;font-weight:700;letter-spacing:-.5px}
 .punch-role{font-size:13px;color:var(--muted2);margin-top:4px}
 .punch-shift-badge{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--muted2);margin-top:10px}
@@ -361,20 +363,27 @@ body::before{content:'';position:fixed;inset:0;background:
   .report-wrap{border-radius:0!important}
   .rep-table tbody tr:hover{background:transparent!important}
 }</style>
+<!-- URL centralizada: edite config.js no servidor -->
 <script src="config.js"></script>
 </head>
 <body>
 
+<!-- ══════════════════════════════════════
+     SCREEN: CHOOSE EMPLOYEE
+══════════════════════════════════════ -->
 <div class="screen active" id="s-choose">
   <div class="choose-wrap">
     <div class="brand"><div class="brand-dot"></div><div class="brand-name">Ponto<span>Digital</span></div></div>
     <div class="brand-sub" id="choose-sub">Quem está registrando o ponto?</div>
-    <div class="emp-grid" id="emp-grid"></div>
+    <div class="emp-grid" id="emp-grid"><!-- dinâmico --></div>
     <div class="choose-divider">área restrita</div>
     <button class="btn-admin" onclick="goLogin()">🔒 Painel Administrativo</button>
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SCREEN: PUNCH
+══════════════════════════════════════ -->
 <div class="screen" id="s-punch">
   <div class="punch-topbar">
     <button class="btn-back" onclick="goChoose()">← Voltar</button>
@@ -386,7 +395,9 @@ body::before{content:'';position:fixed;inset:0;background:
   <div class="punch-body">
     <div class="punch-profile">
       <div class="punch-avatar" id="p-avatar">
-        👤
+        <span id="p-emoji">👤</span>
+        <video id="cam-video" autoplay playsinline muted></video>
+        <canvas id="cam-canvas" style="display:none;"></canvas>
         <div class="punch-status-dot"></div>
       </div>
       <div class="punch-name" id="p-name">--</div>
@@ -410,6 +421,9 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SCREEN: ADMIN LOGIN
+══════════════════════════════════════ -->
 <div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-icon">🔐</div>
@@ -425,6 +439,9 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SCREEN: ADMIN
+══════════════════════════════════════ -->
 <div class="screen" id="s-admin">
   <nav class="admin-nav">
     <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
@@ -437,27 +454,30 @@ body::before{content:'';position:fixed;inset:0;background:
     <button class="nav-exit" onclick="goChoose()">Sair ×</button>
   </nav>
 
+  <!-- ── DASHBOARD ── -->
   <div class="tab-content active" id="t-dash">
-    <div class="stats-row" id="stats-row"></div>
+    <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div>
-      <div id="today-summary"></div>
+      <div id="today-summary"><!-- dinâmico --></div>
     </div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">📈</span> Horas Extras Acumuladas</div>
-      <div id="ot-summary"></div>
+      <div id="ot-summary"><!-- dinâmico --></div>
     </div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
   </div>
 
+  <!-- ── EMPLOYEES ── -->
   <div class="tab-content" id="t-emp">
     <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionário</button>
-    <div id="emp-list"></div>
+    <div id="emp-list"><!-- dinâmico --></div>
   </div>
 
+  <!-- ── SHIFTS ── -->
   <div class="tab-content" id="t-shift">
     <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
-    <div id="shift-list"></div>
+    <div id="shift-list"><!-- dinâmico --></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">ℹ️ O que é um turno?</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -466,9 +486,10 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
+  <!-- ── LOCATIONS ── -->
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
-    <div id="loc-list"></div>
+    <div id="loc-list"><!-- dinâmico --></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">📡 Como obter coordenadas</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -478,12 +499,14 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
+  <!-- ── RECORDS ── -->
   <div class="tab-content" id="t-rec">
     <button class="btn-export-full" onclick="exportCSV()">📊 Exportar CSV Completo</button>
-    <div class="rec-filters" id="rec-filters"></div>
-    <div id="rec-list"></div>
+    <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
+    <div id="rec-list"><!-- dinâmico --></div>
   </div>
 
+  <!-- ── RELATÓRIO ── -->
   <div class="tab-content" id="t-report">
     <div class="card">
       <div class="card-title">📄 Relatório Mensal de Ponto</div>
@@ -509,6 +532,7 @@ body::before{content:'';position:fixed;inset:0;background:
     <div id="report-preview"></div>
   </div>
 
+  <!-- ── CONFIG ── -->
   <div class="tab-content" id="t-cfg">
     <div class="card">
       <div class="card-title">🔗 Integração com Google Sheets</div>
@@ -566,6 +590,10 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+<!-- GPS permission modal -->
 <div class="modal-overlay" id="gps-modal">
   <div class="modal-box" style="border-radius:24px;margin:24px;max-width:380px;align-self:center">
     <div style="font-size:40px;text-align:center;margin-bottom:14px">🔒</div>
@@ -575,6 +603,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- Employee modal -->
 <div class="modal-overlay" id="emp-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -588,11 +617,11 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="form-grid">
       <div class="afield">
         <label>Turno</label>
-        <select id="emp-shift-sel"></select>
+        <select id="emp-shift-sel"><!-- dinâmico --></select>
       </div>
       <div class="afield">
         <label>Local de Trabalho</label>
-        <select id="emp-loc-sel"></select>
+        <select id="emp-loc-sel"><!-- dinâmico --></select>
       </div>
     </div>
     <div class="afield">
@@ -606,6 +635,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- Shift modal -->
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -635,6 +665,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- Location modal -->
 <div class="modal-overlay" id="loc-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -657,6 +688,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- Edit punch modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -674,6 +706,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
+<!-- Confirm delete modal -->
 <div class="modal-overlay" id="del-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -688,6 +721,9 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <div id="toast"></div>
 
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
 <script>
 // ─────────────────────────────────────
 // STATE & DEFAULTS
@@ -695,20 +731,15 @@ body::before{content:'';position:fixed;inset:0;background:
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-// ARRAYS TOTALMENTE VAZIOS PARA INÍCIO LIMPO
 let employees  = LS('pd_employees')  || [];
 let shifts     = LS('pd_shifts')     || [];
 let locations  = LS('pd_locations')  || [];
 let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
 
-// URL do Apps Script: vem do config.js (GOOGLE_URL) ou do localStorage.
 const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
-
-// SENHA PADRÃO NOVA É 123456
 let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true };
 
-// Sempre prioriza o config.js — garante que todos os aparelhos usem a mesma URL
 if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
 
 let currentEmpId = null;
@@ -716,6 +747,7 @@ let pendingRetry  = null;
 let isSending     = false;
 let clockTimer    = null;
 let recFilterEmp  = 'all';
+let cameraStream  = null;
 
 // ─────────────────────────────────────
 // PERSIST HELPERS
@@ -739,6 +771,7 @@ const showScreen = id => {
 
 function goChoose() {
   clearInterval(clockTimer);
+  stopCamera();
   buildChooseGrid();
   showScreen('s-choose');
   currentEmpId = null;
@@ -767,7 +800,6 @@ function goAdmin() {
   renderShiftList();
   renderLocList();
   renderRecords();
-  // Mostra a URL ativa (vinda do config.js)
   const urlEl = document.getElementById('conn-url-display');
   if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada no config.js)';
   document.getElementById('cfg-override').checked = settings.allowOverride !== false;
@@ -810,8 +842,44 @@ function buildChooseGrid() {
 }
 
 // ─────────────────────────────────────
-// EMPLOYEE SCREEN
+// EMPLOYEE SCREEN & CAMERA
 // ─────────────────────────────────────
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+    const video = document.getElementById('cam-video');
+    video.srcObject = cameraStream;
+    video.style.display = 'block';
+    document.getElementById('p-emoji').style.display = 'none';
+  } catch(err) {
+    console.warn("Câmera indisponível", err);
+    toast("⚠️ Câmera indisponível para antifraude", "warn");
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  document.getElementById('cam-video').style.display = 'none';
+  document.getElementById('p-emoji').style.display = 'block';
+}
+
+function takePhoto() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  if (!cameraStream || !video.videoWidth) return "";
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  // Se a câmera for frontal, desenha espelhado para compensar o transform scaleX(-1) do CSS
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.6); // Qualidade 60% para economizar Drive
+}
+
 function goEmployee(empId) {
   currentEmpId = empId;
   const emp = employees.find(e => e.id === empId);
@@ -819,7 +887,7 @@ function goEmployee(empId) {
   const shift = shifts.find(s => s.id === emp.shiftId) || {};
   const loc   = locations.find(l => l.id === emp.locId) || {};
 
-  document.getElementById('p-avatar').childNodes[0].nodeValue = emp.emoji || '👤';
+  document.getElementById('p-emoji').textContent = emp.emoji || '👤';
   document.getElementById('p-name').textContent  = emp.name;
   document.getElementById('p-role').textContent  = emp.role;
   document.getElementById('p-shift').textContent = shift.name ? `${shift.name} — ${loc.name || '?'}` : 'Turno não definido';
@@ -835,15 +903,12 @@ function goEmployee(empId) {
   }
 
   startClock();
+  startCamera();
   showScreen('s-punch');
 
-  // Busca registros atuais da planilha antes de liberar o botão
-  // Garante que pontos batidos em outro aparelho apareçam aqui
   if (navigator.onLine && settings.googleUrl) {
     syncCloud(false).then(() => {
-      if (!pendingRetry) {
-        setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
-      }
+      if (!pendingRetry) setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
     });
   } else {
     if (!pendingRetry) setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
@@ -926,6 +991,28 @@ function updatePunchBtn() {
 }
 
 // ─────────────────────────────────────
+// ANTI-TAMPERING (HORA OFICIAL)
+// ─────────────────────────────────────
+async function checkTimeSync() {
+  try {
+    const res = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo');
+    if (!res.ok) return { ok: true }; // Se a API falhar, libera pra não travar a funcionária
+    const data = await res.json();
+    const serverTime = new Date(data.datetime).getTime();
+    const localTime = new Date().getTime();
+    const diffMin = Math.abs(serverTime - localTime) / 60000;
+    
+    // Se a diferença entre o celular e o servidor for maior que 3 minutos
+    if (diffMin > 3) {
+      return { ok: false, msg: `Divergência de horário detectada! A hora do celular está errada em aprox. ${Math.round(diffMin)} minutos.` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: true }; // Fallback de segurança
+  }
+}
+
+// ─────────────────────────────────────
 // PUNCH LOGIC
 // ─────────────────────────────────────
 async function doPunch(force=false) {
@@ -943,8 +1030,17 @@ async function doPunch(force=false) {
   const btn = document.getElementById('main-btn');
   btn.disabled = true;
   document.getElementById('btn-override').style.display = 'none';
-  setStatus('checking','📡 Verificando GPS...');
+  
+  // 1. Verificação Antifraude de Horário
+  setStatus('checking','⏱ Verificando horário oficial...');
+  const timeCheck = await checkTimeSync();
+  if (!timeCheck.ok) {
+    setStatus('far', `🚫 ${timeCheck.msg}`);
+    toast('Ajuste o horário do celular para automático.', 'error');
+    isSending = false; btn.disabled = false; return;
+  }
 
+  setStatus('checking','📡 Verificando GPS...');
   try {
     const pos  = await getPos();
     const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
@@ -955,6 +1051,9 @@ async function doPunch(force=false) {
       isSending = false; btn.disabled = false; return;
     }
 
+    // 2. Captura a Foto
+    const photoB64 = takePhoto();
+
     const now = new Date();
     const rec = {
       id: Date.now(), empId: currentEmpId, empName: emp.name,
@@ -964,6 +1063,7 @@ async function doPunch(force=false) {
       time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
       lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
       dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
+      photo: photoB64, // Envia a foto
       synced: false
     };
 
@@ -977,6 +1077,8 @@ async function doPunch(force=false) {
       setStatus('ok', `✅ Registrado localmente às ${rec.time.slice(0,5)}`);
       toast('✅ Ponto registrado offline!','success');
       updatePunchBtn(); updateSlots();
+      stopCamera();
+
     } else if (cloudResult.ok) {
       const responseData = cloudResult.data?.data;
 
@@ -1001,6 +1103,7 @@ async function doPunch(force=false) {
 
       updatePunchBtn();
       updateSlots();
+      stopCamera(); // Desliga a câmera após sucesso
       syncCloud(false);
     } else {
       pendingRetry = rec;
@@ -1009,6 +1112,7 @@ async function doPunch(force=false) {
       setStatus('warn', `⚠️ Sem rede. Horário ${rec.time.slice(0,5)} na fila — clique Reenviar.`);
       toast('❌ Falha ao enviar. Toque Reenviar quando tiver sinal.','error');
       updatePunchBtn(); updateSlots();
+      stopCamera();
     }
   } catch(e) { handleGeoErr(e); }
   
@@ -1036,7 +1140,7 @@ async function retryPunch() {
     setStatus('ok', `✅ Ponto das ${t} salvo na planilha ☁️`);
     toast('✅ Reenvio concluído!','success');
     updatePunchBtn(); updateSlots();
-    syncCloud(false); // atualiza todos os dados
+    syncCloud(false); 
   } else {
     setStatus('far', `⚠️ Ainda sem resposta. Tente novamente.`);
     toast('❌ Falha no reenvio.','error');
@@ -1055,7 +1159,8 @@ async function callCloud(payload, tries=3) {
   for (let i=0; i<tries; i++) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      // Timeout aumentado para 25s por causa do upload da imagem
+      const timeout = setTimeout(() => controller.abort(), 25000); 
 
       const res = await fetch(url, {
         method: 'POST',
@@ -1162,7 +1267,7 @@ async function syncCloud(manual=false) {
           dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), parseInt(h), parseInt(mn), parseInt(s||0)).toISOString();
         }
         records.push({ id:cr.id, empId, empName:cr.empName||'', slot:cr.slot, type:cr.type,
-          datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true });
+          datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true, photoUrl:cr.photoUrl||'' });
         changed = true;
       });
       if (changed) records.sort((a,b) => new Date(b.datetime)-new Date(a.datetime));
@@ -1531,16 +1636,20 @@ function renderRecords() {
     const w    = workedMin(empId,date);
     const j    = journeyMin(empId);
     const ot   = w - j;
+    
+    // Novo layout do tag: inclui ícone de foto se existir
     const punches = day.map(r=>`<div class="punch-tag">
       <span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span>
       <span class="ptime">${r.time.slice(0,5)}</span>
       ${settings.showDist!==false ? `<span class="pdist">📍${r.dist??'?'}m</span>` : ''}
+      ${r.photoUrl ? `<a href="${r.photoUrl}" target="_blank" style="text-decoration:none;font-size:12px;" title="Ver Foto">📷</a>` : ''}
       ${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5">☁️</span>' : '<span title="Pendente" style="font-size:10px;opacity:.5">⏳</span>'}
       <div class="punch-tag-actions">
         <button onclick="openEditPunch(${r.id})">✏️</button>
         <button onclick="deletePunch(${r.id})">🗑️</button>
       </div>
     </div>`).join('');
+    
     return `<div class="day-card">
       <div class="day-card-header">
         <div><div class="day-worker">${emp?.name||empId}</div><div class="day-date">${date}</div></div>
