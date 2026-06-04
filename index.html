@@ -192,7 +192,7 @@ body::before{content:'';position:fixed;inset:0;background:
 .ws-bar-fill.amber{background:var(--amber)}
 .ws-time{font-family:'DM Mono',monospace;font-size:12px;color:var(--blue);flex-shrink:0;width:60px;text-align:right}
 
-/* ── TAB: EMPLOYEES ── */
+/* ── TAB: EMPLOYEES / SHIFTS / LOCATIONS ── */
 .emp-list-item{display:flex;align-items:center;gap:14px;padding:14px;background:var(--surface2);border-radius:12px;margin-bottom:8px}
 .eli-avatar{font-size:24px;width:42px;height:42px;background:var(--surface3);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .eli-info{flex:1}
@@ -206,7 +206,6 @@ body::before{content:'';position:fixed;inset:0;background:
 .btn-add{width:100%;background:var(--green-dim);border:1.5px dashed rgba(52,211,153,.4);border-radius:12px;padding:13px;color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
 .btn-add:hover{background:rgba(52,211,153,.2)}
 
-/* ── TAB: SHIFTS / LOCATIONS ── */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-grid.full{grid-template-columns:1fr}
 .afield{margin-bottom:12px}
@@ -214,7 +213,6 @@ body::before{content:'';position:fixed;inset:0;background:
 .afield input,.afield select,.afield textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .afield input:focus,.afield select:focus,.afield textarea:focus{border-color:var(--blue)}
 .afield select option{background:var(--surface2)}
-.afield input:disabled{opacity:.5;cursor:not-allowed}
 .color-row{display:flex;gap:8px;flex-wrap:wrap}
 .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s}
 .color-dot.selected{border-color:#fff}
@@ -415,7 +413,6 @@ body::before{content:'';position:fixed;inset:0;background:
 
     <button class="punch-btn in" id="main-btn" onclick="doPunch(false)">✅ Registar Entrada</button>
     
-    <!-- Modificado para abrir o modal de justificativa em vez de registar direto -->
     <button class="btn-override" id="btn-override" onclick="openModal('just-modal')">⚠️ Registar fora do local (Atestado/Justificativa)</button>
     
     <div class="status-bar idle" id="punch-status">📍 Clique para registar — verificaremos a sua localização</div>
@@ -501,7 +498,10 @@ body::before{content:'';position:fixed;inset:0;background:
 
   <!-- ── RECORDS ── -->
   <div class="tab-content" id="t-rec">
-    <button class="btn-export-full" onclick="exportCSV()">📊 Exportar CSV Completo</button>
+    <div style="display:flex; gap:10px; margin-bottom:14px;">
+      <button class="btn-export-full" style="margin-bottom:0;" onclick="exportCSV()">📊 Exportar CSV</button>
+      <button class="btn-export-full" style="margin-bottom:0; background:var(--blue-dim); color:var(--blue); border-color:rgba(96,165,250,.3);" onclick="openAbsenceModal()">➕ Lançar Ausência / Falta</button>
+    </div>
     <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
     <div id="rec-list"><!-- dinâmico --></div>
   </div>
@@ -558,18 +558,22 @@ body::before{content:'';position:fixed;inset:0;background:
     
     <div class="card">
       <div class="card-title">⚙️ Comportamento & Regras (CLT)</div>
+      
       <div class="setting-row">
         <div><div class="setting-label">Tolerância CLT (10 min)</div><div class="setting-desc">Ignora até 10min de diferença diária na jornada (Art. 58)</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-clt" onchange="saveBoolCfg('cltTolerance',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
+      
       <div class="setting-row">
         <div><div class="setting-label">Intervalo Mínimo (1h)</div><div class="setting-desc">Exige 1h de descanso antes do registo da Entrada 2</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-interval" onchange="saveBoolCfg('minInterval',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
+      
       <div class="setting-row">
         <div><div class="setting-label">Registo forçado</div><div class="setting-desc">Permitir bater ponto fora do raio mediante justificativa</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-override" onchange="saveBoolCfg('allowOverride',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
+      
       <div class="setting-row">
         <div><div class="setting-label">Mostrar distância</div><div class="setting-desc">Exibir distância do local à funcionária</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-showdist" onchange="saveBoolCfg('showDist',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
@@ -589,7 +593,7 @@ body::before{content:'';position:fixed;inset:0;background:
      MODALS
 ══════════════════════════════════════ -->
 
-<!-- Justification Modal (Novo Pilar 3) -->
+<!-- Justification Modal (Employee Side) -->
 <div class="modal-overlay" id="just-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -608,6 +612,40 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('just-modal')">Cancelar</button>
       <button class="btn-confirm" onclick="confirmJustifiedPunch()">Enviar Pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- Launch Absence Modal (Admin Side) -->
+<div class="modal-overlay" id="absence-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Lançar Ausência / Falta</div>
+    <div class="modal-sub">Adicione faltas inteiras ou atestados médicos para a funcionária.</div>
+    <div class="form-grid">
+      <div class="afield">
+        <label>Funcionária</label>
+        <select id="abs-emp-sel"></select>
+      </div>
+      <div class="afield">
+        <label>Data (DD/MM/AAAA)</label>
+        <input type="text" id="abs-date-inp" placeholder="Ex: 25/10/2026">
+      </div>
+    </div>
+    <div class="afield">
+      <label>Tipo de Ausência</label>
+      <select id="abs-type-sel">
+        <option value="falta_justificada">Falta Justificada (Abono / Atestado)</option>
+        <option value="falta_injustificada">Falta Injustificada (Desconto)</option>
+      </select>
+    </div>
+    <div class="afield">
+      <label>Motivo / Observação</label>
+      <input type="text" id="abs-reason-inp" placeholder="Ex: Atestado médico de 1 dia">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('absence-modal')">Cancelar</button>
+      <button class="btn-confirm" onclick="saveAbsence()">Gravar Ausência</button>
     </div>
   </div>
 </div>
@@ -835,7 +873,7 @@ function buildChooseGrid() {
   }
   grid.innerHTML = employees.map(emp => {
     const today = new Date().toLocaleDateString('pt-BR');
-    const todayRecs = records.filter(r => r.empId === emp.id && r.date === today);
+    const todayRecs = records.filter(r => r.empId === emp.id && r.date === today && r.slot !== 'ausencia');
     const next = nextSlot(emp.id);
     const statusTxt = !next ? 'Todos os pontos ✓' : (next.includes('entrada') ? 'A aguardar entrada' : 'A aguardar saída');
     const isActive = todayRecs.some(r => r.slot === 'entrada1') && !todayRecs.some(r => r.slot === 'saida2');
@@ -922,7 +960,7 @@ function startClock() {
 const SLOTS = ['entrada1','saida1','entrada2','saida2'];
 function todayRecs(empId) {
   const today = new Date().toLocaleDateString('pt-BR');
-  return records.filter(r => r.empId === empId && r.date === today).sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+  return records.filter(r => r.empId === empId && r.date === today && r.slot !== 'ausencia').sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
 }
 function nextSlot(empId) {
   const done = todayRecs(empId).map(r => r.slot);
@@ -966,14 +1004,16 @@ function updatePunchBtn() {
   btn.textContent = labels[next];
   btn.className = next.includes('entrada') ? 'punch-btn in' : 'punch-btn out';
   btn.onclick = () => doPunch(false);
+  
+  if (settings.allowOverride !== false) override.style.display = 'block';
 }
 
 // ─────────────────────────────────────
-// JUSTIFICATION LOGIC
+// JUSTIFICATION E ABSENCE LOGIC
 // ─────────────────────────────────────
 async function confirmJustifiedPunch() {
   const reason = document.getElementById('just-reason').value.trim();
-  if(!reason) { toast('Escreva um motivo para a ausência', 'warn'); return; }
+  if(!reason) { toast('Escreva um motivo para a justificação', 'warn'); return; }
   
   const fileInput = document.getElementById('just-file');
   let fileB64 = "";
@@ -985,8 +1025,67 @@ async function confirmJustifiedPunch() {
   
   closeModal('just-modal');
   doPunch(true, reason, fileB64);
-  document.getElementById('just-reason').value = ""; // limpa formulário
+  document.getElementById('just-reason').value = ""; 
   document.getElementById('just-file').value = "";
+}
+
+function openAbsenceModal() {
+  const sel = document.getElementById('abs-emp-sel');
+  sel.innerHTML = '<option value="">-- Selecione --</option>' + employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  const today = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('abs-date-inp').value = today;
+  document.getElementById('abs-reason-inp').value = '';
+  openModal('absence-modal');
+}
+
+async function saveAbsence() {
+  const empId = document.getElementById('abs-emp-sel').value;
+  const date = document.getElementById('abs-date-inp').value.trim();
+  const type = document.getElementById('abs-type-sel').value;
+  const reason = document.getElementById('abs-reason-inp').value.trim();
+
+  if(!empId || !date) { toast('Preencha funcionária e data', 'warn'); return; }
+
+  const emp = employees.find(e => e.id === empId);
+  
+  let dtIso = new Date().toISOString();
+  const [d,m,y] = date.split('/'); 
+  if(y && m && d) dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), 0, 0, 0).toISOString();
+
+  const rec = {
+    id: Date.now() + Math.floor(Math.random()*1000),
+    empId: empId,
+    empName: emp.name,
+    slot: 'ausencia',
+    type: type, 
+    datetime: dtIso,
+    date: date,
+    time: '00:00:00',
+    lat: '', lng: '', dist: '', photo: '',
+    status: 'ok',
+    justification: reason,
+    synced: false
+  };
+
+  records.unshift(rec);
+  saveAll();
+  renderRecords();
+  renderDash();
+  closeModal('absence-modal');
+  toast('A enviar para a folha de cálculo...', 'info');
+
+  if(settings.googleUrl && navigator.onLine) {
+    const res = await callCloud({action:'addRecord', record: rec});
+    if(res.ok) {
+      const idx = records.findIndex(r => String(r.id) === String(rec.id));
+      if(idx > -1) { records[idx].synced = true; saveAll(); renderRecords(); }
+      toast('✅ Ausência salva na folha de cálculo!', 'success');
+    } else {
+      toast('⚠️ Salvo offline. Sincronize mais tarde.', 'warn');
+    }
+  } else {
+    toast('⚠️ Salvo offline. Sincronize mais tarde.', 'warn');
+  }
 }
 
 // ─────────────────────────────────────
@@ -1004,14 +1103,13 @@ async function doPunch(force=false, reason="", attachmentB64="") {
   if (!loc) { toast('⚠️ Local não definido para esta funcionária','warn'); return; }
 
   const now = new Date();
-  if (next === 'entrada2' && settings.minInterval !== false) {
+  if (next === 'entrada2' && settings.minInterval !== false && !force) {
     const todayR = todayRecs(currentEmpId);
     const s1 = todayR.find(r => r.slot === 'saida1');
     if (s1) {
       const diffMin = (now - new Date(s1.datetime)) / 60000;
-      if (diffMin < 60 && !force) {
+      if (diffMin < 60) {
         setStatus('warn', `🚫 O intervalo mínimo é de 1 hora. Faltam ${Math.ceil(60 - diffMin)} minutos.`);
-        if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
         return;
       }
     }
@@ -1036,7 +1134,6 @@ async function doPunch(force=false, reason="", attachmentB64="") {
 
     if (dist > loc.radius && !force) {
       setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`);
-      if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
       isSending = false; btn.disabled = false; return;
     }
 
@@ -1049,9 +1146,9 @@ async function doPunch(force=false, reason="", attachmentB64="") {
       lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
       dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
       photo: photoB64, 
-      status: force ? 'pending' : 'ok', // NOVO: define como pendente se foi forçado
-      justification: reason,            // NOVO: motivo texto
-      attachment: attachmentB64,        // NOVO: anexo base64
+      status: force ? 'pending' : 'ok', 
+      justification: reason,            
+      attachment: attachmentB64,        
       synced: false
     };
 
@@ -1089,7 +1186,7 @@ async function doPunch(force=false, reason="", attachmentB64="") {
 }
 
 // ─────────────────────────────────────
-// Funções Utilitárias Omitidas por Brevidade (getPos, callCloud, syncCloud)
+// UTILS & CLOUD
 // ─────────────────────────────────────
 async function checkTimeSync() {
   try { const res = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo'); if (!res.ok) return { ok: true }; const data = await res.json(); const diffMin = Math.abs(new Date(data.datetime).getTime() - new Date().getTime()) / 60000; if (diffMin > 3) return { ok: false, msg: `Divergência de horário: ~${Math.round(diffMin)} min.` }; return { ok: true }; } catch (e) { return { ok: true }; }
@@ -1139,7 +1236,7 @@ async function syncCloud(manual=false) {
         const obj = { id:cr.id, empId:cr.empId||'', empName:cr.empName||'', slot:cr.slot, type:cr.type, datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true, photoUrl:cr.photoUrl||'', status:cr.status||'ok', justification:cr.justification||'', attachmentUrl:cr.attachmentUrl||'' };
         
         if (existIdx >= 0) {
-          records[existIdx] = obj; // Atualiza se mudou status
+          records[existIdx] = obj; 
         } else {
           records.push(obj);
         }
@@ -1168,7 +1265,6 @@ async function pushConfigToCloud(action, payload) {
 function fmtMin(m) { const h=Math.floor(m/60),mm=Math.floor(m%60); return `${h}h ${String(mm).padStart(2,'0')}m`; }
 
 function workedMin(empId, date) {
-  // Ignora pontos que foram rejeitados
   const day = records.filter(r => r.empId===empId && r.date===date && r.status !== 'rejected').sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
   const e1=day.find(r=>r.slot==='entrada1'), s1=day.find(r=>r.slot==='saida1');
   const e2=day.find(r=>r.slot==='entrada2'), s2=day.find(r=>r.slot==='saida2');
@@ -1204,7 +1300,6 @@ function renderDash() {
   let totalOTToday = 0;
   employees.forEach(emp => { totalOTToday += Math.max(0, calcOT(workedMin(emp.id,today), journeyMin(emp.id))); });
 
-  // Mostra aviso global de aprovações pendentes
   const numPending = records.filter(r => r.status === 'pending').length;
 
   document.getElementById('stats-row').innerHTML = `
@@ -1252,11 +1347,38 @@ function renderRecords() {
     const [empId, date] = k.split('__');
     const emp  = employees.find(e=>e.id===empId);
     const day  = filtered.filter(r=>r.empId===empId && r.date===date).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
-    const w    = workedMin(empId,date);
-    const j    = journeyMin(empId);
-    const ot   = calcOT(w, j);
+    
+    let w = workedMin(empId,date);
+    const j = journeyMin(empId);
+    
+    let ot = 0;
+    const absence = day.find(r => r.slot === 'ausencia');
+    if (absence) {
+      if (absence.type === 'falta_injustificada') ot = -j;
+      else ot = 0; 
+    } else {
+      ot = calcOT(w, j);
+      const dow = new Date(date.split('/')[2], date.split('/')[1]-1, date.split('/')[0]).getDay();
+      const isWE = dow === 0 || dow === 6;
+      if (isWE) ot = w; 
+      else if (w === 0) ot = 0; 
+    }
     
     const punches = day.map(r => {
+      if (r.slot === 'ausencia') {
+        const isJust = r.type === 'falta_justificada';
+        return `<div class="punch-tag" style="flex-direction:column; align-items:stretch; border: 1px solid ${isJust?'var(--blue)':'var(--red)'};">
+          <div style="display:flex;align-items:center;gap:6px;width:100%;">
+            <span style="font-weight:bold;font-size:10px;color:${isJust?'var(--blue)':'var(--red)'}">${isJust?'🩺 FALTA JUSTIFICADA':'❌ FALTA INJUSTIFICADA'}</span>
+            ${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5;margin-left:auto">☁️</span>' : '<span title="Pendente envio" style="font-size:10px;opacity:.5;margin-left:auto">⏳</span>'}
+            <div class="punch-tag-actions">
+              <button onclick="deletePunch('${r.id}')">🗑️</button>
+            </div>
+          </div>
+          ${r.justification ? `<div class="punch-just-info" style="margin-left:0;margin-top:4px;">"${r.justification}"</div>` : ''}
+        </div>`;
+      }
+
       let stateClass = '';
       if(r.status === 'pending') stateClass = 'pending';
       if(r.status === 'rejected') stateClass = 'rejected';
@@ -1278,7 +1400,7 @@ function renderRecords() {
           <span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span>
           <span class="ptime">${r.time.slice(0,5)}</span>
           ${settings.showDist!==false ? `<span class="pdist">📍${r.dist??'?'}m</span>` : ''}
-          ${r.photoUrl ? `<a href="${r.photoUrl}" target="_blank" style="text-decoration:none;font-size:12px;" title="Ver Foto da Câmera">📷</a>` : ''}
+          ${r.photoUrl ? `<a href="${r.photoUrl}" target="_blank" style="text-decoration:none;font-size:12px;" title="Ver Foto da Câmara">📷</a>` : ''}
           ${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5">☁️</span>' : '<span title="Pendente envio" style="font-size:10px;opacity:.5">⏳</span>'}
           <div class="punch-tag-actions">
             ${approvalBtns}
@@ -1347,13 +1469,24 @@ function exportCSV() {
     const [empId,date] = k.split('__');
     const emp   = employees.find(e=>e.id===empId);
     const shift = shifts.find(s=>s.id===emp?.shiftId);
-    // Para CSV ignoramos pontos recusados no cálculo
     const day   = records.filter(r=>r.empId===empId && r.date===date && r.status !== 'rejected');
     const get   = s => (day.find(r=>r.slot===s)||{}).time || '';
     const w     = workedMin(empId,date);
     const j     = journeyMin(empId);
-    const ot    = calcOT(w, j);
-    rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, get('entrada1'), get('saida1'), get('entrada2'), get('saida2'), fmtMin(w), fmtMin(j), Math.round(ot), fmtMin(ot)]);
+    
+    const absence = day.find(r => r.slot === 'ausencia');
+    if (absence) {
+      if (absence.type === 'falta_injustificada') {
+         rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'INJUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), -j, '-'+fmtMin(j)]);
+      } else {
+         rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'JUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), 0, '0h 00m']);
+      }
+    } else {
+      let rawOt = w - j;
+      if (settings.cltTolerance !== false && Math.abs(rawOt) <= 10) rawOt = 0;
+      const ot = Math.max(0, rawOt);
+      rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, get('entrada1'), get('saida1'), get('entrada2'), get('saida2'), fmtMin(w), fmtMin(j), Math.round(ot), fmtMin(ot)]);
+    }
   });
   const csv  = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1362,7 +1495,7 @@ function exportCSV() {
 }
 
 // ─────────────────────────────────────
-// CRUD Funcionários / Turnos / Locais (Omitido p/ brevidade - Mantém-se igual)
+// CRUD Funcionários / Turnos / Locais
 // ─────────────────────────────────────
 function renderEmpList() { const el = document.getElementById('emp-list'); if (!employees.length) { el.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário</p></div>'; return; } el.innerHTML = employees.map(emp => { const shift = shifts.find(s=>s.id===emp.shiftId); const loc = locations.find(l=>l.id===emp.locId); return `<div class="emp-list-item"><div class="eli-avatar">${emp.emoji||'👤'}</div><div class="eli-info"><div class="eli-name">${emp.name}</div><div class="eli-meta">${emp.role} · ${shift?.name||'Sem turno'} · ${loc?.name||'Sem local'}</div></div><div class="eli-actions"><button class="btn-icon" onclick="openEmpModal('${emp.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteEmp('${emp.id}')">🗑️</button></div></div>`; }).join(''); }
 function openEmpModal(id=null) { document.getElementById('emp-modal-title').textContent = id ? 'Editar Funcionário' : 'Novo Funcionário'; document.getElementById('emp-id-edit').value = id || ''; const emp = id ? employees.find(e=>e.id===id) : null; document.getElementById('emp-name-inp').value = emp?.name || ''; document.getElementById('emp-role-inp').value = emp?.role || ''; document.getElementById('emp-emoji-inp').value = emp?.emoji || ''; document.getElementById('emp-shift-sel').innerHTML = '<option value="">-- Selecione --</option>' + shifts.map(s=>`<option value="${s.id}" ${emp?.shiftId===s.id?'selected':''}>${s.name}</option>`).join(''); document.getElementById('emp-loc-sel').innerHTML = '<option value="">-- Selecione --</option>' + locations.map(l=>`<option value="${l.id}" ${emp?.locId===l.id?'selected':''}>${l.emoji||'📍'} ${l.name}</option>`).join(''); openModal('emp-modal'); }
@@ -1391,7 +1524,15 @@ const WEEK_PT   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 function initReportSelects() { const now = new Date(); const mSel = document.getElementById('rep-month'); const ySel = document.getElementById('rep-year'); if(!mSel) return; mSel.innerHTML = MONTHS_PT.map((m,i)=>`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`).join(''); ySel.innerHTML = [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1].map(y=>`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join(''); }
 function populateReportEmpSelect() { const sel = document.getElementById('rep-emp'); if(!sel) return; const cur = sel.value; sel.innerHTML = '<option value="all">Todas as funcionárias</option>' + employees.map(e=>`<option value="${e.id}" ${cur===e.id?'selected':''}>${e.emoji||''} ${e.name}</option>`).join(''); }
 
-function buildReport() {
+async function buildReport() {
+  const preview = document.getElementById('report-preview');
+  
+  // FORÇA A SINCRONIZAÇÃO COM A PLANILHA ANTES DE GERAR O RELATÓRIO
+  if (settings.googleUrl && navigator.onLine) {
+    preview.innerHTML = '<div class="empty"><div class="eicon">⏳</div><p>A baixar os dados mais recentes da folha de cálculo...</p></div>';
+    await syncCloud(false);
+  }
+
   populateReportEmpSelect();
   const month = parseInt(document.getElementById('rep-month').value); const year = parseInt(document.getElementById('rep-year').value);
   const empSel = document.getElementById('rep-emp').value; const empList = empSel === 'all' ? employees : employees.filter(e => e.id === empSel);
@@ -1413,27 +1554,47 @@ function buildReport() {
       const dayRecs = validRecords.filter(r => r.empId === emp.id && r.date === date).sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
       
       const get = slot => (dayRecs.find(r => r.slot === slot) || {}).time || null;
+      const absence = dayRecs.find(r => r.slot === 'ausencia');
       const e1 = get('entrada1'), s1 = get('saida1'), e2 = get('entrada2'), s2 = get('saida2');
+      
       let m=0; if(e1&&s1) m+=(new Date(`2000-01-01T${s1}`)-new Date(`2000-01-01T${e1}`))/60000; if(e2&&s2) m+=(new Date(`2000-01-01T${s2}`)-new Date(`2000-01-01T${e2}`))/60000;
       
-      let ot = !isWE && (e1||e2) ? m - journMin : 0;
-      if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
+      let ot = 0;
+      if (absence) {
+        if (absence.type === 'falta_injustificada') { ot = -journMin; } 
+        else { ot = 0; }
+      } else {
+        ot = !isWE && (e1||e2) ? m - journMin : 0;
+        if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
+      }
       
       if (!isWE && (e1 || e2)) { daysWorked++; totalWorked += m; }
       if (ot > 0) totalOT += ot; if (ot < 0) totalUnder += ot;
-      dayData.push({ d, date, dow, isWE, e1, s1, e2, s2, w:m, ot, hasAny: !!(e1||s1||e2||s2) });
+      dayData.push({ d, date, dow, isWE, e1, s1, e2, s2, w:m, ot, hasAny: !!(e1||s1||e2||s2), absence });
     }
 
     const balance = totalOT + totalUnder;
     html += `<div class="rep-emp-section"><div class="rep-emp-header"><div class="rep-emp-avatar">${emp.emoji||'👤'}</div><div><div class="rep-emp-name">${emp.name}</div><div class="rep-emp-meta">${emp.role} · ${shift?shift.name:'Sem turno'}</div></div></div>
       <div class="rep-summary"><div class="rep-sum-box"><div class="rsb-label">Dias Trabalhados</div><div class="rsb-val blue">${daysWorked}</div></div><div class="rep-sum-box"><div class="rsb-label">Total Trabalhado</div><div class="rsb-val green">${fmtMin(totalWorked)}</div></div><div class="rep-sum-box"><div class="rsb-label">Horas Extra</div><div class="rsb-val ${totalOT>0?'amber':''}">${fmtMin(totalOT)}</div></div><div class="rep-sum-box"><div class="rsb-label">Saldo do Mês</div><div class="rsb-val ${balance>0?'amber':balance<0?'red':''}">${balance>=0?'+':''}${fmtMin(balance)}</div></div></div>
       <div class="rep-table-wrap"><table class="rep-table"><thead><tr><th>Data</th><th>Dia</th><th>Entrada 1</th><th>Saída 1</th><th>Entrada 2</th><th>Saída 2</th><th>Trabalhado</th><th>Jornada</th><th>H. Extra</th></tr></thead><tbody>`;
+    
     dayData.forEach(day => {
-      html += `<tr${day.isWE?' class="td-weekend"':''}><td>${day.date}</td><td>${WEEK_PT[day.dow]}</td><td>${day.e1||'—'}</td><td>${day.s1||'—'}</td><td>${day.e2||'—'}</td><td>${day.s2||'—'}</td><td>${day.hasAny?fmtMin(day.w):'—'}</td><td>${!day.isWE&&day.hasAny?fmtMin(journMin):'—'}</td><td>${day.ot===0?(!day.hasAny||day.isWE?'—':'<span class="ot-badge zero">OK</span>'):(day.ot>0?`<span class="ot-badge pos">+${fmtMin(day.ot)}</span>`:`<span class="ot-badge neg">-${fmtMin(-day.ot)}</span>`)}</td></tr>`;
+      if (day.absence) {
+        const isJust = day.absence.type === 'falta_justificada';
+        html += `<tr${day.isWE?' class="td-weekend"':''}>
+          <td>${day.date}</td><td>${WEEK_PT[day.dow]}</td>
+          <td colspan="4" style="color:${isJust?'#2563eb':'#dc2626'}; font-weight:700; letter-spacing:0.5px;">${isJust ? 'FALTA JUSTIFICADA / ATESTADO' : 'FALTA INJUSTIFICADA'}</td>
+          <td class="td-empty">—</td>
+          <td>${fmtMin(journMin)}</td>
+          <td style="color:${isJust?'#94a3b8':'#dc2626'}; font-weight:700">${isJust ? '0h 00m' : '-'+fmtMin(journMin)}</td>
+        </tr>`;
+      } else {
+        html += `<tr${day.isWE?' class="td-weekend"':''}><td>${day.date}</td><td>${WEEK_PT[day.dow]}</td><td>${day.e1||'—'}</td><td>${day.s1||'—'}</td><td>${day.e2||'—'}</td><td>${day.s2||'—'}</td><td>${day.hasAny?fmtMin(day.w):'—'}</td><td>${!day.isWE&&day.hasAny?fmtMin(journMin):'—'}</td><td>${day.ot===0?(!day.hasAny||day.isWE?'—':'<span class="ot-badge zero">OK</span>'):(day.ot>0?`<span class="ot-badge pos">+${fmtMin(day.ot)}</span>`:`<span class="ot-badge neg">-${fmtMin(-day.ot)}</span>`)}</td></tr>`;
+      }
     });
     html += `</tbody></table></div></div>`;
   });
-  document.getElementById('report-preview').innerHTML = html + `</div>`;
+  preview.innerHTML = html + `</div>`;
 }
 function printReport() { window.print(); }
 </script>
