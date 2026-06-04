@@ -465,7 +465,7 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="card" style="margin-top:14px">
       <div class="card-title">ℹ️ O que é um turno?</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
-        O turno define a <strong>carga horária diária</strong> de uma funcionária — usada para calcular horas extras. Ex: "CLT 44h" = 8h48m/dia. O turno é atribuído a cada funcionária individualmente na aba <strong>Funcionários</strong>.
+        O turno define a <strong>carga horária diária</strong> da funcionária — usada para calcular horas extras. Ex: "CLT 44h" = 8h48m/dia.
       </p>
     </div>
   </div>
@@ -473,12 +473,6 @@ body::before{content:'';position:fixed;inset:0;background:
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
     <div id="loc-list"></div>
-    <div class="card" style="margin-top:14px">
-      <div class="card-title">📡 Como obter coordenadas manuais</div>
-      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
-        Aceda a <strong>maps.google.com</strong>, clique com o botão direito no local exato e copie as coordenadas.
-      </p>
-    </div>
   </div>
 
   <div class="tab-content" id="t-rec">
@@ -517,7 +511,6 @@ body::before{content:'';position:fixed;inset:0;background:
       <div class="card-title">🔗 Integração com Google Sheets</div>
       <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
         A URL do Apps Script é carregada automaticamente do ficheiro <strong style="color:var(--green)">config.js</strong> no servidor.<br>
-        Para alterar, edite esse ficheiro — todos os aparelhos serão atualizados automaticamente.
       </div>
       <div id="conn-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;word-break:break-all;margin-bottom:12px">—</div>
       <div style="display:flex;gap:8px">
@@ -526,21 +519,7 @@ body::before{content:'';position:fixed;inset:0;background:
       </div>
       <div id="conn-status" style="margin-top:10px;font-size:12px;color:var(--muted2);display:none"></div>
     </div>
-    <div class="card">
-      <div class="card-title">📋 Como configurar o Google Sheets</div>
-      <div style="font-size:12px;color:var(--muted2);line-height:1.8">
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">1.</strong> Abra a sua folha de cálculo no Google Sheets</div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">2.</strong> Menu <strong style="color:var(--blue)">Extensões → Apps Script</strong></div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">3.</strong> Apague o código existente e cole o conteúdo do ficheiro <strong style="color:var(--green)">Code.gs</strong> fornecido</div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">4.</strong> Clique em <strong style="color:var(--blue)">Implementar → Nova implantação</strong></div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">5.</strong> Tipo: <strong style="color:var(--amber)">App da Web</strong> · Acesso: <strong style="color:var(--amber)">Qualquer pessoa</strong></div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">6.</strong> Copie a URL gerada e cole no config.js</div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">7.</strong> As abas <strong style="color:var(--green)">Registros, Funcionários, Turnos, Locais</strong> serão criadas automaticamente</div>
-        <div style="padding:10px;background:var(--amber-dim);border:1px solid rgba(251,191,36,.3);border-radius:8px;color:var(--amber);margin-top:8px">
-          ⚠️ Após salvar a URL, clique em <strong>Sincronizar</strong> no Dashboard para carregar os dados existentes da folha de cálculo.
-        </div>
-      </div>
-    </div>
+    
     <div class="card">
       <div class="card-title">🔒 Segurança</div>
       <div class="afield">
@@ -549,17 +528,31 @@ body::before{content:'';position:fixed;inset:0;background:
       </div>
       <button class="btn-sync" onclick="savePassword()">💾 Alterar Senha</button>
     </div>
+    
     <div class="card">
-      <div class="card-title">⚙️ Comportamento</div>
+      <div class="card-title">⚙️ Comportamento & Regras (CLT)</div>
+      
+      <div class="setting-row">
+        <div><div class="setting-label">Tolerância CLT (10 min)</div><div class="setting-desc">Ignora até 10min de diferença diária na jornada (Art. 58)</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg-clt" onchange="saveBoolCfg('cltTolerance',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+      </div>
+      
+      <div class="setting-row">
+        <div><div class="setting-label">Intervalo Mínimo (1h)</div><div class="setting-desc">Exige 1h de descanso antes do registo da Entrada 2</div></div>
+        <label class="toggle"><input type="checkbox" id="cfg-interval" onchange="saveBoolCfg('minInterval',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+      </div>
+      
       <div class="setting-row">
         <div><div class="setting-label">Registo forçado</div><div class="setting-desc">Permitir bater ponto fora do raio (com aviso)</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-override" onchange="saveBoolCfg('allowOverride',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
+      
       <div class="setting-row">
         <div><div class="setting-label">Mostrar distância</div><div class="setting-desc">Exibir distância do local à funcionária</div></div>
-        <label class="toggle"><input type="checkbox" id="cfg-showdist" checked onchange="saveBoolCfg('showDist',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+        <label class="toggle"><input type="checkbox" id="cfg-showdist" onchange="saveBoolCfg('showDist',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
     </div>
+    
     <div class="card">
       <div class="card-title">🗑️ Dados</div>
       <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">
@@ -600,7 +593,7 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
     <div class="afield">
       <label>Emoji / Avatar</label>
-      <input type="text" id="emp-emoji-inp" placeholder="Ex: 👩‍⚕️" maxlength="4" style="font-size:24px;text-align:center">
+      <input type="text" id="emp-emoji-inp" placeholder="👩‍⚕️" maxlength="4" style="font-size:24px;text-align:center">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('emp-modal')">Cancelar</button>
@@ -648,16 +641,14 @@ body::before{content:'';position:fixed;inset:0;background:
       <div class="afield"><label>Nome do Local</label><input type="text" id="loc-name-inp" placeholder="Ex: Casa da Ana"></div>
       <div class="afield"><label>Emoji</label><input type="text" id="loc-emoji-inp" placeholder="🏠" maxlength="4" style="font-size:22px;text-align:center"></div>
     </div>
-    
     <button id="btn-get-gps" class="btn-sync" style="margin-bottom: 14px; background: var(--blue-dim); border: 1px dashed var(--blue); width: 100%; justify-content: center;" onclick="fillCurrentLoc()">
       📍 Preencher com o meu GPS atual
     </button>
-
     <div class="form-grid">
       <div class="afield"><label>Latitude</label><input type="number" id="loc-lat-inp" step="0.000001" placeholder="-23.561414"></div>
       <div class="afield"><label>Longitude</label><input type="number" id="loc-lng-inp" step="0.000001" placeholder="-46.656361"></div>
     </div>
-    <div class="afield"><label>Raio da Cerca (metros)</label><input type="number" id="loc-radius-inp" min="10" max="5000" value="150" placeholder="150"></div>
+    <div class="afield"><label>Raio da Cerca (m)</label><input type="number" id="loc-radius-inp" min="10" max="5000" value="150" placeholder="150"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('loc-modal')">Cancelar</button>
       <button class="btn-confirm" onclick="saveLocation()">Salvar</button>
@@ -703,7 +694,6 @@ body::before{content:'';position:fixed;inset:0;background:
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-// ARRAYS TOTALMENTE VAZIOS PARA INÍCIO LIMPO
 let employees  = LS('pd_employees')  || [];
 let shifts     = LS('pd_shifts')     || [];
 let locations  = LS('pd_locations')  || [];
@@ -712,8 +702,8 @@ let pending    = LS('pd_pending')    || [];
 
 const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
 
-// SENHA PADRÃO NOVA É 123456
-let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true };
+// Adicionadas as novas configurações da CLT no objeto padrão
+let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true };
 
 if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
 
@@ -776,9 +766,13 @@ function goAdmin() {
   renderLocList();
   renderRecords();
   const urlEl = document.getElementById('conn-url-display');
-  if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada no config.js)';
+  if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada)';
+  
+  // Carrega os estados dos botões (toggles) nas configurações
   document.getElementById('cfg-override').checked = settings.allowOverride !== false;
   document.getElementById('cfg-showdist').checked  = settings.showDist !== false;
+  document.getElementById('cfg-clt').checked       = settings.cltTolerance !== false;
+  document.getElementById('cfg-interval').checked  = settings.minInterval !== false;
 }
 
 function showTab(id, btn) {
@@ -964,9 +958,6 @@ function updatePunchBtn() {
   btn.onclick     = () => doPunch(false);
 }
 
-// ─────────────────────────────────────
-// ANTI-TAMPERING (HORA OFICIAL)
-// ─────────────────────────────────────
 async function checkTimeSync() {
   try {
     const res = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo');
@@ -985,9 +976,6 @@ async function checkTimeSync() {
   }
 }
 
-// ─────────────────────────────────────
-// FUNÇÃO NOVA: PREENCHER GPS NO MODAL
-// ─────────────────────────────────────
 async function fillCurrentLoc() {
   const btn = document.getElementById('btn-get-gps');
   const originalText = btn.innerHTML;
@@ -998,9 +986,7 @@ async function fillCurrentLoc() {
     document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6);
     document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6);
     toast('✅ Coordenadas capturadas com sucesso!','success');
-  } catch(e) { 
-    handleGeoErr(e); 
-  }
+  } catch(e) { handleGeoErr(e); }
   btn.innerHTML = originalText;
   btn.disabled = false;
 }
@@ -1019,12 +1005,27 @@ async function doPunch(force=false) {
   const loc = locations.find(l => l.id === emp.locId);
   if (!loc) { toast('⚠️ Local não definido para esta funcionária','warn'); return; }
 
+  const now = new Date();
+
+  // 1. Regra da CLT: Validação do Intervalo de Almoço (1 hora)
+  if (next === 'entrada2' && settings.minInterval !== false) {
+    const todayR = todayRecs(currentEmpId);
+    const s1 = todayR.find(r => r.slot === 'saida1');
+    if (s1) {
+      const diffMin = (now - new Date(s1.datetime)) / 60000;
+      if (diffMin < 60 && !force) {
+        setStatus('warn', `🚫 O intervalo mínimo é de 1 hora. Faltam ${Math.ceil(60 - diffMin)} minutos.`);
+        if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
+        return;
+      }
+    }
+  }
+
   isSending = true;
   const btn = document.getElementById('main-btn');
   btn.disabled = true;
   document.getElementById('btn-override').style.display = 'none';
   
-  // 1. Verificação Antifraude de Horário
   setStatus('checking','⏱ A verificar horário oficial...');
   const timeCheck = await checkTimeSync();
   if (!timeCheck.ok) {
@@ -1044,10 +1045,8 @@ async function doPunch(force=false) {
       isSending = false; btn.disabled = false; return;
     }
 
-    // 2. Captura a Foto
     const photoB64 = takePhoto();
 
-    const now = new Date();
     const rec = {
       id: Date.now(), empId: currentEmpId, empName: emp.name,
       slot: next, type: next.includes('entrada') ? 'entrada' : 'saida',
@@ -1071,10 +1070,8 @@ async function doPunch(force=false) {
       toast('✅ Ponto registado offline!','success');
       updatePunchBtn(); updateSlots();
       stopCamera();
-
     } else if (cloudResult.ok) {
       const responseData = cloudResult.data?.data;
-
       if (responseData && responseData.status === 'duplicate') {
         rec.time = responseData.time;
         rec.synced = true;
@@ -1093,19 +1090,12 @@ async function doPunch(force=false) {
         setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`);
         toast('✅ Ponto salvo na folha de cálculo!','success');
       }
-
-      updatePunchBtn();
-      updateSlots();
-      stopCamera(); 
-      syncCloud(false);
+      updatePunchBtn(); updateSlots(); stopCamera(); syncCloud(false);
     } else {
-      pendingRetry = rec;
-      pending.push(rec);
-      saveAll();
+      pendingRetry = rec; pending.push(rec); saveAll();
       setStatus('warn', `⚠️ Sem rede. Horário ${rec.time.slice(0,5)} na fila — clique Reenviar.`);
       toast('❌ Falha ao enviar. Toque Reenviar quando tiver sinal.','error');
-      updatePunchBtn(); updateSlots();
-      stopCamera();
+      updatePunchBtn(); updateSlots(); stopCamera();
     }
   } catch(e) { handleGeoErr(e); }
   
@@ -1123,17 +1113,14 @@ async function retryPunch() {
   const ok = await sendToCloud(pendingRetry, 3);
   if (ok) {
     pendingRetry.synced = true;
-    if (!records.find(r => String(r.id) === String(pendingRetry.id))) {
-      records.unshift(pendingRetry);
-    }
+    if (!records.find(r => String(r.id) === String(pendingRetry.id))) { records.unshift(pendingRetry); }
     pending = pending.filter(p => p.id !== pendingRetry.id);
     const t = pendingRetry.time.slice(0,5);
     pendingRetry = null;
     saveAll();
     setStatus('ok', `✅ Ponto das ${t} salvo na nuvem ☁️`);
     toast('✅ Reenvio concluído!','success');
-    updatePunchBtn(); updateSlots();
-    syncCloud(false); 
+    updatePunchBtn(); updateSlots(); syncCloud(false); 
   } else {
     setStatus('far', `⚠️ Ainda sem resposta. Tente novamente.`);
     toast('❌ Falha no reenvio.','error');
@@ -1154,31 +1141,18 @@ async function callCloud(payload, tries=3) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 25000); 
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        redirect: 'follow',
-        signal: controller.signal
-      });
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow', signal: controller.signal });
       clearTimeout(timeout);
 
       const text = await res.text();
-      let json = {};
-      try { json = JSON.parse(text); } catch(e) {}
-
-      if (json.status === 'error') {
-        console.warn('Apps Script error:', json.error);
-      }
+      let json = {}; try { json = JSON.parse(text); } catch(e) {}
+      if (json.status === 'error') console.warn('Apps Script error:', json.error);
       return { ok: true, data: json };
 
     } catch(e) {
       const isLast = i === tries - 1;
-      if (e.name === 'AbortError') {
-        console.warn(`callCloud timeout (tentativa ${i+1}/${tries})`);
-      } else {
-        console.warn(`callCloud falhou (tentativa ${i+1}/${tries}):`, e.message);
-      }
+      if (e.name === 'AbortError') console.warn(`callCloud timeout (tentativa ${i+1}/${tries})`);
+      else console.warn(`callCloud falhou (tentativa ${i+1}/${tries}):`, e.message);
       if (!isLast) await sleep(2000);
     }
   }
@@ -1268,13 +1242,8 @@ async function syncCloud(manual=false) {
 
     if (changed) {
       buildChooseGrid();
-      if (document.getElementById('s-punch').classList.contains('active') && currentEmpId) {
-        updateSlots();
-        updatePunchBtn();
-      }
-      if (document.getElementById('s-admin').classList.contains('active')) {
-        renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords();
-      }
+      if (document.getElementById('s-punch').classList.contains('active') && currentEmpId) { updateSlots(); updatePunchBtn(); }
+      if (document.getElementById('s-admin').classList.contains('active')) { renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); }
     }
     if (manual) toast('✅ Dados sincronizados!','success');
   } catch(e) {
@@ -1307,9 +1276,10 @@ function calcDist(la1,ln1,la2,ln2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dN
 const setStatus = (state,msg) => { const el=document.getElementById('punch-status'); if(el){el.className='status-bar '+state; el.textContent=msg||'';} };
 
 // ─────────────────────────────────────
-// ADMIN: DASHBOARD
+// ADMIN & CALCULATIONS (COM REGRAS DA CLT)
 // ─────────────────────────────────────
 function fmtMin(m) { const h=Math.floor(m/60),mm=Math.floor(m%60); return `${h}h ${String(mm).padStart(2,'0')}m`; }
+
 function workedMin(empId, date) {
   const day = records.filter(r => r.empId===empId && r.date===date).sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
   const e1=day.find(r=>r.slot==='entrada1'), s1=day.find(r=>r.slot==='saida1');
@@ -1319,15 +1289,26 @@ function workedMin(empId, date) {
   if(e2&&s2) m+=(new Date(s2.datetime)-new Date(e2.datetime))/60000;
   return Math.max(0,m);
 }
+
 function journeyMin(empId) {
   const emp = employees.find(e=>e.id===empId);
   if (!emp) return 480;
   const shift = shifts.find(s=>s.id===emp.shiftId);
   return shift ? (shift.hours*60 + (shift.mins||0)) : 480;
 }
+
+// NOVO: Função para calcular Horas Extra aplicando Tolerância da CLT
+function calcOT(w, j) {
+  let diff = w - j;
+  if (settings.cltTolerance !== false && Math.abs(diff) <= 10) {
+    return 0; // Ignora variações de até 10 minutos (Art. 58 CLT)
+  }
+  return diff;
+}
+
 function totalOT(empId) {
   const dates = [...new Set(records.filter(r=>r.empId===empId).map(r=>r.date))];
-  return dates.reduce((sum,d) => { const w=workedMin(empId,d),j=journeyMin(empId); return sum+Math.max(0,w-j); }, 0);
+  return dates.reduce((sum,d) => { const w=workedMin(empId,d), j=journeyMin(empId); const ot=calcOT(w,j); return sum+Math.max(0,ot); }, 0);
 }
 
 function renderDash() {
@@ -1337,8 +1318,14 @@ function renderDash() {
     return tr.some(r=>r.slot==='entrada1') && !tr.some(r=>r.slot==='saida2');
   }).length;
   const totalPunches = records.filter(r=>r.date===today).length;
+  
   let totalOTToday = 0;
-  employees.forEach(emp => { const w=workedMin(emp.id,today),j=journeyMin(emp.id); totalOTToday+=Math.max(0,w-j); });
+  employees.forEach(emp => { 
+    const w = workedMin(emp.id,today); 
+    const j = journeyMin(emp.id); 
+    const ot = calcOT(w, j);
+    totalOTToday += Math.max(0, ot); 
+  });
 
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-box"><div class="stat-label">A Trabalhar</div><div class="stat-value green">${totalWorking}</div><div class="stat-sub">de ${employees.length} funcionário(s)</div></div>
@@ -1351,7 +1338,6 @@ function renderDash() {
     const w = workedMin(emp.id,today);
     const j = journeyMin(emp.id);
     const pct = Math.min(100,w/j*100);
-    const ot = Math.max(0,w-j);
     const shift = shifts.find(s=>s.id===emp.shiftId) || {};
     const color = shift.color || '#34d399';
     return `<div class="worker-summary">
@@ -1372,7 +1358,6 @@ function renderDash() {
 
   document.getElementById('ot-summary').innerHTML = employees.map(emp => {
     const ot = totalOT(emp.id);
-    const shift = shifts.find(s=>s.id===emp.shiftId) || {};
     return `<div class="worker-summary">
       <div class="ws-avatar">${emp.emoji||'👤'}</div>
       <div class="ws-info">
@@ -1613,7 +1598,7 @@ function renderRecords() {
     const day  = filtered.filter(r=>r.empId===empId && r.date===date).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
     const w    = workedMin(empId,date);
     const j    = journeyMin(empId);
-    const ot   = w - j;
+    const ot   = calcOT(w, j);
     
     const punches = day.map(r=>`<div class="punch-tag">
       <span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span>
@@ -1690,7 +1675,11 @@ function exportCSV() {
     const get   = s => (day.find(r=>r.slot===s)||{}).time || '';
     const w     = workedMin(empId,date);
     const j     = journeyMin(empId);
-    const ot    = Math.max(0,w-j);
+    
+    let rawOt = w - j;
+    if (settings.cltTolerance !== false && Math.abs(rawOt) <= 10) rawOt = 0;
+    const ot = Math.max(0, rawOt);
+    
     rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, get('entrada1'), get('saida1'), get('entrada2'), get('saida2'), fmtMin(w), fmtMin(j), Math.round(ot), fmtMin(ot)]);
   });
   const csv  = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -1903,7 +1892,10 @@ function buildReport() {
       };
       const e1 = get('entrada1'), s1 = get('saida1'), e2 = get('entrada2'), s2 = get('saida2');
       const w = workedMin(emp.id, date);
-      const ot = !isWE && (e1||e2) ? w - journMin : 0;
+      
+      let ot = !isWE && (e1||e2) ? w - journMin : 0;
+      if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0; // Regra CLT
+      
       if (!isWE && (e1 || e2)) { daysWorked++; totalWorked += w; }
       if (ot > 0) totalOT    += ot;
       if (ot < 0) totalUnder += ot;
