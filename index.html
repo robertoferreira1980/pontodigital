@@ -1,214 +1,100 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ponto Digital</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; text-align: center; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-    h2 { color: #1a1f2e; }
-    select, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
-    button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
-    button:disabled { background-color: #ccc; cursor: not-allowed; }
-    #btn-override { background-color: #dc3545; display: none; margin-top: 10px; }
-    .status { margin-top: 15px; font-size: 14px; padding: 10px; border-radius: 5px; }
-    .status.checking { background: #e2e3e5; color: #383d41; }
-    .status.ok { background: #d4edda; color: #155724; }
-    .status.warn { background: #fff3cd; color: #856404; }
-    .status.far { background: #f8d7da; color: #721c24; }
-    .history { margin-top: 20px; text-align: left; }
-    .history-item { background: #e9ecef; padding: 10px; margin-bottom: 5px; border-radius: 5px; font-size: 14px; display: flex; justify-content: space-between; }
-  </style>
-</head>
-<body>
+async function doPunch(force=false) {
+  if (isSending || pendingRetry) return;
+  if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
+  if (!currentEmpId) return;
+  const next = nextSlot(currentEmpId);
+  if (!next) return;
 
-  <div class="card">
-    <h2>⏰ Ponto Digital</h2>
-    
-    <select id="emp-select" onchange="changeEmp()">
-      <option value="">Selecione a Funcionária...</option>
-      <option value="1">Ana Silva</option>
-      <option value="2">Maria Costa</option>
-    </select>
+  const emp = employees.find(e => e.id === currentEmpId);
+  const loc = locations.find(l => l.id === emp.locId);
+  if (!loc) { toast('⚠️ Local não definido para este funcionário','warn'); return; }
 
-    <div id="status-box" class="status checking" style="display: none;"></div>
+  isSending = true;
+  const btn = document.getElementById('main-btn');
+  btn.disabled = true;
+  document.getElementById('btn-override').style.display = 'none';
+  setStatus('checking','📡 Verificando GPS...');
 
-    <button id="main-btn" onclick="doPunch(false)" disabled>Registrar Ponto</button>
-    <button id="btn-override" onclick="doPunch(true)">Forçar Registo (Fora do Raio)</button>
+  try {
+    const pos  = await getPos();
+    const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
 
-    <div class="history">
-      <h3>Registos de Hoje</h3>
-      <div id="records-list"></div>
-    </div>
-  </div>
-
-  <script>
-    // Configurações e Variáveis Globais
-    const locations = [{ id: "loc1", lat: -23.5505, lng: -46.6333, radius: 100 }]; // Substitua pelas coordenadas reais da empresa
-    const employees = [
-      { id: "1", name: "Ana Silva", locId: "loc1" },
-      { id: "2", name: "Maria Costa", locId: "loc1" }
-    ];
-    let currentEmpId = null;
-    let records = [];
-    let isSending = false;
-    let pendingRetry = null;
-    const settings = { allowOverride: true };
-
-    // Funções de Interface
-    function toast(msg, type) { alert(msg); } // Pode substituir por uma biblioteca de toast real
-    function setStatus(type, msg) {
-      const box = document.getElementById('status-box');
-      box.className = `status ${type}`;
-      box.innerText = msg;
-      box.style.display = 'block';
+    if (dist > loc.radius && !force) {
+      setStatus('far', `🚫 Você está a ${Math.round(dist)}m do local. Raio: ${loc.radius}m.`);
+      if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
+      isSending = false; btn.disabled = false; return;
     }
 
-    function changeEmp() {
-      currentEmpId = document.getElementById('emp-select').value;
-      updatePunchBtn();
-      updateSlots();
-    }
+    const now = new Date();
+    const rec = {
+      id: Date.now(), empId: currentEmpId, empName: emp.name,
+      slot: next, type: next.includes('entrada') ? 'entrada' : 'saida',
+      datetime: now.toISOString(),
+      date: now.toLocaleDateString('pt-BR'),
+      time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+      lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
+      dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
+      synced: false
+    };
 
-    function updatePunchBtn() {
-      const btn = document.getElementById('main-btn');
-      btn.disabled = !currentEmpId || isSending;
-      document.getElementById('btn-override').style.display = 'none';
-      if(currentEmpId) setStatus('checking', 'Pronto para registar.');
-    }
+    // 3. O aplicativo NÃO exibe e NÃO salva localmente ainda, apenas envia.
+    setStatus('checking', '📡 Enviando para a planilha...');
+    const cloudResult = await callCloud({ action: 'addRecord', record: rec }, 3);
 
-    function updateSlots() {
-      const list = document.getElementById('records-list');
-      list.innerHTML = '';
-      const today = new Date().toLocaleDateString('pt-BR');
-      const todayRecords = records.filter(r => r.empId === currentEmpId && r.date === today);
-      
-      if(todayRecords.length === 0) list.innerHTML = '<div class="history-item">Nenhum registo hoje.</div>';
-      
-      todayRecords.forEach(r => {
-        list.innerHTML += `<div class="history-item"><span>${r.slot} (${r.type})</span> <span>${r.time}</span></div>`;
-      });
-    }
+    if (cloudResult.local) {
+      // Sem URL configurada — modo offline local
+      rec.synced = false;
+      records.unshift(rec);
+      saveAll();
+      setStatus('ok', `✅ Registrado localmente às ${rec.time.slice(0,5)}`);
+      toast('✅ Ponto registrado offline!','success');
+      updatePunchBtn(); updateSlots();
 
-    function nextSlot(empId) {
-      const today = new Date().toLocaleDateString('pt-BR');
-      const count = records.filter(r => r.empId === empId && r.date === today).length;
-      if (count === 0) return 'entrada 1';
-      if (count === 1) return 'saida 1';
-      if (count === 2) return 'entrada 2';
-      if (count === 3) return 'saida 2';
-      return `extra ${count - 3}`;
-    }
+    } else if (cloudResult.ok) {
+      // Recebemos resposta da planilha!
+      const responseData = cloudResult.data.data; // Pega o retorno lá do Code.gs
 
-    // Funções de GPS e Cálculo
-    function getPos() {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
-      });
-    }
-
-    function calcDist(lat1, lon1, lat2, lon2) {
-      const R = 6371e3; // Metros
-      const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
-      const dp = (lat2-lat1) * Math.PI/180, dl = (lon2-lon1) * Math.PI/180;
-      const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    }
-
-    function handleGeoErr(e) {
-      setStatus('far', '❌ Erro de GPS. Ative a localização no telemóvel.');
-    }
-
-    // Comunicação com o Google Apps Script
-    function callCloud(payload) {
-      return new Promise((resolve) => {
-        google.script.run
-          .withSuccessHandler(res => resolve({ ok: true, data: { data: res } }))
-          .withFailureHandler(err => resolve({ ok: false, error: err }))
-          [payload.action](payload.record);
-      });
-    }
-
-    // LÓGICA PRINCIPAL CORRIGIDA
-    async function doPunch(force=false) {
-      if (isSending || pendingRetry) return;
-      if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
-      if (!currentEmpId) return;
-      const next = nextSlot(currentEmpId);
-
-      const emp = employees.find(e => e.id === currentEmpId);
-      const loc = locations.find(l => l.id === emp.locId);
-      if (!loc) { toast('⚠️ Local não definido para esta funcionária','warn'); return; }
-
-      isSending = true;
-      const btn = document.getElementById('main-btn');
-      btn.disabled = true;
-      document.getElementById('btn-override').style.display = 'none';
-      setStatus('checking','📡 A verificar GPS...');
-
-      try {
-        const pos  = await getPos();
-        const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
-
-        if (dist > loc.radius && !force) {
-          setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`);
-          if (settings.allowOverride) document.getElementById('btn-override').style.display = 'block';
-          isSending = false; btn.disabled = false; return;
+      if (responseData && responseData.status === 'duplicate') {
+        // Alguém já bateu esse ponto em outro celular
+        rec.time = responseData.time; // Pega o horário que já estava gravado lá
+        rec.synced = true;
+        
+        // Remove duplicatas locais (se houver) e salva o horário oficial
+        records = records.filter(r => !(r.empId === rec.empId && r.date === rec.date && r.slot === rec.slot));
+        records.unshift(rec);
+        saveAll();
+        
+        setStatus('warn', `⚠️ Já registrado por outro aparelho às ${rec.time.slice(0,5)}`);
+        toast('Ponto recuperado da planilha!', 'warn');
+        updatePunchBtn(); updateSlots();
+      } else {
+        // Gravado com sucesso na planilha
+        if (responseData && responseData.time) {
+           rec.time = responseData.time; // Garante o horário exato retornado
         }
-
-        const now = new Date();
-        // Prepara o registo, mas NÃO o adiciona aos "records" locais nem mostra o horário ainda
-        const rec = {
-          id: Date.now(), empId: currentEmpId, empName: emp.name,
-          slot: next, type: next.includes('entrada') ? 'entrada' : 'saida',
-          date: now.toLocaleDateString('pt-BR'),
-          time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-          lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
-          dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist)
-        };
-
-        setStatus('checking', '📡 A enviar para a folha de cálculo...');
-        const cloudResult = await callCloud({ action: 'addRecord', record: rec });
-
-        if (cloudResult.ok) {
-          const responseData = cloudResult.data.data; // Pega no retorno do Code.gs
-
-          if (responseData && responseData.status === 'duplicate') {
-            // Se já foi batido noutro telemóvel, atualiza o horário para o oficial que já estava na nuvem
-            rec.time = responseData.time;
-            
-            // Remove possíveis duplicados locais e salva o oficial
-            records = records.filter(r => !(r.empId === rec.empId && r.date === rec.date && r.slot === rec.slot));
-            records.unshift(rec);
-            
-            setStatus('warn', `⚠️ Já registado por outro aparelho às ${rec.time.slice(0,5)}`);
-            toast('Ponto recuperado da folha de cálculo!', 'warn');
-            
-          } else {
-            // Gravado com sucesso na nuvem (novo registo)
-            if (!records.find(r => String(r.id) === String(rec.id))) {
-              records.unshift(rec);
-            }
-            setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`);
-            toast('✅ Ponto salvo na folha de cálculo!','success');
-          }
-          
-          updatePunchBtn(); 
-          updateSlots();
-
-        } else {
-          // Falha na rede do Google
-          setStatus('warn', `⚠️ Falha ao comunicar com a nuvem. Tente novamente.`);
-          toast('❌ Falha ao enviar.','error');
-          updatePunchBtn();
+        rec.synced = true;
+        if (!records.find(r => String(r.id) === String(rec.id))) {
+          records.unshift(rec);
         }
-      } catch(e) { handleGeoErr(e); }
-      
-      isSending = false;
-      btn.disabled = false;
+        saveAll();
+        setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} ☁️`);
+        toast('✅ Ponto salvo na planilha!','success');
+        updatePunchBtn(); updateSlots();
+      }
+
+      // Sincroniza o resto em background
+      syncCloud(false);
+
+    } else {
+      // Falha de rede: aí sim ele guarda na fila de espera local
+      pendingRetry = rec;
+      pending.push(rec);
+      saveAll();
+      setStatus('warn', `⚠️ Sem resposta da rede. Horário ${rec.time.slice(0,5)} na fila — clique Reenviar.`);
+      toast('❌ Falha ao enviar. Toque Reenviar quando tiver sinal.','error');
+      updatePunchBtn(); updateSlots();
     }
-  </script>
-</body>
-</html>
+  } catch(e) { handleGeoErr(e); }
+  isSending = false;
+  if (!pendingRetry) btn.disabled = false;
+}
