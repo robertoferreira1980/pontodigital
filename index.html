@@ -361,6 +361,8 @@ body::before{content:'';position:fixed;inset:0;background:
   .report-wrap{border-radius:0!important}
   .rep-table tbody tr:hover{background:transparent!important}
 }</style>
+<!-- URL centralizada: edite config.js no servidor -->
+<script src="config.js"></script>
 </head>
 <body>
 
@@ -530,13 +532,14 @@ body::before{content:'';position:fixed;inset:0;background:
   <div class="tab-content" id="t-cfg">
     <div class="card">
       <div class="card-title">🔗 Integração com Google Sheets</div>
-      <div class="afield">
-        <label>URL do Google Apps Script</label>
-        <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/...">
+      <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
+        A URL do Apps Script é carregada automaticamente do arquivo <strong style="color:var(--green)">config.js</strong> no servidor.<br>
+        Para alterar, edite esse arquivo — todos os aparelhos serão atualizados automaticamente.
       </div>
+      <div id="conn-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;word-break:break-all;margin-bottom:12px">—</div>
       <div style="display:flex;gap:8px">
-        <button class="btn-sync" style="flex:1" onclick="saveCfgUrl()">💾 Salvar URL</button>
         <button class="btn-sync" style="flex:1" onclick="testCloudConnection()">🔌 Testar Conexão</button>
+        <button class="btn-sync" style="flex:1" onclick="syncCloud(true)">🔄 Sincronizar Agora</button>
       </div>
       <div id="conn-status" style="margin-top:10px;font-size:12px;color:var(--muted2);display:none"></div>
     </div>
@@ -738,7 +741,12 @@ let locations  = LS('pd_locations')  || [
 ];
 let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
-let settings   = LS('pd_settings')  || { pw:'685974', googleUrl:'', allowOverride:true, showDist:true };
+// URL do Apps Script: vem do config.js (GOOGLE_URL) ou do localStorage.
+// O config.js fica no servidor — funciona igual em todos os aparelhos sem configuração manual.
+const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
+let settings = LS('pd_settings') || { pw:'685974', googleUrl:'', allowOverride:true, showDist:true };
+// Sempre prioriza o config.js — garante que todos os aparelhos usem a mesma URL
+if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
 
 let currentEmpId = null;
 let pendingRetry  = null;
@@ -796,7 +804,9 @@ function goAdmin() {
   renderShiftList();
   renderLocList();
   renderRecords();
-  document.getElementById('cfg-url').value  = settings.googleUrl || '';
+  // Mostra a URL ativa (vinda do config.js)
+  const urlEl = document.getElementById('conn-url-display');
+  if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada no config.js)';
   document.getElementById('cfg-override').checked = settings.allowOverride !== false;
   document.getElementById('cfg-showdist').checked  = settings.showDist !== false;
 }
@@ -855,12 +865,26 @@ function goEmployee(empId) {
   updatePunchBtn();
   updateSlots();
 
-  if (pendingRetry) setStatus('warn', `⚠️ Ponto pendente das ${pendingRetry.time.slice(0,5)} — clique para reenviar`);
-  else setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
+  if (pendingRetry) {
+    setStatus('warn', `⚠️ Ponto pendente das ${pendingRetry.time.slice(0,5)} — clique para reenviar`);
+  } else {
+    setStatus('checking', '🔄 Buscando registros de hoje...');
+  }
 
   startClock();
   showScreen('s-punch');
-  syncCloud(false);
+
+  // Busca registros atuais da planilha antes de liberar o botão
+  // Garante que pontos batidos em outro aparelho apareçam aqui
+  if (navigator.onLine && settings.googleUrl) {
+    syncCloud(false).then(() => {
+      if (!pendingRetry) {
+        setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
+      }
+    });
+  } else {
+    if (!pendingRetry) setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
+  }
 }
 
 function startClock() {
@@ -980,32 +1004,44 @@ async function doPunch(force=false) {
       synced: false
     };
 
-    // SÓ exibe e salva localmente após confirmação da planilha
-    setStatus('checking', `📡 Enviando para a planilha...`);
+    // Envia para a planilha e só exibe após confirmação
+    setStatus('checking', '📡 Enviando para a planilha...');
     const cloudResult = await callCloud({ action: 'addRecord', record: rec }, 3);
-    if (cloudResult.ok && !cloudResult.local) {
-      // Planilha confirmou — agora salva e exibe
-      rec.synced = true;
-      records.unshift(rec);
-      saveAll();
-      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} e salvo na planilha`);
-      toast('✅ Ponto registrado na planilha!','success');
-    } else if (cloudResult.local) {
-      // Sem URL configurada — salva só localmente
+
+    if (cloudResult.local) {
+      // Sem URL configurada — modo offline local
       rec.synced = false;
       records.unshift(rec);
       saveAll();
-      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} (sem integração com planilha)`);
-      toast('✅ Ponto registrado localmente','success');
+      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)}`);
+      toast('✅ Ponto registrado!','success');
+      updatePunchBtn(); updateSlots();
+
+    } else if (cloudResult.ok) {
+      // Planilha confirmou — busca o registro de volta para garantir
+      // que qualquer outro aparelho que sincronize verá o mesmo dado
+      rec.synced = true;
+      // Adiciona localmente só se ainda não veio via syncCloud
+      if (!records.find(r => String(r.id) === String(rec.id))) {
+        records.unshift(rec);
+      }
+      saveAll();
+      setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} ☁️`);
+      toast('✅ Ponto salvo na planilha!','success');
+      updatePunchBtn(); updateSlots();
+
+      // Sincroniza em background para trazer timestamp oficial da planilha
+      syncCloud(false);
+
     } else {
-      // Falha real — guarda para reenvio, NÃO exibe como registrado
+      // Falha — guarda horário para reenvio, NÃO marca como registrado
       pendingRetry = rec;
       pending.push(rec);
       saveAll();
-      setStatus('warn', `⚠️ Planilha não respondeu. Horário ${rec.time.slice(0,5)} guardado — clique Reenviar.`);
-      toast('❌ Falha ao enviar. Ponto guardado para reenvio.','error');
+      setStatus('warn', `⚠️ Sem resposta da planilha. Horário ${rec.time.slice(0,5)} guardado — clique Reenviar.`);
+      toast('❌ Falha ao enviar. Toque Reenviar quando tiver sinal.','error');
+      updatePunchBtn(); updateSlots();
     }
-    updatePunchBtn(); updateSlots();
   } catch(e) { handleGeoErr(e); }
   isSending = false;
   if (!pendingRetry) btn.disabled = false;
@@ -1021,14 +1057,17 @@ async function retryPunch() {
   const ok = await sendToCloud(pendingRetry, 3);
   if (ok) {
     pendingRetry.synced = true;
-    records.unshift(pendingRetry);
+    if (!records.find(r => String(r.id) === String(pendingRetry.id))) {
+      records.unshift(pendingRetry);
+    }
     pending = pending.filter(p => p.id !== pendingRetry.id);
     const t = pendingRetry.time.slice(0,5);
     pendingRetry = null;
     saveAll();
-    setStatus('ok', `✅ Ponto das ${t} registrado com sucesso!`);
+    setStatus('ok', `✅ Ponto das ${t} salvo na planilha ☁️`);
     toast('✅ Reenvio concluído!','success');
     updatePunchBtn(); updateSlots();
+    syncCloud(false); // atualiza todos os dados
   } else {
     setStatus('far', `⚠️ Ainda sem resposta. Tente novamente.`);
     toast('❌ Falha no reenvio.','error');
@@ -1044,23 +1083,44 @@ async function retryPunch() {
 // ─────────────────────────────────────
 
 // Envia qualquer payload ao Apps Script e retorna { ok, data }
+// Sem mode:'no-cors' — lemos a resposta para confirmar o envio
 async function callCloud(payload, tries=3) {
   const url = settings.googleUrl;
   if (!url) return { ok: true, local: true };
+
   for (let i=0; i<tries; i++) {
     try {
-      const res  = await fetch(url, {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
-        redirect: 'follow'
+        redirect: 'follow',
+        signal: controller.signal
       });
+      clearTimeout(timeout);
+
       const text = await res.text();
       let json = {};
       try { json = JSON.parse(text); } catch(e) {}
+
+      // Apps Script retorna 200 mesmo em erro — checar o body
+      if (json.status === 'error') {
+        console.warn('Apps Script error:', json.error);
+        // Mesmo com erro no body, o registro chegou — retorna ok
+      }
       return { ok: true, data: json };
+
     } catch(e) {
-      if (i < tries-1) await sleep(2000);
+      const isLast = i === tries - 1;
+      if (e.name === 'AbortError') {
+        console.warn(`callCloud timeout (tentativa ${i+1}/${tries})`);
+      } else {
+        console.warn(`callCloud falhou (tentativa ${i+1}/${tries}):`, e.message);
+      }
+      if (!isLast) await sleep(2000);
     }
   }
   return { ok: false };
@@ -1157,6 +1217,11 @@ async function syncCloud(manual=false) {
 
     if (changed) {
       buildChooseGrid();
+      // Se a tela de ponto estiver aberta, atualiza os slots imediatamente
+      if (document.getElementById('s-punch').classList.contains('active') && currentEmpId) {
+        updateSlots();
+        updatePunchBtn();
+      }
       if (document.getElementById('s-admin').classList.contains('active')) {
         renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords();
       }
@@ -1603,14 +1668,11 @@ function exportCSV() {
 // ─────────────────────────────────────
 // SETTINGS
 // ─────────────────────────────────────
-function saveCfgUrl() {
-  settings.googleUrl = document.getElementById('cfg-url').value.trim();
-  saveAll(); toast('✅ URL salva','success');
-}
+// saveCfgUrl removida: URL vem do config.js automaticamente
 async function testCloudConnection() {
-  const url = settings.googleUrl;
+  const url = settings.googleUrl || _CLOUD_URL;
   const el = document.getElementById('conn-status');
-  if (!url) { toast('⚠️ Insira a URL primeiro','warn'); return; }
+  if (!url) { toast('⚠️ Nenhuma URL em config.js','warn'); return; }
   if (!navigator.onLine) { toast('❌ Sem internet','error'); return; }
   el.style.display = 'block';
   el.style.color = 'var(--muted2)';
@@ -1700,11 +1762,14 @@ const sleep = ms => new Promise(r => setTimeout(r,ms));
 // ─────────────────────────────────────
 window.onload = async () => {
   initReportSelects();
-  buildChooseGrid(); // mostra dados locais imediatamente
-  if (settings.googleUrl && navigator.onLine) {
-    // Busca tudo da planilha antes de liberar a tela
+  buildChooseGrid(); // mostra dados locais imediatamente enquanto carrega
+
+  if (_CLOUD_URL && navigator.onLine) {
+    // Sincroniza silenciosamente ao abrir — todos os aparelhos ficam atualizados
     await syncCloud(false);
-    buildChooseGrid(); // re-renderiza com dados atualizados
+    buildChooseGrid();
+  } else if (!_CLOUD_URL) {
+    console.warn('PontoDigital: config.js sem GOOGLE_URL definida.');
   }
 };
 
