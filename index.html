@@ -413,6 +413,7 @@ body::before{content:'';position:fixed;inset:0;background:
 
     <button class="punch-btn in" id="main-btn" onclick="doPunch(false)">✅ Registar Entrada</button>
     
+    <!-- Modificado para abrir o modal de justificativa em vez de registar direto -->
     <button class="btn-override" id="btn-override" onclick="openModal('just-modal')">⚠️ Registar fora do local (Atestado/Justificativa)</button>
     
     <div class="status-bar idle" id="punch-status">📍 Clique para registar — verificaremos a sua localização</div>
@@ -547,6 +548,24 @@ body::before{content:'';position:fixed;inset:0;background:
       <div id="conn-status" style="margin-top:10px;font-size:12px;color:var(--muted2);display:none"></div>
     </div>
     
+    <div class="card">
+      <div class="card-title">🔒 Fechamento de Folha (Lock)</div>
+      <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
+        Tranque um mês após o pagamento. Nenhum ponto poderá ser adicionado, editado ou apagado nesse período.
+      </div>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="afield">
+          <label>Mês</label>
+          <select id="lock-month" onchange="updateLockBtn()"></select>
+        </div>
+        <div class="afield">
+          <label>Ano</label>
+          <select id="lock-year" onchange="updateLockBtn()"></select>
+        </div>
+      </div>
+      <button class="btn-sync" onclick="toggleLockMonth()" id="btn-lock-month">🔒 Trancar Mês</button>
+    </div>
+
     <div class="card">
       <div class="card-title">🔒 Segurança</div>
       <div class="afield">
@@ -812,6 +831,52 @@ const saveAll = () => {
 };
 
 // ─────────────────────────────────────
+// LOCK LOGIC (FECHAMENTO DE MÊS)
+// ─────────────────────────────────────
+function isMonthLocked(dateStr) {
+  if (!dateStr) return false;
+  const parts = dateStr.split('/');
+  if (parts.length < 3) return false;
+  const m = parseInt(parts[1], 10);
+  const y = parseInt(parts[2], 10);
+  const key = `lock_${m}_${y}`;
+  return (settings[key] === 'true' || settings[key] === true);
+}
+
+function updateLockBtn() {
+  const mSel = document.getElementById('lock-month');
+  const ySel = document.getElementById('lock-year');
+  if(!mSel || !ySel) return;
+  const key = `lock_${mSel.value}_${ySel.value}`;
+  const isLocked = (settings[key] === 'true' || settings[key] === true);
+  const btn = document.getElementById('btn-lock-month');
+  if(isLocked) {
+    btn.textContent = "🔓 Destrancar Mês";
+    btn.style.background = "var(--red-dim)";
+    btn.style.color = "var(--red)";
+    btn.style.borderColor = "var(--red)";
+  } else {
+    btn.textContent = "🔒 Trancar Mês";
+    btn.style.background = "rgba(96,165,250,.1)";
+    btn.style.color = "var(--blue)";
+    btn.style.borderColor = "rgba(96,165,250,.3)";
+  }
+}
+
+function toggleLockMonth() {
+  const m = document.getElementById('lock-month').value;
+  const y = document.getElementById('lock-year').value;
+  const key = `lock_${m}_${y}`;
+  const isLocked = (settings[key] === 'true' || settings[key] === true);
+  const newVal = !isLocked;
+  settings[key] = newVal;
+  saveAll();
+  updateLockBtn();
+  toast(newVal ? '🔒 Mês trancado com sucesso!' : '🔓 Mês destrancado com sucesso!', 'success');
+  if(settings.googleUrl) pushConfigToCloud('saveConfig', {key: key, value: String(newVal)});
+}
+
+// ─────────────────────────────────────
 // NAV
 // ─────────────────────────────────────
 const showScreen = id => {
@@ -845,7 +910,7 @@ function doLogin() {
 
 function goAdmin() {
   showScreen('s-admin');
-  renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords();
+  renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn();
   const urlEl = document.getElementById('conn-url-display');
   if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada)';
   
@@ -1045,6 +1110,7 @@ async function saveAbsence() {
   const reason = document.getElementById('abs-reason-inp').value.trim();
 
   if(!empId || !date) { toast('Preencha funcionária e data', 'warn'); return; }
+  if(isMonthLocked(date)) { toast('🚫 Mês trancado. Impossível lançar faltas.', 'error'); return; }
 
   const emp = employees.find(e => e.id === empId);
   
@@ -1067,24 +1133,23 @@ async function saveAbsence() {
     synced: false
   };
 
-  records.unshift(rec);
-  saveAll();
-  renderRecords();
-  renderDash();
-  closeModal('absence-modal');
   toast('A enviar para a folha de cálculo...', 'info');
 
   if(settings.googleUrl && navigator.onLine) {
     const res = await callCloud({action:'addRecord', record: rec});
     if(res.ok) {
-      const idx = records.findIndex(r => String(r.id) === String(rec.id));
-      if(idx > -1) { records[idx].synced = true; saveAll(); renderRecords(); }
+      rec.synced = true;
+      records.unshift(rec);
+      saveAll();
+      renderRecords();
+      renderDash();
+      closeModal('absence-modal');
       toast('✅ Ausência salva na folha de cálculo!', 'success');
     } else {
-      toast('⚠️ Salvo offline. Sincronize mais tarde.', 'warn');
+      toast('❌ Falha na conexão. A falta não foi salva.', 'error');
     }
   } else {
-    toast('⚠️ Salvo offline. Sincronize mais tarde.', 'warn');
+    toast('❌ Sem conexão para enviar a falta.', 'error');
   }
 }
 
@@ -1095,6 +1160,11 @@ async function doPunch(force=false, reason="", attachmentB64="") {
   if (isSending || pendingRetry) return;
   if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
   if (!currentEmpId) return;
+  
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('pt-BR');
+  if(isMonthLocked(todayStr)) { toast('🚫 Este mês já está fechado (Trancado)', 'error'); return; }
+
   const next = nextSlot(currentEmpId);
   if (!next) return;
 
@@ -1102,7 +1172,6 @@ async function doPunch(force=false, reason="", attachmentB64="") {
   const loc = locations.find(l => l.id === emp.locId);
   if (!loc) { toast('⚠️ Local não definido para esta funcionária','warn'); return; }
 
-  const now = new Date();
   if (next === 'entrada2' && settings.minInterval !== false && !force) {
     const todayR = todayRecs(currentEmpId);
     const s1 = todayR.find(r => r.slot === 'saida1');
@@ -1142,7 +1211,7 @@ async function doPunch(force=false, reason="", attachmentB64="") {
     const rec = {
       id: Date.now(), empId: currentEmpId, empName: emp.name,
       slot: next, type: next.includes('entrada') ? 'entrada' : 'saida',
-      datetime: now.toISOString(), date: now.toLocaleDateString('pt-BR'), time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+      datetime: now.toISOString(), date: todayStr, time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
       lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
       dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
       photo: photoB64, 
@@ -1223,7 +1292,16 @@ async function syncCloud(manual=false) {
     const res  = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' });
     const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { return; }
     let changed = false;
-    if (data?.config && !data.config.error) { const c = data.config; if (c.pw) settings.pw = String(c.pw).trim(); SS('pd_settings', settings); }
+    
+    // Sincroniza Configs
+    if (data?.config && !data.config.error) { 
+      const c = data.config; 
+      if (c.pw) settings.pw = String(c.pw).trim(); 
+      // Sincroniza os meses trancados da cloud
+      Object.keys(c).forEach(k => { if(k.startsWith('lock_')) settings[k] = (c[k] === 'true' || c[k] === true); });
+      SS('pd_settings', settings); 
+    }
+    
     if (Array.isArray(data?.employees)) { data.employees.forEach(ce => { if (!ce.id) return; const idx = employees.findIndex(e => e.id === ce.id); if (idx >= 0) employees[idx] = { ...employees[idx], ...ce }; else employees.push(ce); changed = true; }); SS('pd_employees', employees); }
     if (Array.isArray(data?.shifts)) { data.shifts.forEach(cs => { if (!cs.id) return; const idx = shifts.findIndex(s => s.id === cs.id); if (idx >= 0) shifts[idx] = { ...shifts[idx], ...cs }; else shifts.push(cs); changed = true; }); SS('pd_shifts', shifts); }
     if (Array.isArray(data?.locations)) { data.locations.forEach(cl => { if (!cl.id) return; const idx = locations.findIndex(l => l.id === cl.id); if (idx >= 0) locations[idx] = { ...locations[idx], ...cl }; else locations.push(cl); changed = true; }); SS('pd_locations', locations); }
@@ -1247,7 +1325,7 @@ async function syncCloud(manual=false) {
     }
     if (changed) {
       buildChooseGrid(); if (document.getElementById('s-punch').classList.contains('active') && currentEmpId) { updateSlots(); updatePunchBtn(); }
-      if (document.getElementById('s-admin').classList.contains('active')) { renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); }
+      if (document.getElementById('s-admin').classList.contains('active')) { renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn(); }
     }
     if (manual) toast('✅ Dados sincronizados!','success');
   } catch(e) { if (manual) toast('❌ Falha ao ligar à folha de cálculo','error'); }
@@ -1430,6 +1508,9 @@ function setRecFilter(id, btn) { recFilterEmp = id; document.querySelectorAll('.
 async function changeStatus(recordId, newStatus) {
   const i = records.findIndex(r => String(r.id) === String(recordId));
   if (i === -1) return;
+  const dateStr = records[i].date;
+  if(isMonthLocked(dateStr)) { toast('🚫 Mês trancado. Não pode alterar status.', 'error'); return; }
+
   records[i].status = newStatus;
   saveAll(); renderRecords(); renderDash();
   toast(newStatus === 'ok' ? '✅ Aprovado!' : '❌ Recusado', 'success');
@@ -1448,12 +1529,17 @@ function savePunchEdit() {
   const date = document.getElementById('edit-date-inp').value;
   const time = document.getElementById('edit-time-inp').value;
   const i    = records.findIndex(r=>String(r.id)===String(id)); if (i===-1) return;
+  if(isMonthLocked(date)) { toast('🚫 Mês trancado. Edição não permitida.', 'error'); return; }
+
   const [d,m,y] = date.split('/'); const [h,mn,s] = time.split(':');
   records[i].date = date; records[i].time = time; records[i].datetime = new Date(y,m-1,d,h,mn,s||0).toISOString();
   saveAll(); closeModal('edit-modal'); renderRecords(); renderDash(); toast('✅ Atualizado','success');
   if (settings.googleUrl) callCloud({action:'editRecord', record: records[i]});
 }
 function deletePunch(id) {
+  const r = records.find(r=>String(r.id)===String(id));
+  if(r && isMonthLocked(r.date)) { toast('🚫 Mês trancado. Exclusão não permitida.', 'error'); return; }
+
   openDelModal('Excluir este registo?', () => {
     records = records.filter(r=>String(r.id)!==String(id));
     saveAll(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
@@ -1469,10 +1555,12 @@ function exportCSV() {
     const [empId,date] = k.split('__');
     const emp   = employees.find(e=>e.id===empId);
     const shift = shifts.find(s=>s.id===emp?.shiftId);
+    // Para CSV ignoramos pontos recusados no cálculo
     const day   = records.filter(r=>r.empId===empId && r.date===date && r.status !== 'rejected');
     const get   = s => (day.find(r=>r.slot===s)||{}).time || '';
     const w     = workedMin(empId,date);
     const j     = journeyMin(empId);
+    const ot    = calcOT(w, j);
     
     const absence = day.find(r => r.slot === 'ausencia');
     if (absence) {
@@ -1482,9 +1570,6 @@ function exportCSV() {
          rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'JUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), 0, '0h 00m']);
       }
     } else {
-      let rawOt = w - j;
-      if (settings.cltTolerance !== false && Math.abs(rawOt) <= 10) rawOt = 0;
-      const ot = Math.max(0, rawOt);
       rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, get('entrada1'), get('saida1'), get('entrada2'), get('saida2'), fmtMin(w), fmtMin(j), Math.round(ot), fmtMin(ot)]);
     }
   });
@@ -1521,7 +1606,18 @@ function confirmReset() { openDelModal('Apagar TODOS os registos?', () => { reco
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WEEK_PT   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
-function initReportSelects() { const now = new Date(); const mSel = document.getElementById('rep-month'); const ySel = document.getElementById('rep-year'); if(!mSel) return; mSel.innerHTML = MONTHS_PT.map((m,i)=>`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`).join(''); ySel.innerHTML = [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1].map(y=>`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join(''); }
+function initReportSelects() { 
+  const now = new Date(); 
+  const mSel = document.getElementById('rep-month'); 
+  const ySel = document.getElementById('rep-year'); 
+  if(mSel) mSel.innerHTML = MONTHS_PT.map((m,i)=>`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`).join(''); 
+  if(ySel) ySel.innerHTML = [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1].map(y=>`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join(''); 
+  
+  const lMon = document.getElementById('lock-month');
+  const lYear = document.getElementById('lock-year');
+  if(lMon) lMon.innerHTML = MONTHS_PT.map((m,i)=>`<option value="${i+1}" ${i===now.getMonth()?'selected':''}>${m}</option>`).join(''); 
+  if(lYear) lYear.innerHTML = [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1].map(y=>`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join(''); 
+}
 function populateReportEmpSelect() { const sel = document.getElementById('rep-emp'); if(!sel) return; const cur = sel.value; sel.innerHTML = '<option value="all">Todas as funcionárias</option>' + employees.map(e=>`<option value="${e.id}" ${cur===e.id?'selected':''}>${e.emoji||''} ${e.name}</option>`).join(''); }
 
 async function buildReport() {
