@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
@@ -279,7 +279,7 @@ body::before{content:'';position:fixed;inset:0;background:
 .toggle input:checked ~ .toggle-knob{left:23px}
 
 /* ── SYNC BTN ── */
-.btn-sync{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:10px;padding:9px 14px;color:var(--blue);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;width:100%}
+.btn-sync{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:10px;padding:9px 14px;color:var(--blue);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;width:100%}
 .btn-sync:hover{background:rgba(96,165,250,.2)}
 
 /* ── MODALS ── */
@@ -363,27 +363,20 @@ body::before{content:'';position:fixed;inset:0;background:
   .report-wrap{border-radius:0!important}
   .rep-table tbody tr:hover{background:transparent!important}
 }</style>
-<!-- URL centralizada: edite config.js no servidor -->
 <script src="config.js"></script>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     SCREEN: CHOOSE EMPLOYEE
-══════════════════════════════════════ -->
 <div class="screen active" id="s-choose">
   <div class="choose-wrap">
     <div class="brand"><div class="brand-dot"></div><div class="brand-name">Ponto<span>Digital</span></div></div>
     <div class="brand-sub" id="choose-sub">Quem está registrando o ponto?</div>
-    <div class="emp-grid" id="emp-grid"><!-- dinâmico --></div>
+    <div class="emp-grid" id="emp-grid"></div>
     <div class="choose-divider">área restrita</div>
     <button class="btn-admin" onclick="goLogin()">🔒 Painel Administrativo</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: PUNCH
-══════════════════════════════════════ -->
 <div class="screen" id="s-punch">
   <div class="punch-topbar">
     <button class="btn-back" onclick="goChoose()">← Voltar</button>
@@ -421,9 +414,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN LOGIN
-══════════════════════════════════════ -->
 <div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-icon">🔐</div>
@@ -439,9 +429,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN
-══════════════════════════════════════ -->
 <div class="screen" id="s-admin">
   <nav class="admin-nav">
     <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
@@ -454,30 +441,27 @@ body::before{content:'';position:fixed;inset:0;background:
     <button class="nav-exit" onclick="goChoose()">Sair ×</button>
   </nav>
 
-  <!-- ── DASHBOARD ── -->
   <div class="tab-content active" id="t-dash">
-    <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
+    <div class="stats-row" id="stats-row"></div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div>
-      <div id="today-summary"><!-- dinâmico --></div>
+      <div id="today-summary"></div>
     </div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">📈</span> Horas Extras Acumuladas</div>
-      <div id="ot-summary"><!-- dinâmico --></div>
+      <div id="ot-summary"></div>
     </div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
   </div>
 
-  <!-- ── EMPLOYEES ── -->
   <div class="tab-content" id="t-emp">
     <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionário</button>
-    <div id="emp-list"><!-- dinâmico --></div>
+    <div id="emp-list"></div>
   </div>
 
-  <!-- ── SHIFTS ── -->
   <div class="tab-content" id="t-shift">
     <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
-    <div id="shift-list"><!-- dinâmico --></div>
+    <div id="shift-list"></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">ℹ️ O que é um turno?</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -486,27 +470,23 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
-  <!-- ── LOCATIONS ── -->
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
-    <div id="loc-list"><!-- dinâmico --></div>
+    <div id="loc-list"></div>
     <div class="card" style="margin-top:14px">
-      <div class="card-title">📡 Como obter coordenadas</div>
+      <div class="card-title">📡 Como obter coordenadas manuais</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
-        Acesse <strong>maps.google.com</strong>, clique com botão direito no local exato e copie as coordenadas que aparecem. O raio define quantos metros de tolerância a funcionária pode estar do ponto central para bater o ponto.
+        Aceda a <strong>maps.google.com</strong>, clique com o botão direito no local exato e copie as coordenadas.
       </p>
-      <button class="btn-sync" style="margin-top:12px" onclick="detectMyLoc()">📍 Usar minha localização atual</button>
     </div>
   </div>
 
-  <!-- ── RECORDS ── -->
   <div class="tab-content" id="t-rec">
     <button class="btn-export-full" onclick="exportCSV()">📊 Exportar CSV Completo</button>
-    <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
-    <div id="rec-list"><!-- dinâmico --></div>
+    <div class="rec-filters" id="rec-filters"></div>
+    <div id="rec-list"></div>
   </div>
 
-  <!-- ── RELATÓRIO ── -->
   <div class="tab-content" id="t-report">
     <div class="card">
       <div class="card-title">📄 Relatório Mensal de Ponto</div>
@@ -532,13 +512,12 @@ body::before{content:'';position:fixed;inset:0;background:
     <div id="report-preview"></div>
   </div>
 
-  <!-- ── CONFIG ── -->
   <div class="tab-content" id="t-cfg">
     <div class="card">
       <div class="card-title">🔗 Integração com Google Sheets</div>
       <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
-        A URL do Apps Script é carregada automaticamente do arquivo <strong style="color:var(--green)">config.js</strong> no servidor.<br>
-        Para alterar, edite esse arquivo — todos os aparelhos serão atualizados automaticamente.
+        A URL do Apps Script é carregada automaticamente do ficheiro <strong style="color:var(--green)">config.js</strong> no servidor.<br>
+        Para alterar, edite esse ficheiro — todos os aparelhos serão atualizados automaticamente.
       </div>
       <div id="conn-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;word-break:break-all;margin-bottom:12px">—</div>
       <div style="display:flex;gap:8px">
@@ -550,15 +529,15 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="card">
       <div class="card-title">📋 Como configurar o Google Sheets</div>
       <div style="font-size:12px;color:var(--muted2);line-height:1.8">
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">1.</strong> Abra sua planilha no Google Sheets</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">1.</strong> Abra a sua folha de cálculo no Google Sheets</div>
         <div style="margin-bottom:8px"><strong style="color:var(--text)">2.</strong> Menu <strong style="color:var(--blue)">Extensões → Apps Script</strong></div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">3.</strong> Apague o código existente e cole o conteúdo do arquivo <strong style="color:var(--green)">Code.gs</strong> fornecido</div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">4.</strong> Clique em <strong style="color:var(--blue)">Implantar → Nova implantação</strong></div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">3.</strong> Apague o código existente e cole o conteúdo do ficheiro <strong style="color:var(--green)">Code.gs</strong> fornecido</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">4.</strong> Clique em <strong style="color:var(--blue)">Implementar → Nova implantação</strong></div>
         <div style="margin-bottom:8px"><strong style="color:var(--text)">5.</strong> Tipo: <strong style="color:var(--amber)">App da Web</strong> · Acesso: <strong style="color:var(--amber)">Qualquer pessoa</strong></div>
-        <div style="margin-bottom:8px"><strong style="color:var(--text)">6.</strong> Copie a URL gerada e cole no campo acima</div>
+        <div style="margin-bottom:8px"><strong style="color:var(--text)">6.</strong> Copie a URL gerada e cole no config.js</div>
         <div style="margin-bottom:8px"><strong style="color:var(--text)">7.</strong> As abas <strong style="color:var(--green)">Registros, Funcionários, Turnos, Locais</strong> serão criadas automaticamente</div>
         <div style="padding:10px;background:var(--amber-dim);border:1px solid rgba(251,191,36,.3);border-radius:8px;color:var(--amber);margin-top:8px">
-          ⚠️ Após salvar a URL, clique em <strong>Sincronizar</strong> no Dashboard para carregar os dados existentes da planilha.
+          ⚠️ Após salvar a URL, clique em <strong>Sincronizar</strong> no Dashboard para carregar os dados existentes da folha de cálculo.
         </div>
       </div>
     </div>
@@ -573,27 +552,23 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="card">
       <div class="card-title">⚙️ Comportamento</div>
       <div class="setting-row">
-        <div><div class="setting-label">Registro forçado</div><div class="setting-desc">Permitir bater ponto fora do raio (com aviso)</div></div>
+        <div><div class="setting-label">Registo forçado</div><div class="setting-desc">Permitir bater ponto fora do raio (com aviso)</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-override" onchange="saveBoolCfg('allowOverride',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
       <div class="setting-row">
-        <div><div class="setting-label">Mostrar distância</div><div class="setting-desc">Exibir distância do local ao funcionário</div></div>
+        <div><div class="setting-label">Mostrar distância</div><div class="setting-desc">Exibir distância do local à funcionária</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-showdist" checked onchange="saveBoolCfg('showDist',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
     </div>
     <div class="card">
       <div class="card-title">🗑️ Dados</div>
       <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">
-        Apagar todos os registros de ponto
+        Apagar todos os registos e configurações locais
       </button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MODALS
-══════════════════════════════════════ -->
-<!-- GPS permission modal -->
 <div class="modal-overlay" id="gps-modal">
   <div class="modal-box" style="border-radius:24px;margin:24px;max-width:380px;align-self:center">
     <div style="font-size:40px;text-align:center;margin-bottom:14px">🔒</div>
@@ -603,7 +578,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Employee modal -->
 <div class="modal-overlay" id="emp-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -617,11 +591,11 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="form-grid">
       <div class="afield">
         <label>Turno</label>
-        <select id="emp-shift-sel"><!-- dinâmico --></select>
+        <select id="emp-shift-sel"></select>
       </div>
       <div class="afield">
         <label>Local de Trabalho</label>
-        <select id="emp-loc-sel"><!-- dinâmico --></select>
+        <select id="emp-loc-sel"></select>
       </div>
     </div>
     <div class="afield">
@@ -635,7 +609,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Shift modal -->
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -665,17 +638,21 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Location modal -->
 <div class="modal-overlay" id="loc-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
     <div class="modal-title" id="loc-modal-title">Novo Local</div>
-    <div class="modal-sub">Informe nome, coordenadas e raio da cerca eletrônica</div>
+    <div class="modal-sub">Informe nome, coordenadas e raio da cerca eletrónica</div>
     <input type="hidden" id="loc-id-edit">
     <div class="form-grid">
       <div class="afield"><label>Nome do Local</label><input type="text" id="loc-name-inp" placeholder="Ex: Casa da Ana"></div>
       <div class="afield"><label>Emoji</label><input type="text" id="loc-emoji-inp" placeholder="🏠" maxlength="4" style="font-size:22px;text-align:center"></div>
     </div>
+    
+    <button id="btn-get-gps" class="btn-sync" style="margin-bottom: 14px; background: var(--blue-dim); border: 1px dashed var(--blue); width: 100%; justify-content: center;" onclick="fillCurrentLoc()">
+      📍 Preencher com o meu GPS atual
+    </button>
+
     <div class="form-grid">
       <div class="afield"><label>Latitude</label><input type="number" id="loc-lat-inp" step="0.000001" placeholder="-23.561414"></div>
       <div class="afield"><label>Longitude</label><input type="number" id="loc-lng-inp" step="0.000001" placeholder="-46.656361"></div>
@@ -688,12 +665,11 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Edit punch modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
     <div class="modal-title">Editar Ponto</div>
-    <div class="modal-sub">A edição fica registrada no histórico</div>
+    <div class="modal-sub">A edição fica registada no histórico</div>
     <input type="hidden" id="edit-punch-id">
     <div class="form-grid">
       <div class="afield"><label>Data (DD/MM/AAAA)</label><input type="text" id="edit-date-inp"></div>
@@ -706,12 +682,11 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Confirm delete modal -->
 <div class="modal-overlay" id="del-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
     <div class="modal-title">Confirmar exclusão</div>
-    <div class="modal-sub" id="del-modal-sub">Tem certeza?</div>
+    <div class="modal-sub" id="del-modal-sub">Tem a certeza?</div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('del-modal')">Cancelar</button>
       <button class="btn-danger-confirm" id="del-confirm-btn">Excluir</button>
@@ -721,9 +696,6 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <div id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════ -->
 <script>
 // ─────────────────────────────────────
 // STATE & DEFAULTS
@@ -731,6 +703,7 @@ body::before{content:'';position:fixed;inset:0;background:
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
+// ARRAYS TOTALMENTE VAZIOS PARA INÍCIO LIMPO
 let employees  = LS('pd_employees')  || [];
 let shifts     = LS('pd_shifts')     || [];
 let locations  = LS('pd_locations')  || [];
@@ -738,6 +711,8 @@ let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
 
 const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
+
+// SENHA PADRÃO NOVA É 123456
 let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true };
 
 if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
@@ -819,7 +794,7 @@ function showTab(id, btn) {
 function buildChooseGrid() {
   const grid = document.getElementById('emp-grid');
   if (!employees.length) {
-    grid.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário cadastrado.<br>Acesse o painel admin para adicionar.</p></div>';
+    grid.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário cadastrado.<br>Aceda ao painel admin para adicionar.</p></div>';
     return;
   }
   grid.innerHTML = employees.map(emp => {
@@ -827,7 +802,7 @@ function buildChooseGrid() {
     const todayRecs = records.filter(r => r.empId === emp.id && r.date === today);
     const next = nextSlot(emp.id);
     const shift = shifts.find(s => s.id === emp.shiftId);
-    const statusTxt = !next ? 'Todos os pontos ✓' : (next.includes('entrada') ? 'Aguardando entrada' : 'Aguardando saída');
+    const statusTxt = !next ? 'Todos os pontos ✓' : (next.includes('entrada') ? 'A aguardar entrada' : 'A aguardar saída');
     const isActive = todayRecs.some(r => r.slot === 'entrada1') && !todayRecs.some(r => r.slot === 'saida2');
     return `<div class="emp-card" onclick="goEmployee('${emp.id}')">
       <div class="emp-avatar-sm">${emp.emoji || '👤'}</div>
@@ -852,8 +827,8 @@ async function startCamera() {
     video.style.display = 'block';
     document.getElementById('p-emoji').style.display = 'none';
   } catch(err) {
-    console.warn("Câmera indisponível", err);
-    toast("⚠️ Câmera indisponível para antifraude", "warn");
+    console.warn("Câmara indisponível", err);
+    toast("⚠️ Câmara indisponível para antifraude", "warn");
   }
 }
 
@@ -873,11 +848,10 @@ function takePhoto() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
-  // Se a câmera for frontal, desenha espelhado para compensar o transform scaleX(-1) do CSS
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', 0.6); // Qualidade 60% para economizar Drive
+  return canvas.toDataURL('image/jpeg', 0.6);
 }
 
 function goEmployee(empId) {
@@ -899,7 +873,7 @@ function goEmployee(empId) {
   if (pendingRetry) {
     setStatus('warn', `⚠️ Ponto pendente das ${pendingRetry.time.slice(0,5)} — clique para reenviar`);
   } else {
-    setStatus('checking', '🔄 Buscando registros de hoje...');
+    setStatus('checking', '🔄 A procurar registos de hoje...');
   }
 
   startClock();
@@ -908,10 +882,10 @@ function goEmployee(empId) {
 
   if (navigator.onLine && settings.googleUrl) {
     syncCloud(false).then(() => {
-      if (!pendingRetry) setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
+      if (!pendingRetry) setStatus('idle', '📍 Clique para registar — verificaremos a sua localização');
     });
   } else {
-    if (!pendingRetry) setStatus('idle', '📍 Clique para registrar — verificaremos sua localização');
+    if (!pendingRetry) setStatus('idle', '📍 Clique para registar — verificaremos a sua localização');
   }
 }
 
@@ -972,19 +946,19 @@ function updatePunchBtn() {
     btn.className   = 'punch-btn';
     btn.disabled    = true;
     btn.onclick     = null;
-    setStatus('far','Conecte-se à internet para registrar o ponto.');
+    setStatus('far','Ligue-se à internet para registar o ponto.');
     return;
   }
   const next = nextSlot(currentEmpId);
   if (!next) {
-    btn.textContent = '✅ Todos os pontos registrados hoje';
+    btn.textContent = '✅ Todos os pontos registados hoje';
     btn.className   = 'punch-btn in';
     btn.disabled    = true;
     btn.onclick     = null;
     return;
   }
   btn.disabled = false;
-  const labels = { entrada1:'✅ Registrar Entrada 1', saida1:'🏁 Registrar Saída 1', entrada2:'✅ Registrar Entrada 2', saida2:'🏁 Registrar Saída 2' };
+  const labels = { entrada1:'✅ Registar Entrada 1', saida1:'🏁 Registar Saída 1', entrada2:'✅ Registar Entrada 2', saida2:'🏁 Registar Saída 2' };
   btn.textContent = labels[next];
   btn.className   = next.includes('entrada') ? 'punch-btn in' : 'punch-btn out';
   btn.onclick     = () => doPunch(false);
@@ -996,20 +970,39 @@ function updatePunchBtn() {
 async function checkTimeSync() {
   try {
     const res = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo');
-    if (!res.ok) return { ok: true }; // Se a API falhar, libera pra não travar a funcionária
+    if (!res.ok) return { ok: true }; 
     const data = await res.json();
     const serverTime = new Date(data.datetime).getTime();
     const localTime = new Date().getTime();
     const diffMin = Math.abs(serverTime - localTime) / 60000;
     
-    // Se a diferença entre o celular e o servidor for maior que 3 minutos
     if (diffMin > 3) {
-      return { ok: false, msg: `Divergência de horário detectada! A hora do celular está errada em aprox. ${Math.round(diffMin)} minutos.` };
+      return { ok: false, msg: `Divergência de horário detetada! A hora do telemóvel está errada em aprox. ${Math.round(diffMin)} minutos.` };
     }
     return { ok: true };
   } catch (e) {
-    return { ok: true }; // Fallback de segurança
+    return { ok: true };
   }
+}
+
+// ─────────────────────────────────────
+// FUNÇÃO NOVA: PREENCHER GPS NO MODAL
+// ─────────────────────────────────────
+async function fillCurrentLoc() {
+  const btn = document.getElementById('btn-get-gps');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '⏳ A buscar satélites...';
+  btn.disabled = true;
+  try {
+    const pos = await getPos();
+    document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6);
+    document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6);
+    toast('✅ Coordenadas capturadas com sucesso!','success');
+  } catch(e) { 
+    handleGeoErr(e); 
+  }
+  btn.innerHTML = originalText;
+  btn.disabled = false;
 }
 
 // ─────────────────────────────────────
@@ -1024,7 +1017,7 @@ async function doPunch(force=false) {
 
   const emp = employees.find(e => e.id === currentEmpId);
   const loc = locations.find(l => l.id === emp.locId);
-  if (!loc) { toast('⚠️ Local não definido para este funcionário','warn'); return; }
+  if (!loc) { toast('⚠️ Local não definido para esta funcionária','warn'); return; }
 
   isSending = true;
   const btn = document.getElementById('main-btn');
@@ -1032,21 +1025,21 @@ async function doPunch(force=false) {
   document.getElementById('btn-override').style.display = 'none';
   
   // 1. Verificação Antifraude de Horário
-  setStatus('checking','⏱ Verificando horário oficial...');
+  setStatus('checking','⏱ A verificar horário oficial...');
   const timeCheck = await checkTimeSync();
   if (!timeCheck.ok) {
     setStatus('far', `🚫 ${timeCheck.msg}`);
-    toast('Ajuste o horário do celular para automático.', 'error');
+    toast('Ajuste o horário do telemóvel para automático.', 'error');
     isSending = false; btn.disabled = false; return;
   }
 
-  setStatus('checking','📡 Verificando GPS...');
+  setStatus('checking','📡 A verificar GPS...');
   try {
     const pos  = await getPos();
     const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
 
     if (dist > loc.radius && !force) {
-      setStatus('far', `🚫 Você está a ${Math.round(dist)}m do local. Raio: ${loc.radius}m.`);
+      setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`);
       if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
       isSending = false; btn.disabled = false; return;
     }
@@ -1063,19 +1056,19 @@ async function doPunch(force=false) {
       time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
       lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
       dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
-      photo: photoB64, // Envia a foto
+      photo: photoB64, 
       synced: false
     };
 
-    setStatus('checking', '📡 Enviando para a planilha...');
+    setStatus('checking', '📡 A enviar para a folha de cálculo...');
     const cloudResult = await callCloud({ action: 'addRecord', record: rec }, 3);
 
     if (cloudResult.local) {
       rec.synced = false;
       records.unshift(rec);
       saveAll();
-      setStatus('ok', `✅ Registrado localmente às ${rec.time.slice(0,5)}`);
-      toast('✅ Ponto registrado offline!','success');
+      setStatus('ok', `✅ Registado localmente às ${rec.time.slice(0,5)}`);
+      toast('✅ Ponto registado offline!','success');
       updatePunchBtn(); updateSlots();
       stopCamera();
 
@@ -1088,8 +1081,8 @@ async function doPunch(force=false) {
         records = records.filter(r => !(r.empId === rec.empId && r.date === rec.date && r.slot === rec.slot));
         records.unshift(rec);
         saveAll();
-        setStatus('warn', `⚠️ Já registrado por outro aparelho às ${rec.time.slice(0,5)}`);
-        toast('Ponto recuperado da planilha!', 'warn');
+        setStatus('warn', `⚠️ Já registado por outro aparelho às ${rec.time.slice(0,5)}`);
+        toast('Ponto recuperado da folha de cálculo!', 'warn');
       } else {
         if (responseData && responseData.time) rec.time = responseData.time;
         rec.synced = true;
@@ -1097,13 +1090,13 @@ async function doPunch(force=false) {
           records.unshift(rec);
         }
         saveAll();
-        setStatus('ok', `✅ Registrado às ${rec.time.slice(0,5)} ☁️`);
-        toast('✅ Ponto salvo na planilha!','success');
+        setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`);
+        toast('✅ Ponto salvo na folha de cálculo!','success');
       }
 
       updatePunchBtn();
       updateSlots();
-      stopCamera(); // Desliga a câmera após sucesso
+      stopCamera(); 
       syncCloud(false);
     } else {
       pendingRetry = rec;
@@ -1126,7 +1119,7 @@ async function retryPunch() {
   isSending = true;
   const btn = document.getElementById('main-btn');
   btn.disabled = true;
-  setStatus('checking',`📡 Reenviando ponto das ${pendingRetry.time.slice(0,5)}...`);
+  setStatus('checking',`📡 A reenviar ponto das ${pendingRetry.time.slice(0,5)}...`);
   const ok = await sendToCloud(pendingRetry, 3);
   if (ok) {
     pendingRetry.synced = true;
@@ -1137,7 +1130,7 @@ async function retryPunch() {
     const t = pendingRetry.time.slice(0,5);
     pendingRetry = null;
     saveAll();
-    setStatus('ok', `✅ Ponto das ${t} salvo na planilha ☁️`);
+    setStatus('ok', `✅ Ponto das ${t} salvo na nuvem ☁️`);
     toast('✅ Reenvio concluído!','success');
     updatePunchBtn(); updateSlots();
     syncCloud(false); 
@@ -1159,7 +1152,6 @@ async function callCloud(payload, tries=3) {
   for (let i=0; i<tries; i++) {
     try {
       const controller = new AbortController();
-      // Timeout aumentado para 25s por causa do upload da imagem
       const timeout = setTimeout(() => controller.abort(), 25000); 
 
       const res = await fetch(url, {
@@ -1202,12 +1194,12 @@ async function syncCloud(manual=false) {
   const url = settings.googleUrl;
   if (!url) { if(manual) toast('⚠️ URL do Apps Script não configurada','warn'); return; }
   if (!navigator.onLine) { if(manual) toast('❌ Sem internet','error'); return; }
-  if (manual) toast('🔄 Sincronizando com a planilha...','info');
+  if (manual) toast('🔄 A sincronizar com a folha de cálculo...','info');
   try {
     const res  = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' });
     const text = await res.text();
     let data;
-    try { data = JSON.parse(text); } catch(e) { if(manual) toast('❌ Resposta inválida da planilha','error'); return; }
+    try { data = JSON.parse(text); } catch(e) { if(manual) toast('❌ Resposta inválida da folha de cálculo','error'); return; }
 
     let changed = false;
 
@@ -1286,7 +1278,7 @@ async function syncCloud(manual=false) {
     }
     if (manual) toast('✅ Dados sincronizados!','success');
   } catch(e) {
-    if (manual) toast('❌ Falha ao conectar com a planilha','error');
+    if (manual) toast('❌ Falha ao ligar à folha de cálculo','error');
   }
 }
 
@@ -1349,9 +1341,9 @@ function renderDash() {
   employees.forEach(emp => { const w=workedMin(emp.id,today),j=journeyMin(emp.id); totalOTToday+=Math.max(0,w-j); });
 
   document.getElementById('stats-row').innerHTML = `
-    <div class="stat-box"><div class="stat-label">Trabalhando agora</div><div class="stat-value green">${totalWorking}</div><div class="stat-sub">de ${employees.length} funcionário(s)</div></div>
-    <div class="stat-box"><div class="stat-label">Pontos hoje</div><div class="stat-value blue">${totalPunches}</div><div class="stat-sub">registros de hoje</div></div>
-    <div class="stat-box"><div class="stat-label">HE total hoje</div><div class="stat-value amber">${fmtMin(totalOTToday)}</div><div class="stat-sub">horas extras no dia</div></div>
+    <div class="stat-box"><div class="stat-label">A Trabalhar</div><div class="stat-value green">${totalWorking}</div><div class="stat-sub">de ${employees.length} funcionário(s)</div></div>
+    <div class="stat-box"><div class="stat-label">Pontos hoje</div><div class="stat-value blue">${totalPunches}</div><div class="stat-sub">registos de hoje</div></div>
+    <div class="stat-box"><div class="stat-label">HE total hoje</div><div class="stat-value amber">${fmtMin(totalOTToday)}</div><div class="stat-sub">horas extra no dia</div></div>
     <div class="stat-box"><div class="stat-label">Pendentes</div><div class="stat-value ${pending.length?'red':'green'}">${pending.length}</div><div class="stat-sub">envios na fila</div></div>
   `;
 
@@ -1445,7 +1437,7 @@ function saveEmployee() {
   } else {
     employees.push({ id:'emp_'+Date.now(), name, role, emoji, shiftId, locId });
   }
-  saveAll(); renderEmpList(); toast('💾 Salvando na planilha...','info');
+  saveAll(); renderEmpList(); toast('💾 A guardar na folha de cálculo...','info');
   pushConfigToCloud('saveEmployee', employees.find(e => e.id === (editId || employees[employees.length-1].id)))
     .then(ok => {
       if (ok) toast('✅ Funcionário salvo e sincronizado!','success');
@@ -1455,11 +1447,11 @@ function saveEmployee() {
 }
 
 function confirmDeleteEmp(id) {
-  openDelModal(`Excluir funcionário e todos os seus registros de ponto?`, () => {
+  openDelModal(`Excluir funcionária e todos os seus registos de ponto?`, () => {
     employees = employees.filter(e=>e.id!==id);
     records   = records.filter(r=>r.empId!==id);
     saveAll(); renderEmpList(); renderRecords(); renderDash();
-    pushConfigToCloud('deleteEmployee', {id}).then(ok => toast(ok?'🗑️ Excluído da planilha':'🗑️ Excluído localmente','success'));
+    pushConfigToCloud('deleteEmployee', {id}).then(ok => toast(ok?'🗑️ Excluído da nuvem':'🗑️ Excluído localmente','success'));
   });
 }
 
@@ -1515,7 +1507,7 @@ function saveShift() {
     shifts.push({ id:'shift_'+Date.now(), name, hours, mins, color:selectedColor });
   }
   const savedShift = editId ? shifts.find(s=>s.id===editId) : shifts[shifts.length-1];
-  saveAll(); renderShiftList(); toast('💾 Salvando na planilha...','info');
+  saveAll(); renderShiftList(); toast('💾 A guardar...','info');
   pushConfigToCloud('saveShift', savedShift)
     .then(ok => {
       if (ok) toast('✅ Turno salvo e sincronizado!','success');
@@ -1529,7 +1521,7 @@ function confirmDeleteShift(id) {
     shifts = shifts.filter(s=>s.id!==id);
     employees.forEach(e => { if(e.shiftId===id) e.shiftId=''; });
     saveAll(); renderShiftList(); renderEmpList();
-    pushConfigToCloud('deleteShift', {id}).then(ok => toast(ok?'🗑️ Excluído da planilha':'🗑️ Excluído localmente','success'));
+    pushConfigToCloud('deleteShift', {id}).then(ok => toast(ok?'🗑️ Excluído':'🗑️ Excluído localmente','success'));
   });
 }
 
@@ -1583,7 +1575,7 @@ function saveLocation() {
     locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius });
   }
   const savedLoc = editId ? locations.find(l=>l.id===editId) : locations[locations.length-1];
-  saveAll(); renderLocList(); toast('💾 Salvando na planilha...','info');
+  saveAll(); renderLocList(); toast('💾 A guardar...','info');
   pushConfigToCloud('saveLocation', savedLoc)
     .then(ok => {
       if (ok) toast('✅ Local salvo e sincronizado!','success');
@@ -1597,22 +1589,8 @@ function confirmDeleteLoc(id) {
     locations = locations.filter(l=>l.id!==id);
     employees.forEach(e => { if(e.locId===id) e.locId=''; });
     saveAll(); renderLocList(); renderEmpList();
-    pushConfigToCloud('deleteLocation', {id}).then(ok => toast(ok?'🗑️ Excluído da planilha':'🗑️ Excluído localmente','success'));
+    pushConfigToCloud('deleteLocation', {id}).then(ok => toast(ok?'🗑️ Excluído':'🗑️ Excluído localmente','success'));
   });
-}
-
-async function detectMyLoc() {
-  toast('📡 Detectando localização...','info');
-  try {
-    const pos = await getPos();
-    document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6);
-    document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6);
-    openLocModal();
-    setTimeout(() => {
-      document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6);
-      document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6);
-    }, 50);
-  } catch(e) { handleGeoErr(e); }
 }
 
 // ─────────────────────────────────────
@@ -1625,7 +1603,7 @@ function renderRecords() {
 
   const filtered = recFilterEmp==='all' ? records : records.filter(r=>r.empId===recFilterEmp);
   const el = document.getElementById('rec-list');
-  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="eicon">🗒️</div><p>Nenhum registro</p></div>'; return; }
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="eicon">🗒️</div><p>Nenhum registo</p></div>'; return; }
 
   const keys = [...new Set(filtered.map(r=>`${r.empId}__${r.date}`))];
   const slotLabel = { entrada1:'E1', saida1:'S1', entrada2:'E2', saida2:'S2' };
@@ -1637,7 +1615,6 @@ function renderRecords() {
     const j    = journeyMin(empId);
     const ot   = w - j;
     
-    // Novo layout do tag: inclui ícone de foto se existir
     const punches = day.map(r=>`<div class="punch-tag">
       <span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span>
       <span class="ptime">${r.time.slice(0,5)}</span>
@@ -1694,7 +1671,7 @@ function savePunchEdit() {
 }
 
 function deletePunch(id) {
-  openDelModal('Excluir este registro de ponto?', () => {
+  openDelModal('Excluir este registo de ponto?', () => {
     records = records.filter(r=>r.id!==id);
     saveAll(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
     if (settings.googleUrl) callCloud({action:'deleteRecord', id});
@@ -1728,11 +1705,11 @@ function exportCSV() {
 async function testCloudConnection() {
   const url = settings.googleUrl || _CLOUD_URL;
   const el = document.getElementById('conn-status');
-  if (!url) { toast('⚠️ Nenhuma URL em config.js','warn'); return; }
+  if (!url) { toast('⚠️ Nenhuma URL configurada','warn'); return; }
   if (!navigator.onLine) { toast('❌ Sem internet','error'); return; }
   el.style.display = 'block';
   el.style.color = 'var(--muted2)';
-  el.textContent = '🔌 Testando conexão...';
+  el.textContent = '🔌 A testar ligação...';
   try {
     const res  = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' });
     const text = await res.text();
@@ -1741,11 +1718,11 @@ async function testCloudConnection() {
       const empCount = data.employees?.length || 0;
       const recCount = data.records?.length || 0;
       el.style.color = 'var(--green)';
-      el.textContent = `✅ Conectado! ${empCount} funcionário(s), ${recCount} registro(s) na planilha.`;
-      toast('✅ Conexão OK!','success');
+      el.textContent = `✅ Ligação OK! ${empCount} funcionário(s), ${recCount} registo(s) na folha de cálculo.`;
+      toast('✅ Ligação OK!','success');
     } else {
       el.style.color = 'var(--red)';
-      el.textContent = '❌ Planilha respondeu mas retornou erro: ' + (data?.error || 'resposta inválida');
+      el.textContent = '❌ A folha respondeu com erro: ' + (data?.error || 'resposta inválida');
     }
   } catch(e) {
     el.style.color = 'var(--red)';
@@ -1759,7 +1736,7 @@ async function savePassword() {
   
   settings.pw = pw; 
   saveAll(); 
-  toast('💾 Salvando na planilha...','info');
+  toast('💾 A guardar...','info');
 
   if (settings.googleUrl) {
     const ok = await pushConfigToCloud('saveConfig', { key: 'pw', value: pw });
@@ -1775,10 +1752,10 @@ async function savePassword() {
 
 function saveBoolCfg(key, val) { settings[key]=val; saveAll(); }
 function confirmReset() {
-  openDelModal('Apagar TODOS os registros de ponto e zerar cache? Esta ação não pode ser desfeita.', () => {
+  openDelModal('Apagar TODOS os registos de ponto e limpar cache? Esta ação não pode ser desfeita.', () => {
     records=[]; pending=[]; employees=[]; locations=[]; shifts=[]; saveAll(); 
     renderDash(); renderRecords(); renderEmpList(); renderLocList(); renderShiftList(); 
-    toast('🗑️ Aplicativo resetado!','success');
+    toast('🗑️ Aplicação limpa!','success');
     setTimeout(() => window.location.reload(), 1500);
   });
 }
@@ -1797,7 +1774,6 @@ function openDelModal(msg, cb) {
   document.getElementById('del-confirm-btn').onclick = () => { closeModal('del-modal'); if(delCallback) delCallback(); delCallback=null; };
 }
 
-// Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if(e.target===o) o.classList.remove('show'); });
 });
@@ -1823,7 +1799,7 @@ window.addEventListener('online', async () => {
     }
     if (currentEmpId) { pendingRetry=pending.find(p=>p.empId===currentEmpId)||null; updatePunchBtn(); updateSlots(); }
   }
-  if (currentEmpId && !pendingRetry) { updatePunchBtn(); setStatus('idle','📍 Online — pronto para registrar'); }
+  if (currentEmpId && !pendingRetry) { updatePunchBtn(); setStatus('idle','📍 Online — pronto para registar'); }
 });
 window.addEventListener('offline', () => { if (currentEmpId) updatePunchBtn(); });
 
@@ -1894,11 +1870,11 @@ function buildReport() {
         </div>
         <div class="rh-period">
           <div class="rh-period-title">${MONTHS_PT[month-1]} / ${year}</div>
-          <div class="rh-period-sub">Gerado em ${genAt}</div>
+          <div class="rh-period-sub">Gerado a ${genAt}</div>
         </div>
       </div>
       <div class="rh-meta">
-        <span>📋 ${totalRecords} registros no período</span>
+        <span>📋 ${totalRecords} registos no período</span>
         <span>👥 ${empList.length} funcionária(s)</span>
         <span>📅 ${daysInMonth} dias no mês</span>
       </div>
@@ -1946,7 +1922,7 @@ function buildReport() {
       <div class="rep-summary">
         <div class="rep-sum-box"><div class="rsb-label">Dias Trabalhados</div><div class="rsb-val blue">${daysWorked}</div></div>
         <div class="rep-sum-box"><div class="rsb-label">Total Trabalhado</div><div class="rsb-val green">${fmtMin(totalWorked)}</div></div>
-        <div class="rep-sum-box"><div class="rsb-label">Horas Extras</div><div class="rsb-val ${totalOT>0?'amber':''}">+${fmtMin(totalOT)}</div></div>
+        <div class="rep-sum-box"><div class="rsb-label">Horas Extra</div><div class="rsb-val ${totalOT>0?'amber':''}">+${fmtMin(totalOT)}</div></div>
         <div class="rep-sum-box"><div class="rsb-label">Saldo do Mês</div><div class="rsb-val ${balance>0?'amber':balance<0?'red':''}">${balance>=0?'+':''}${fmtMin(balance)}</div></div>
       </div>
       <div class="rep-table-wrap">
@@ -2009,20 +1985,16 @@ function buildReport() {
           <tfoot>
             <tr>
               <td colspan="2">TOTAIS DO MÊS</td>
-              <td colspan="4"></td>
+              <td colspan=\"4\"></td>
               <td>${fmtMin(totalWorked)}</td>
               <td>${fmtMin(journMin * daysWorked)}</td>
-              <td style="color:${balance>=0?'#34d399':'#f87171'}">${balance>=0?'+':''}${fmtMin(balance)}</td>
-              <td style="color:${totalOT>0?'#fbbf24':'#7888a8'}">${totalOT>0?'+'+fmtMin(totalOT):'—'}</td>
+              <td style=\"color:${balance>=0?'#34d399':'#f87171'}\">${balance>=0?'+':''}${fmtMin(balance)}</td>
+              <td style=\"color:${totalOT>0?'#fbbf24':'#7888a8'}\">${totalOT>0?'+'+fmtMin(totalOT):'—'}</td>
             </tr>
           </tfoot>
         </table>
       </div>
-      <div class="rep-footer">
-        <span>PontoDigital Pro · ${MONTHS_PT[month-1]} ${year}</span>
-        <span>Assinatura: ___________________________</span>
-      </div>
-    </div>`;
+      <div class=\"rep-footer\">\n        <span>PontoDigital Pro · ${MONTHS_PT[month-1]} ${year}</span>\n        <span>Assinatura: ___________________________</span>\n      </div>\n    </div>`;
   });
 
   html += `</div>`;
