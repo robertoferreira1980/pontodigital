@@ -361,27 +361,20 @@ body::before{content:'';position:fixed;inset:0;background:
   .report-wrap{border-radius:0!important}
   .rep-table tbody tr:hover{background:transparent!important}
 }</style>
-<!-- URL centralizada: edite config.js no servidor -->
 <script src="config.js"></script>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     SCREEN: CHOOSE EMPLOYEE
-══════════════════════════════════════ -->
 <div class="screen active" id="s-choose">
   <div class="choose-wrap">
     <div class="brand"><div class="brand-dot"></div><div class="brand-name">Ponto<span>Digital</span></div></div>
     <div class="brand-sub" id="choose-sub">Quem está registrando o ponto?</div>
-    <div class="emp-grid" id="emp-grid"><!-- dinâmico --></div>
+    <div class="emp-grid" id="emp-grid"></div>
     <div class="choose-divider">área restrita</div>
     <button class="btn-admin" onclick="goLogin()">🔒 Painel Administrativo</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: PUNCH
-══════════════════════════════════════ -->
 <div class="screen" id="s-punch">
   <div class="punch-topbar">
     <button class="btn-back" onclick="goChoose()">← Voltar</button>
@@ -417,9 +410,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN LOGIN
-══════════════════════════════════════ -->
 <div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-icon">🔐</div>
@@ -435,9 +425,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN
-══════════════════════════════════════ -->
 <div class="screen" id="s-admin">
   <nav class="admin-nav">
     <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
@@ -450,30 +437,27 @@ body::before{content:'';position:fixed;inset:0;background:
     <button class="nav-exit" onclick="goChoose()">Sair ×</button>
   </nav>
 
-  <!-- ── DASHBOARD ── -->
   <div class="tab-content active" id="t-dash">
-    <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
+    <div class="stats-row" id="stats-row"></div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div>
-      <div id="today-summary"><!-- dinâmico --></div>
+      <div id="today-summary"></div>
     </div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">📈</span> Horas Extras Acumuladas</div>
-      <div id="ot-summary"><!-- dinâmico --></div>
+      <div id="ot-summary"></div>
     </div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
   </div>
 
-  <!-- ── EMPLOYEES ── -->
   <div class="tab-content" id="t-emp">
     <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionário</button>
-    <div id="emp-list"><!-- dinâmico --></div>
+    <div id="emp-list"></div>
   </div>
 
-  <!-- ── SHIFTS ── -->
   <div class="tab-content" id="t-shift">
     <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
-    <div id="shift-list"><!-- dinâmico --></div>
+    <div id="shift-list"></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">ℹ️ O que é um turno?</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -482,10 +466,9 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
-  <!-- ── LOCATIONS ── -->
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
-    <div id="loc-list"><!-- dinâmico --></div>
+    <div id="loc-list"></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">📡 Como obter coordenadas</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -495,14 +478,12 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
-  <!-- ── RECORDS ── -->
   <div class="tab-content" id="t-rec">
     <button class="btn-export-full" onclick="exportCSV()">📊 Exportar CSV Completo</button>
-    <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
-    <div id="rec-list"><!-- dinâmico --></div>
+    <div class="rec-filters" id="rec-filters"></div>
+    <div id="rec-list"></div>
   </div>
 
-  <!-- ── RELATÓRIO ── -->
   <div class="tab-content" id="t-report">
     <div class="card">
       <div class="card-title">📄 Relatório Mensal de Ponto</div>
@@ -528,7 +509,6 @@ body::before{content:'';position:fixed;inset:0;background:
     <div id="report-preview"></div>
   </div>
 
-  <!-- ── CONFIG ── -->
   <div class="tab-content" id="t-cfg">
     <div class="card">
       <div class="card-title">🔗 Integração com Google Sheets</div>
@@ -586,10 +566,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MODALS
-══════════════════════════════════════ -->
-<!-- GPS permission -->
 <div class="modal-overlay" id="gps-modal">
   <div class="modal-box" style="border-radius:24px;margin:24px;max-width:380px;align-self:center">
     <div style="font-size:40px;text-align:center;margin-bottom:14px">🔒</div>
@@ -599,7 +575,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Employee modal -->
 <div class="modal-overlay" id="emp-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -613,11 +588,11 @@ body::before{content:'';position:fixed;inset:0;background:
     <div class="form-grid">
       <div class="afield">
         <label>Turno</label>
-        <select id="emp-shift-sel"><!-- dinâmico --></select>
+        <select id="emp-shift-sel"></select>
       </div>
       <div class="afield">
         <label>Local de Trabalho</label>
-        <select id="emp-loc-sel"><!-- dinâmico --></select>
+        <select id="emp-loc-sel"></select>
       </div>
     </div>
     <div class="afield">
@@ -631,7 +606,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Shift modal -->
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -661,7 +635,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Location modal -->
 <div class="modal-overlay" id="loc-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -684,7 +657,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Edit punch modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -702,7 +674,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Confirm delete modal -->
 <div class="modal-overlay" id="del-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -717,9 +688,6 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <div id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════ -->
 <script>
 // ─────────────────────────────────────
 // STATE & DEFAULTS
@@ -727,24 +695,19 @@ body::before{content:'';position:fixed;inset:0;background:
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-let employees  = LS('pd_employees')  || [
-  { id:'emp_1', name:'Hanna',       role:'Cuidadora',     emoji:'👶', shiftId:'shift_1', locId:'loc_1' },
-  { id:'emp_2', name:'Maria Júlia', role:'Administrativa', emoji:'💼', shiftId:'shift_2', locId:'loc_2' }
-];
-let shifts     = LS('pd_shifts')     || [
-  { id:'shift_1', name:'Diarista',   hours:8,  mins:0,  color:'#34d399' },
-  { id:'shift_2', name:'CLT 44h',    hours:8,  mins:48, color:'#60a5fa' }
-];
-let locations  = LS('pd_locations')  || [
-  { id:'loc_1', name:'Casa (Baba)',   emoji:'🏠', lat:-22.981132, lng:-45.541034, radius:150 },
-  { id:'loc_2', name:'Escritório',    emoji:'🏢', lat:-22.816895, lng:-45.200503, radius:150 }
-];
+// ARRAYS TOTALMENTE VAZIOS PARA INÍCIO LIMPO
+let employees  = LS('pd_employees')  || [];
+let shifts     = LS('pd_shifts')     || [];
+let locations  = LS('pd_locations')  || [];
 let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
+
 // URL do Apps Script: vem do config.js (GOOGLE_URL) ou do localStorage.
-// O config.js fica no servidor — funciona igual em todos os aparelhos sem configuração manual.
 const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
-let settings = LS('pd_settings') || { pw:'685974', googleUrl:'', allowOverride:true, showDist:true };
+
+// SENHA PADRÃO NOVA É 123456
+let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true };
+
 // Sempre prioriza o config.js — garante que todos os aparelhos usem a mesma URL
 if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
 
@@ -1083,13 +1046,8 @@ async function retryPunch() {
 }
 
 // ─────────────────────────────────────
-// CLOUD COMMUNICATION — CORRIGIDO
-// Toda comunicação com o Apps Script passa por aqui.
-// Não usamos mode:'no-cors' para poder ler a resposta e confirmar.
+// CLOUD COMMUNICATION
 // ─────────────────────────────────────
-
-// Envia qualquer payload ao Apps Script e retorna { ok, data }
-// Sem mode:'no-cors' — lemos a resposta para confirmar o envio
 async function callCloud(payload, tries=3) {
   const url = settings.googleUrl;
   if (!url) return { ok: true, local: true };
@@ -1097,7 +1055,7 @@ async function callCloud(payload, tries=3) {
   for (let i=0; i<tries; i++) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
       const res = await fetch(url, {
         method: 'POST',
@@ -1112,10 +1070,8 @@ async function callCloud(payload, tries=3) {
       let json = {};
       try { json = JSON.parse(text); } catch(e) {}
 
-      // Apps Script retorna 200 mesmo em erro — checar o body
       if (json.status === 'error') {
         console.warn('Apps Script error:', json.error);
-        // Mesmo com erro no body, o registro chegou — retorna ok
       }
       return { ok: true, data: json };
 
@@ -1132,13 +1088,11 @@ async function callCloud(payload, tries=3) {
   return { ok: false };
 }
 
-// Atalho legado para compatibilidade com retryPunch
 async function sendToCloud(data, tries=3) {
   const result = await callCloud({ action:'addRecord', record: data }, tries);
   return result.ok;
 }
 
-// Busca TUDO da planilha: config, employees, shifts, locations, records
 async function syncCloud(manual=false) {
   const url = settings.googleUrl;
   if (!url) { if(manual) toast('⚠️ URL do Apps Script não configurada','warn'); return; }
@@ -1152,7 +1106,6 @@ async function syncCloud(manual=false) {
 
     let changed = false;
 
-    // 1. Config legada (babaName/secName etc) — retrocompatível
     if (data?.config && !data.config.error) {
       const c = data.config;
       if (c.pw) settings.pw = String(c.pw).trim();
@@ -1160,8 +1113,7 @@ async function syncCloud(manual=false) {
       SS('pd_settings', settings);
     }
 
-    // 2. Funcionários vindos da planilha
-    if (Array.isArray(data?.employees) && data.employees.length) {
+    if (Array.isArray(data?.employees)) {
       data.employees.forEach(ce => {
         if (!ce.id) return;
         const idx = employees.findIndex(e => e.id === ce.id);
@@ -1172,8 +1124,7 @@ async function syncCloud(manual=false) {
       SS('pd_employees', employees);
     }
 
-    // 3. Turnos vindos da planilha
-    if (Array.isArray(data?.shifts) && data.shifts.length) {
+    if (Array.isArray(data?.shifts)) {
       data.shifts.forEach(cs => {
         if (!cs.id) return;
         const idx = shifts.findIndex(s => s.id === cs.id);
@@ -1184,8 +1135,7 @@ async function syncCloud(manual=false) {
       SS('pd_shifts', shifts);
     }
 
-    // 4. Locais vindos da planilha
-    if (Array.isArray(data?.locations) && data.locations.length) {
+    if (Array.isArray(data?.locations)) {
       data.locations.forEach(cl => {
         if (!cl.id) return;
         const idx = locations.findIndex(l => l.id === cl.id);
@@ -1196,12 +1146,10 @@ async function syncCloud(manual=false) {
       SS('pd_locations', locations);
     }
 
-    // 5. Registros de ponto vindos da planilha
-    if (Array.isArray(data?.records) && data.records.length) {
+    if (Array.isArray(data?.records)) {
       data.records.forEach(cr => {
         if (!cr.id) return;
-        if (records.find(r => String(r.id) === String(cr.id))) return; // já existe
-        // Resolve empId pelo nome caso venha só o nome
+        if (records.find(r => String(r.id) === String(cr.id))) return;
         let empId = cr.empId || '';
         if (!empId && cr.empName) {
           const emp = employees.find(e => e.name === cr.empName);
@@ -1223,7 +1171,6 @@ async function syncCloud(manual=false) {
 
     if (changed) {
       buildChooseGrid();
-      // Se a tela de ponto estiver aberta, atualiza os slots imediatamente
       if (document.getElementById('s-punch').classList.contains('active') && currentEmpId) {
         updateSlots();
         updatePunchBtn();
@@ -1238,9 +1185,8 @@ async function syncCloud(manual=false) {
   }
 }
 
-// Envia funcionário/turno/local para a planilha
 async function pushConfigToCloud(action, payload) {
-  if (!settings.googleUrl) return true; // sem URL = só local
+  if (!settings.googleUrl) return true;
   const result = await callCloud({ action, payload });
   return result.ok;
 }
@@ -1289,7 +1235,6 @@ function totalOT(empId) {
 
 function renderDash() {
   const today = new Date().toLocaleDateString('pt-BR');
-  // Stats
   const totalWorking = employees.filter(emp => {
     const tr = todayRecs(emp.id);
     return tr.some(r=>r.slot==='entrada1') && !tr.some(r=>r.slot==='saida2');
@@ -1305,7 +1250,6 @@ function renderDash() {
     <div class="stat-box"><div class="stat-label">Pendentes</div><div class="stat-value ${pending.length?'red':'green'}">${pending.length}</div><div class="stat-sub">envios na fila</div></div>
   `;
 
-  // Today summary
   document.getElementById('today-summary').innerHTML = employees.map(emp => {
     const w = workedMin(emp.id,today);
     const j = journeyMin(emp.id);
@@ -1329,7 +1273,6 @@ function renderDash() {
     </div>`;
   }).join('') || '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário</p></div>';
 
-  // OT summary
   document.getElementById('ot-summary').innerHTML = employees.map(emp => {
     const ot = totalOT(emp.id);
     const shift = shifts.find(s=>s.id===emp.shiftId) || {};
@@ -1571,7 +1514,6 @@ async function detectMyLoc() {
 // ADMIN: RECORDS
 // ─────────────────────────────────────
 function renderRecords() {
-  // Build filter chips
   const fc = document.getElementById('rec-filters');
   fc.innerHTML = `<button class="filter-chip ${recFilterEmp==='all'?'active':''}" onclick="setRecFilter('all',this)">Todos</button>` +
     employees.map(e=>`<button class="filter-chip ${recFilterEmp===e.id?'active':''}" onclick="setRecFilter('${e.id}',this)">${e.emoji||''} ${e.name}</button>`).join('');
@@ -1724,8 +1666,11 @@ async function savePassword() {
 
 function saveBoolCfg(key, val) { settings[key]=val; saveAll(); }
 function confirmReset() {
-  openDelModal('Apagar TODOS os registros de ponto? Esta ação não pode ser desfeita.', () => {
-    records=[]; pending=[]; saveAll(); renderDash(); renderRecords(); toast('🗑️ Registros apagados','success');
+  openDelModal('Apagar TODOS os registros de ponto e zerar cache? Esta ação não pode ser desfeita.', () => {
+    records=[]; pending=[]; employees=[]; locations=[]; shifts=[]; saveAll(); 
+    renderDash(); renderRecords(); renderEmpList(); renderLocList(); renderShiftList(); 
+    toast('🗑️ Aplicativo resetado!','success');
+    setTimeout(() => window.location.reload(), 1500);
   });
 }
 
@@ -1783,10 +1728,9 @@ const sleep = ms => new Promise(r => setTimeout(r,ms));
 // ─────────────────────────────────────
 window.onload = async () => {
   initReportSelects();
-  buildChooseGrid(); // mostra dados locais imediatamente enquanto carrega
+  buildChooseGrid();
 
   if (_CLOUD_URL && navigator.onLine) {
-    // Sincroniza silenciosamente ao abrir — todos os aparelhos ficam atualizados
     await syncCloud(false);
     buildChooseGrid();
   } else if (!_CLOUD_URL) {
@@ -1856,7 +1800,6 @@ function buildReport() {
     const journMin = shift ? (shift.hours * 60 + (shift.mins || 0)) : 480;
     const shiftLbl = shift ? `${shift.name} — ${fmtMin(journMin)}/dia` : 'Turno não definido';
 
-    // Build per-day data
     const dayData = [];
     let totalWorked = 0, totalOT = 0, totalUnder = 0, daysWorked = 0;
 
@@ -1882,7 +1825,6 @@ function buildReport() {
       dayData.push({ d, date, dow, isWE, e1, s1, e2, s2, w, ot, hasAny: !!(e1||s1||e2||s2) });
     }
 
-    // Summary boxes
     const balance = totalOT + totalUnder;
     html += `<div class="rep-emp-section">
       <div class="rep-emp-header">
@@ -1954,7 +1896,6 @@ function buildReport() {
       </tr>`;
     });
 
-    // Totals row
     html += `</tbody>
           <tfoot>
             <tr>
