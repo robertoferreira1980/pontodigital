@@ -786,31 +786,7 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <script>
 // ─────────────────────────────────────
-// STATE & DEFAULTS
-// ─────────────────────────────────────
-const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
-const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
-
-let employees  = LS('pd_employees')  || [];
-let shifts     = LS('pd_shifts') || [];
-let locations  = LS('pd_locations')  || [];
-let records    = LS('pd_records')    || [];
-let pending    = LS('pd_pending')    || [];
-
-const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
-let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true };
-if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
-
-let currentEmpId = null;
-let pendingRetry  = null;
-let isSending     = false;
-let clockTimer    = null;
-let recFilterEmp  = 'all';
-let cameraStream  = null;
-let activePinEmpId = null; 
-
-// ─────────────────────────────────────
-// MODAL HELPERS (RESTAURADOS!)
+// MODAL HELPERS
 // ─────────────────────────────────────
 const openModal  = id => document.getElementById(id).classList.add('show');
 const closeModal = id => document.getElementById(id).classList.remove('show');
@@ -833,6 +809,30 @@ function toast(msg, type='success') {
   el.textContent = msg; el.className = `show ${type}`;
   clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3500);
 }
+
+// ─────────────────────────────────────
+// STATE & DEFAULTS
+// ─────────────────────────────────────
+const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
+const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+let employees  = LS('pd_employees')  || [];
+let shifts     = LS('pd_shifts') || [];
+let locations  = LS('pd_locations')  || [];
+let records    = LS('pd_records')    || [];
+let pending    = LS('pd_pending')    || [];
+
+const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
+let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true };
+if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
+
+let currentEmpId = null;
+let pendingRetry  = null;
+let isSending     = false;
+let clockTimer    = null;
+let recFilterEmp  = 'all';
+let cameraStream  = null;
+let activePinEmpId = null; 
 
 // ─────────────────────────────────────
 // PERSIST HELPERS
@@ -902,7 +902,7 @@ const showScreen = id => {
 
 function promptPin(empId) {
   const emp = employees.find(e => e.id === empId);
-  if (!emp.pin) {
+  if (!emp.pin && String(emp.pin) !== "0") {
     loginEmployee(empId);
     return;
   }
@@ -919,7 +919,7 @@ function verifyPin() {
   const val = document.getElementById('pin-input').value;
   const emp = employees.find(e => e.id === activePinEmpId);
   
-  if (emp && emp.pin === val) {
+  if (emp && String(emp.pin).padStart(4, '0') === val) {
     closeModal('pin-modal');
     loginEmployee(activePinEmpId);
   } else {
@@ -1282,8 +1282,9 @@ async function doPunch(force=false, reason="", attachmentB64="") {
     if (cloudResult.local) {
       rec.synced = false; records.unshift(rec); saveAll();
       setStatus('ok', `✅ Registado localmente às ${rec.time.slice(0,5)}`);
-      toast('✅ Ponto registado offline!','success');
+      toast('✅ Ponto registado! A recarregar...','success');
       updatePunchBtn(); updateSlots(); stopCamera();
+      setTimeout(() => window.location.reload(), 1500); 
     } else if (cloudResult.ok) {
       const responseData = cloudResult.data?.data;
       if (responseData && responseData.status === 'duplicate') {
@@ -1296,14 +1297,11 @@ async function doPunch(force=false, reason="", attachmentB64="") {
         rec.synced = true;
         if (!records.find(r => String(r.id) === String(rec.id))) records.unshift(rec);
         saveAll();
-        setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`); toast(force ? '✅ Pedido enviado ao gestor!' : '✅ Ponto salvo!','success');
+        setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`); toast(force ? '✅ Pedido enviado ao gestor!' : '✅ Ponto salvo! A recarregar...','success');
       }
       updatePunchBtn(); updateSlots(); stopCamera(); 
-      
-      // AO REGISTAR ONLINE, SINCRONIZA E RECARREGA A PÁGINA
       await syncCloud(false);
       setTimeout(() => window.location.reload(), 1500);
-      
     } else {
       pendingRetry = rec; pending.push(rec); saveAll();
       setStatus('warn', `⚠️ Sem rede. Horário ${rec.time.slice(0,5)} na fila — clique Reenviar.`);
@@ -1357,7 +1355,6 @@ async function syncCloud(manual=false) {
     const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { return; }
     let changed = false;
     
-    // Sincroniza Configs
     if (data?.config && !data.config.error) { 
       const c = data.config; 
       if (c.pw) settings.pw = String(c.pw).trim(); 
@@ -1716,7 +1713,6 @@ function populateReportEmpSelect() { const sel = document.getElementById('rep-em
 async function buildReport() {
   const preview = document.getElementById('report-preview');
   
-  // FORÇA A SINCRONIZAÇÃO COM A PLANILHA ANTES DE GERAR O RELATÓRIO
   if (settings.googleUrl && navigator.onLine) {
     preview.innerHTML = '<div class="empty"><div class="eicon">⏳</div><p>A baixar os dados mais recentes da folha de cálculo...</p></div>';
     await syncCloud(false);
@@ -1727,7 +1723,6 @@ async function buildReport() {
   const empSel = document.getElementById('rep-emp').value; const empList = empSel === 'all' ? employees : employees.filter(e => e.id === empSel);
   const daysInMonth = new Date(year, month, 0).getDate(); const genAt = new Date().toLocaleString('pt-BR');
   
-  // Ignora recusados no relatório final
   const validRecords = records.filter(r => r.status !== 'rejected');
   const totalRecords = validRecords.filter(r => parseInt((r.date||'').split('/')[1]) === month && parseInt((r.date||'').split('/')[2]) === year).length;
 
