@@ -81,7 +81,7 @@ body::before{content:'';position:fixed;inset:0;background:
 #s-punch{padding:0}
 .punch-topbar{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center}
 .btn-back{background:none;border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
-.btn-back:hover{color:var(--red);border-color:rgba(248,113,113,.4);background:var(--red-dim)}
+.btn-back:hover{color:var(--text);border-color:var(--border2)}
 .live-clock{text-align:right}
 .live-clock .lc-time{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:1px}
 .live-clock .lc-date{font-size:11px;color:var(--muted2);margin-top:2px}
@@ -359,27 +359,20 @@ body::before{content:'';position:fixed;inset:0;background:
   .report-wrap{border-radius:0!important}
   .rep-table tbody tr:hover{background:transparent!important}
 }</style>
-<!-- URL centralizada: edite config.js no servidor -->
 <script src="config.js"></script>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     SCREEN: CHOOSE EMPLOYEE
-══════════════════════════════════════ -->
 <div class="screen active" id="s-choose">
   <div class="choose-wrap">
     <div class="brand"><div class="brand-dot"></div><div class="brand-name">Ponto<span>Digital</span></div></div>
     <div class="brand-sub" id="choose-sub">Quem está a registar o ponto?</div>
-    <div class="emp-grid" id="emp-grid"><!-- dinâmico --></div>
+    <div class="emp-grid" id="emp-grid"></div>
     <div class="choose-divider">área restrita</div>
     <button class="btn-admin" onclick="goLogin()">🔒 Painel Administrativo</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: PUNCH
-══════════════════════════════════════ -->
 <div class="screen" id="s-punch">
   <div class="punch-topbar">
     <button class="btn-back" onclick="logoutEmployee()">🚪 Sair</button>
@@ -419,9 +412,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN LOGIN
-══════════════════════════════════════ -->
 <div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-icon">🔐</div>
@@ -437,9 +427,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN
-══════════════════════════════════════ -->
 <div class="screen" id="s-admin">
   <nav class="admin-nav">
     <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
@@ -452,30 +439,27 @@ body::before{content:'';position:fixed;inset:0;background:
     <button class="nav-exit" onclick="goChoose()">Sair ×</button>
   </nav>
 
-  <!-- ── DASHBOARD ── -->
   <div class="tab-content active" id="t-dash">
-    <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
+    <div class="stats-row" id="stats-row"></div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div>
-      <div id="today-summary"><!-- dinâmico --></div>
+      <div id="today-summary"></div>
     </div>
     <div class="card">
       <div class="card-title"><span class="card-title-icon">📈</span> Horas Extra Acumuladas</div>
-      <div id="ot-summary"><!-- dinâmico --></div>
+      <div id="ot-summary"></div>
     </div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
   </div>
 
-  <!-- ── EMPLOYEES ── -->
   <div class="tab-content" id="t-emp">
     <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionária</button>
-    <div id="emp-list"><!-- dinâmico --></div>
+    <div id="emp-list"></div>
   </div>
 
-  <!-- ── SHIFTS ── -->
   <div class="tab-content" id="t-shift">
     <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
-    <div id="shift-list"><!-- dinâmico --></div>
+    <div id="shift-list"></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">ℹ️ O que é um turno?</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -484,10 +468,9 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
-  <!-- ── LOCATIONS ── -->
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
-    <div id="loc-list"><!-- dinâmico --></div>
+    <div id="loc-list"></div>
     <div class="card" style="margin-top:14px">
       <div class="card-title">📡 Como obter coordenadas manuais</div>
       <p style="font-size:12px;color:var(--muted2);line-height:1.6">
@@ -496,17 +479,15 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
   </div>
 
-  <!-- ── RECORDS ── -->
   <div class="tab-content" id="t-rec">
     <div style="display:flex; gap:10px; margin-bottom:14px;">
       <button class="btn-export-full" style="margin-bottom:0;" onclick="exportCSV()">📊 Exportar CSV</button>
       <button class="btn-export-full" style="margin-bottom:0; background:var(--blue-dim); color:var(--blue); border-color:rgba(96,165,250,.3);" onclick="openAbsenceModal()">➕ Lançar Ausência / Falta</button>
     </div>
-    <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
-    <div id="rec-list"><!-- dinâmico --></div>
+    <div class="rec-filters" id="rec-filters"></div>
+    <div id="rec-list"></div>
   </div>
 
-  <!-- ── RELATÓRIO ── -->
   <div class="tab-content" id="t-report">
     <div class="card">
       <div class="card-title">📄 Relatório Mensal de Ponto</div>
@@ -532,7 +513,6 @@ body::before{content:'';position:fixed;inset:0;background:
     <div id="report-preview"></div>
   </div>
 
-  <!-- ── CONFIG ── -->
   <div class="tab-content" id="t-cfg">
     <div class="card">
       <div class="card-title">🔗 Integração com Google Sheets</div>
@@ -607,11 +587,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MODALS
-══════════════════════════════════════ -->
-
-<!-- PIN Modal (Acesso do Funcionário) -->
 <div class="modal-overlay" id="pin-modal">
   <div class="modal-box" style="max-width:320px;text-align:center;align-self:center;border-radius:24px;">
     <div class="modal-title">Digite o seu PIN</div>
@@ -625,7 +600,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Justification Modal -->
 <div class="modal-overlay" id="just-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -648,7 +622,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Launch Absence Modal -->
 <div class="modal-overlay" id="absence-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -691,7 +664,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Employee modal -->
 <div class="modal-overlay" id="emp-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -729,7 +701,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Shift modal -->
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -759,7 +730,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Location modal -->
 <div class="modal-overlay" id="loc-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -783,7 +753,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Edit punch modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -801,7 +770,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Confirm delete modal -->
 <div class="modal-overlay" id="del-modal">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -816,9 +784,6 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <div id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════ -->
 <script>
 // ─────────────────────────────────────
 // STATE & DEFAULTS
@@ -826,18 +791,8 @@ body::before{content:'';position:fixed;inset:0;background:
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-// 1. DADOS TESTE + DEFAULTS INTELIGENTES
-let employees  = LS('pd_employees')  || [
-  { id:'emp_1', name:'Hanna',       role:'Cuidadora',     emoji:'👶', shiftId:'shift_1', locId:'loc_1', pin:'1234' },
-  { id:'emp_2', name:'Maria Júlia', role:'Administrativa', emoji:'💼', shiftId:'shift_2', locId:'loc_2', pin:'1234' }
-];
-let shifts     = LS('pd_shifts');
-if (!shifts || shifts.length === 0) {
-  shifts = [
-    { id:'shift_1', name:'Turno Comercial (8h)', hours:8, mins:0, color:'#34d399' },
-    { id:'shift_2', name:'Meio Período (4h)', hours:4, mins:0, color:'#60a5fa' }
-  ];
-}
+let employees  = LS('pd_employees')  || [];
+let shifts     = LS('pd_shifts') || [];
 let locations  = LS('pd_locations')  || [];
 let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
@@ -852,8 +807,32 @@ let isSending     = false;
 let clockTimer    = null;
 let recFilterEmp  = 'all';
 let cameraStream  = null;
+let activePinEmpId = null; 
 
-let activePinEmpId = null; // Guarda quem está tentando logar
+// ─────────────────────────────────────
+// MODAL HELPERS (RESTAURADOS!)
+// ─────────────────────────────────────
+const openModal  = id => document.getElementById(id).classList.add('show');
+const closeModal = id => document.getElementById(id).classList.remove('show');
+
+let delCallback = null;
+function openDelModal(msg, cb) {
+  document.getElementById('del-modal-sub').textContent = msg;
+  delCallback = cb;
+  openModal('del-modal');
+  document.getElementById('del-confirm-btn').onclick = () => { closeModal('del-modal'); if(delCallback) delCallback(); delCallback=null; };
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('show'); });
+});
+
+let _tt;
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3500);
+}
 
 // ─────────────────────────────────────
 // PERSIST HELPERS
@@ -923,7 +902,6 @@ const showScreen = id => {
 
 function promptPin(empId) {
   const emp = employees.find(e => e.id === empId);
-  // Compatibilidade: Se a funcionária não tiver PIN cadastrado, entra direto
   if (!emp.pin) {
     loginEmployee(empId);
     return;
@@ -950,12 +928,12 @@ function verifyPin() {
 }
 
 function loginEmployee(empId) {
-  SS('pd_logged_emp', empId); // Grava a sessão "Lembrar de Mim"
+  SS('pd_logged_emp', empId); 
   goEmployee(empId);
 }
 
 function logoutEmployee() {
-  localStorage.removeItem('pd_logged_emp'); // Esquece a sessão
+  localStorage.removeItem('pd_logged_emp'); 
   goChoose();
 }
 
@@ -1018,7 +996,6 @@ function buildChooseGrid() {
     const statusTxt = !next ? 'Todos os pontos ✓' : (next.includes('entrada') ? 'A aguardar entrada' : 'A aguardar saída');
     const isActive = todayRecs.some(r => r.slot === 'entrada1') && !todayRecs.some(r => r.slot === 'saida2');
     
-    // Atualizado: onclick agora chama o promptPin em vez de ir direto
     return `<div class="emp-card" onclick="promptPin('${emp.id}')">
       <div class="emp-avatar-sm">${emp.emoji || '👤'}</div>
       <div class="emp-card-info">
@@ -1280,6 +1257,7 @@ async function doPunch(force=false, reason="", attachmentB64="") {
 
     if (dist > loc.radius && !force) {
       setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`);
+      if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
       isSending = false; btn.disabled = false; return;
     }
 
@@ -1320,7 +1298,12 @@ async function doPunch(force=false, reason="", attachmentB64="") {
         saveAll();
         setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`); toast(force ? '✅ Pedido enviado ao gestor!' : '✅ Ponto salvo!','success');
       }
-      updatePunchBtn(); updateSlots(); stopCamera(); syncCloud(false);
+      updatePunchBtn(); updateSlots(); stopCamera(); 
+      
+      // AO REGISTAR ONLINE, SINCRONIZA E RECARREGA A PÁGINA
+      await syncCloud(false);
+      setTimeout(() => window.location.reload(), 1500);
+      
     } else {
       pendingRetry = rec; pending.push(rec); saveAll();
       setStatus('warn', `⚠️ Sem rede. Horário ${rec.time.slice(0,5)} na fila — clique Reenviar.`);
@@ -1356,8 +1339,12 @@ async function retryPunch() {
     if (!records.find(x => String(x.id) === String(pendingRetry.id))) { records.unshift(pendingRetry); }
     pending = pending.filter(p => p.id !== pendingRetry.id);
     const t = pendingRetry.time.slice(0,5); pendingRetry = null; saveAll();
-    setStatus('ok', `✅ Ponto salvo ☁️`); toast('✅ Concluído!','success');
-    updatePunchBtn(); updateSlots(); syncCloud(false); 
+    setStatus('ok', `✅ Ponto salvo ☁️`); 
+    toast('✅ Reenvio concluído! A recarregar...','success');
+    updatePunchBtn(); updateSlots(); 
+    
+    await syncCloud(false); 
+    setTimeout(() => window.location.reload(), 1500); 
   } else { setStatus('far', `⚠️ Tente novamente.`); toast('❌ Falha.','error'); updatePunchBtn(); }
   isSending = false; btn.disabled = false;
 }
@@ -1400,7 +1387,6 @@ async function syncCloud(manual=false) {
       SS('pd_records', records);
     }
     if (changed) {
-      // Se não for admin, atualiza apenas o visual, caso contrário atualiza tudo
       if (document.getElementById('s-admin').classList.contains('active')) { 
         renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn(); 
       } else {
@@ -1807,7 +1793,6 @@ function printReport() { window.print(); }
 window.onload = async () => {
   initReportSelects();
   
-  // VERIFICA SE HÁ SESSÃO GRAVADA ("LEMBRAR DE MIM")
   const loggedEmp = LS('pd_logged_emp');
   if (loggedEmp && employees.find(e => e.id === loggedEmp)) {
     goEmployee(loggedEmp);
@@ -1818,7 +1803,6 @@ window.onload = async () => {
   if (_CLOUD_URL && navigator.onLine) {
     await syncCloud(false);
     
-    // Após sincronizar as novas alterações da nuvem, revê a ecrã inicial
     const loggedEmpSync = LS('pd_logged_emp');
     if (!document.getElementById('s-admin').classList.contains('active')) {
       if (loggedEmpSync && employees.find(e => e.id === loggedEmpSync)) {
