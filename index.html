@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
@@ -81,7 +81,7 @@ body::before{content:'';position:fixed;inset:0;background:
 #s-punch{padding:0}
 .punch-topbar{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center}
 .btn-back{background:none;border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
-.btn-back:hover{color:var(--text);border-color:var(--border2)}
+.btn-back:hover{color:var(--red);border-color:rgba(248,113,113,.4);background:var(--red-dim)}
 .live-clock{text-align:right}
 .live-clock .lc-time{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:1px}
 .live-clock .lc-date{font-size:11px;color:var(--muted2);margin-top:2px}
@@ -459,7 +459,7 @@ body::before{content:'';position:fixed;inset:0;background:
       <div id="today-summary"><!-- dinâmico --></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="card-title-icon">📈</span> Horas Extras (Acumuladas)</div>
+      <div class="card-title"><span class="card-title-icon">📈</span> Horas Extra Acumuladas</div>
       <div id="ot-summary"><!-- dinâmico --></div>
     </div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
@@ -575,14 +575,6 @@ body::before{content:'';position:fixed;inset:0;background:
     
     <div class="card">
       <div class="card-title">⚙️ Comportamento & Regras (CLT)</div>
-      
-      <div class="setting-row">
-        <div><div class="setting-label">Regime de Horas Extras</div><div class="setting-desc">Tratar extras como Banco de Horas ou Pagamento</div></div>
-        <select id="cfg-regime" onchange="saveBoolCfg('otRegime', this.value)" style="width:150px; background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;outline:none;">
-          <option value="banco">Banco de Horas</option>
-          <option value="pago">Pagamento Mensal</option>
-        </select>
-      </div>
       
       <div class="setting-row">
         <div><div class="setting-label">Tolerância CLT (10 min)</div><div class="setting-desc">Ignora até 10min de diferença diária na jornada (Art. 58)</div></div>
@@ -710,9 +702,18 @@ body::before{content:'';position:fixed;inset:0;background:
       <div class="afield"><label>Cargo / Função</label><input type="text" id="emp-role-inp" placeholder="Ex: Cuidadora"></div>
     </div>
     
-    <div class="afield">
-      <label style="color:var(--amber)">PIN de Acesso (4 dígitos)</label>
-      <input type="text" id="emp-pin-inp" placeholder="Ex: 1234" maxlength="4" pattern="\d{4}">
+    <div class="form-grid">
+      <div class="afield">
+        <label style="color:var(--amber)">PIN de Acesso (4 dígitos)</label>
+        <input type="text" id="emp-pin-inp" placeholder="Ex: 1234" maxlength="4" pattern="\d{4}">
+      </div>
+      <div class="afield">
+        <label>Regime de Horas Extras</label>
+        <select id="emp-regime-sel">
+          <option value="banco">Banco de Horas</option>
+          <option value="pago">Horas Extras (Pagas)</option>
+        </select>
+      </div>
     </div>
 
     <div class="form-grid">
@@ -865,7 +866,7 @@ let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
 
 const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
-let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true, otRegime:'banco' };
+let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true };
 if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
 
 let currentEmpId = null;
@@ -1013,8 +1014,6 @@ function goAdmin() {
   document.getElementById('cfg-showdist').checked  = settings.showDist !== false;
   document.getElementById('cfg-clt').checked       = settings.cltTolerance !== false;
   document.getElementById('cfg-interval').checked  = settings.minInterval !== false;
-  const regimeEl = document.getElementById('cfg-regime');
-  if(regimeEl) regimeEl.value = settings.otRegime || 'banco';
 }
 
 function showTab(id, btn) {
@@ -1301,6 +1300,7 @@ async function doPunch(force=false, reason="", attachmentB64="") {
 
     if (dist > loc.radius && !force) {
       setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`);
+      if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
       isSending = false; btn.disabled = false; return;
     }
 
@@ -1471,7 +1471,6 @@ function journeyMin(empId) {
 
 function renderDash() {
   const today = new Date().toLocaleDateString('pt-BR');
-  const regime = settings.otRegime || 'banco';
   const totalWorking = employees.filter(emp => {
     const tr = todayRecs(emp.id).filter(r => r.status !== 'rejected');
     return tr.some(r=>r.slot==='entrada1') && !tr.some(r=>r.slot==='saida2');
@@ -1509,6 +1508,7 @@ function renderDash() {
   document.getElementById('ot-summary').innerHTML = employees.map(emp => {
     let tot50 = 0, tot100 = 0, balance = 0;
     const dates = [...new Set(records.filter(r=>r.empId===emp.id).map(r=>r.date))];
+    const regime = emp.otRegime || 'banco';
     dates.forEach(d => {
       const w=workedMin(emp.id,d), j=journeyMin(emp.id);
       const dow = new Date(d.split('/')[2], d.split('/')[1]-1, d.split('/')[0]).getDay();
@@ -1748,9 +1748,9 @@ function refreshEmpModalSelects() {
 // ─────────────────────────────────────
 // CRUD Funcionários / Turnos / Locais
 // ─────────────────────────────────────
-function renderEmpList() { const el = document.getElementById('emp-list'); if (!employees.length) { el.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário</p></div>'; return; } el.innerHTML = employees.map(emp => { const shift = shifts.find(s=>s.id===emp.shiftId); const loc = locations.find(l=>l.id===emp.locId); return `<div class="emp-list-item"><div class="eli-avatar">${emp.emoji||'👤'}</div><div class="eli-info"><div class="eli-name">${emp.name}</div><div class="eli-meta">${emp.role} · ${shift?.name||'Sem turno'} · ${loc?.name||'Sem local'}</div></div><div class="eli-actions"><button class="btn-icon" onclick="openEmpModal('${emp.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteEmp('${emp.id}')">🗑️</button></div></div>`; }).join(''); }
-function openEmpModal(id=null) { document.getElementById('emp-modal-title').textContent = id ? 'Editar Funcionário' : 'Novo Funcionário'; document.getElementById('emp-id-edit').value = id || ''; const emp = id ? employees.find(e=>e.id===id) : null; document.getElementById('emp-name-inp').value = emp?.name || ''; document.getElementById('emp-role-inp').value = emp?.role || ''; document.getElementById('emp-emoji-inp').value = emp?.emoji || ''; document.getElementById('emp-pin-inp').value = emp?.pin || ''; refreshEmpModalSelects(); if(emp) { document.getElementById('emp-shift-sel').value = emp.shiftId; document.getElementById('emp-loc-sel').value = emp.locId; } openModal('emp-modal'); }
-function saveEmployee() { const name = document.getElementById('emp-name-inp').value.trim(); const role = document.getElementById('emp-role-inp').value.trim(); const emoji = document.getElementById('emp-emoji-inp').value.trim(); const pin = document.getElementById('emp-pin-inp').value.trim(); const shiftId = document.getElementById('emp-shift-sel').value; const locId = document.getElementById('emp-loc-sel').value; if (!name) { toast('⚠️ Nome obrigatório','warn'); return; } const editId = document.getElementById('emp-id-edit').value; if (editId) { const i = employees.findIndex(e=>e.id===editId); employees[i] = { ...employees[i], name, role, emoji, shiftId, locId, pin }; } else { employees.push({ id:'emp_'+Date.now(), name, role, emoji, shiftId, locId, pin }); } saveAll(); renderEmpList(); toast('💾 Salvando...','info'); pushConfigToCloud('saveEmployee', employees.find(e => e.id === (editId || employees[employees.length-1].id))).then(ok => toast(ok ? '✅ Salvo!' : '⚠️ Salvo localmente','success')); closeModal('emp-modal'); }
+function renderEmpList() { const el = document.getElementById('emp-list'); if (!employees.length) { el.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário</p></div>'; return; } el.innerHTML = employees.map(emp => { const shift = shifts.find(s=>s.id===emp.shiftId); const loc = locations.find(l=>l.id===emp.locId); return `<div class="emp-list-item"><div class="eli-avatar">${emp.emoji||'👤'}</div><div class="eli-info"><div class="eli-name">${emp.name}</div><div class="eli-meta">${emp.role} · ${shift?.name||'Sem turno'} · ${emp.otRegime === 'pago' ? '💰 Extras Pagas' : '🏦 Banco de Horas'}</div></div><div class="eli-actions"><button class="btn-icon" onclick="openEmpModal('${emp.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteEmp('${emp.id}')">🗑️</button></div></div>`; }).join(''); }
+function openEmpModal(id=null) { document.getElementById('emp-modal-title').textContent = id ? 'Editar Funcionário' : 'Novo Funcionário'; document.getElementById('emp-id-edit').value = id || ''; const emp = id ? employees.find(e=>e.id===id) : null; document.getElementById('emp-name-inp').value = emp?.name || ''; document.getElementById('emp-role-inp').value = emp?.role || ''; document.getElementById('emp-emoji-inp').value = emp?.emoji || ''; document.getElementById('emp-pin-inp').value = emp?.pin || ''; document.getElementById('emp-regime-sel').value = emp?.otRegime || 'banco'; refreshEmpModalSelects(); if(emp) { document.getElementById('emp-shift-sel').value = emp.shiftId; document.getElementById('emp-loc-sel').value = emp.locId; } openModal('emp-modal'); }
+function saveEmployee() { const name = document.getElementById('emp-name-inp').value.trim(); const role = document.getElementById('emp-role-inp').value.trim(); const emoji = document.getElementById('emp-emoji-inp').value.trim(); const pin = document.getElementById('emp-pin-inp').value.trim(); const otRegime = document.getElementById('emp-regime-sel').value; const shiftId = document.getElementById('emp-shift-sel').value; const locId = document.getElementById('emp-loc-sel').value; if (!name) { toast('⚠️ Nome obrigatório','warn'); return; } const editId = document.getElementById('emp-id-edit').value; if (editId) { const i = employees.findIndex(e=>e.id===editId); employees[i] = { ...employees[i], name, role, emoji, shiftId, locId, pin, otRegime }; } else { employees.push({ id:'emp_'+Date.now(), name, role, emoji, shiftId, locId, pin, otRegime }); } saveAll(); renderEmpList(); toast('💾 Salvando...','info'); pushConfigToCloud('saveEmployee', employees.find(e => e.id === (editId || employees[employees.length-1].id))).then(ok => toast(ok ? '✅ Salvo!' : '⚠️ Salvo localmente','success')); closeModal('emp-modal'); }
 function confirmDeleteEmp(id) { openDelModal(`Excluir funcionário?`, () => { employees = employees.filter(e=>e.id!==id); records = records.filter(r=>r.empId!==id); saveAll(); renderEmpList(); renderRecords(); renderDash(); pushConfigToCloud('deleteEmployee', {id}).then(ok => toast('🗑️ Excluído','success')); }); }
 function renderShiftList() { const el = document.getElementById('shift-list'); if (!shifts.length) { el.innerHTML = '<div class="empty"><p>Nenhum turno</p></div>'; return; } el.innerHTML = shifts.map(s => `<div class="shift-item"><div class="shift-color" style="background:${s.color}"></div><div class="shift-info"><div class="shift-name">${s.name}</div><div class="shift-hours">${s.hours}h ${s.mins?s.mins+'m':''}/dia</div><div class="shift-journey">Jornada: ${fmtMin(s.hours*60+(s.mins||0))}</div></div><div class="eli-actions"><button class="btn-icon" onclick="openShiftModal('${s.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteShift('${s.id}')">🗑️</button></div></div>`).join(''); }
 let selectedColor = '#34d399'; function selectColor(el) { document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected')); el.classList.add('selected'); selectedColor = el.dataset.color; }
@@ -1759,7 +1759,7 @@ function saveShift() { const name = document.getElementById('shift-name-inp').va
 function confirmDeleteShift(id) { openDelModal('Excluir turno?', () => { shifts = shifts.filter(s=>s.id!==id); employees.forEach(e => { if(e.shiftId===id) e.shiftId=''; }); saveAll(); renderShiftList(); renderEmpList(); pushConfigToCloud('deleteShift', {id}); }); }
 function renderLocList() { const el = document.getElementById('loc-list'); if (!locations.length) { el.innerHTML = '<div class="empty"><p>Nenhum local</p></div>'; return; } el.innerHTML = locations.map(l => `<div class="loc-item"><div class="loc-header"><div class="loc-pin">${l.emoji||'📍'}</div><div class="loc-name">${l.name}</div><div class="eli-actions"><button class="btn-icon" onclick="openLocModal('${l.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteLoc('${l.id}')">🗑️</button></div></div><div class="loc-coords"><div class="coord-box"><div class="coord-label">Lat</div><div class="coord-val">${l.lat}</div></div><div class="coord-box"><div class="coord-label">Lng</div><div class="coord-val">${l.lng}</div></div><div class="coord-box"><div class="coord-label">Raio</div><div class="coord-val">${l.radius}m</div></div></div></div>`).join(''); }
 function openLocModal(id=null) { document.getElementById('loc-modal-title').textContent = id ? 'Editar Local' : 'Novo Local'; document.getElementById('loc-id-edit').value = id || ''; const l = id ? locations.find(lc=>lc.id===id) : null; document.getElementById('loc-name-inp').value = l?.name || ''; document.getElementById('loc-emoji-inp').value = l?.emoji || '📍'; document.getElementById('loc-lat-inp').value = l?.lat || ''; document.getElementById('loc-lng-inp').value = l?.lng || ''; document.getElementById('loc-radius-inp').value = l?.radius || 150; openModal('loc-modal'); }
-function saveLocation() { const name = document.getElementById('loc-name-inp').value.trim(); const emoji = document.getElementById('loc-emoji-inp').value.trim() || '📍'; const lat = parseFloat(document.getElementById('loc-lat-inp').value); const lng = parseFloat(document.getElementById('loc-lng-inp').value); const radius = parseInt(document.getElementById('loc-radius-inp').value) || 150; if (!name || isNaN(lat) || isNaN(lng)) return; const editId = document.getElementById('loc-id-edit').value; if (editId) { const i = locations.findIndex(l=>l.id===editId); locations[i] = { ...locations[i], name, emoji, lat, lng, radius }; } else { locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius }); } const savedLoc = editId ? locations.find(l=>l.id===editId) : locations[locations.length-1]; saveAll(); renderLocList(); refreshEmpModalSelects(); pushConfigToCloud('saveLocation', savedLoc).then(ok => toast('✅ Salvo!','success')); closeModal('loc-modal'); }
+function saveLocation() { const name = document.getElementById('loc-name-inp').value.trim(); const emoji = document.getElementById('loc-emoji-inp').value.trim() || '📍'; const lat = parseFloat(document.getElementById('loc-lat-inp').value); const lng = parseFloat(document.getElementById('loc-lng-inp').value); const radius = parseInt(document.getElementById('loc-radius-inp').value) || 150; if (!name || isNaN(lat)) return; const editId = document.getElementById('loc-id-edit').value; if (editId) { const i = locations.findIndex(l=>l.id===editId); locations[i] = { ...locations[i], name, emoji, lat, lng, radius }; } else { locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius }); } const savedLoc = editId ? locations.find(l=>l.id===editId) : locations[locations.length-1]; saveAll(); renderLocList(); refreshEmpModalSelects(); pushConfigToCloud('saveLocation', savedLoc).then(ok => toast('✅ Salvo!','success')); closeModal('loc-modal'); }
 function confirmDeleteLoc(id) { openDelModal('Excluir local?', () => { locations = locations.filter(l=>l.id!==id); employees.forEach(e => { if(e.locId===id) e.locId=''; }); saveAll(); renderLocList(); renderEmpList(); pushConfigToCloud('deleteLocation', {id}); }); }
 async function testCloudConnection() { const url = settings.googleUrl || _CLOUD_URL; const el = document.getElementById('conn-status'); if (!url) return; el.style.display = 'block'; el.style.color = 'var(--muted2)'; el.textContent = '🔌 A testar...'; try { const res = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' }); const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { data=null; } if (data && !data.error) { el.style.color = 'var(--green)'; el.textContent = `✅ Ligação OK!`; toast('✅ OK!','success'); } else { el.style.color = 'var(--red)'; el.textContent = '❌ Erro.'; } } catch(e) { el.style.color = 'var(--red)'; el.textContent = '❌ Falha: ' + e.message; } }
 function savePassword() { const pw = document.getElementById('cfg-pw').value.trim(); if (pw.length < 6) return; settings.pw = pw; saveAll(); toast('✅ Senha alterada','success'); pushConfigToCloud('saveConfig', {key:'pw', value:pw}); }
@@ -1799,7 +1799,6 @@ async function buildReport() {
   const month = parseInt(document.getElementById('rep-month').value); const year = parseInt(document.getElementById('rep-year').value);
   const empSel = document.getElementById('rep-emp').value; const empList = empSel === 'all' ? employees : employees.filter(e => e.id === empSel);
   const daysInMonth = new Date(year, month, 0).getDate(); const genAt = new Date().toLocaleString('pt-BR');
-  const regime = settings.otRegime || 'banco';
   
   // Ignora recusados no relatório final
   const validRecords = records.filter(r => r.status !== 'rejected');
@@ -1811,6 +1810,7 @@ async function buildReport() {
     const shift = shifts.find(s => s.id === emp.shiftId); const journMin = shift ? (shift.hours * 60 + (shift.mins || 0)) : 480;
     const dayData = []; let totalWorked = 0, totalOT = 0, totalUnder = 0, daysWorked = 0;
     let total50 = 0, total100 = 0, balance = 0;
+    const regime = emp.otRegime || 'banco';
 
     for (let d = 1; d <= daysInMonth; d++) {
       const date = `${String(d).padStart(2,'0')}/${String(month).padStart(2,'0')}/${year}`;
@@ -1826,6 +1826,7 @@ async function buildReport() {
       let ot = 0, ot50 = 0, ot100 = 0;
       if (absence) {
         if (absence.type === 'falta_injustificada') { ot = -journMin; } 
+        else { ot = 0; }
       } else {
         ot = isWE ? m : m - journMin;
         if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
@@ -1853,7 +1854,7 @@ async function buildReport() {
         summaryExtras = `<div class="rep-sum-box"><div class="rsb-label">Horas Extras Totais</div><div class="rsb-val ${totalOT>0?'amber':''}">${fmtMin(totalOT)}</div></div><div class="rep-sum-box"><div class="rsb-label">Saldo do Mês (Banco)</div><div class="rsb-val ${balance>0?'amber':balance<0?'red':''}">${balance>=0?'+':''}${fmtMin(balance)}</div></div>`;
     }
 
-    html += `<div class="rep-emp-section"><div class="rep-emp-header"><div class="rep-emp-avatar">${emp.emoji||'👤'}</div><div><div class="rep-emp-name">${emp.name}</div><div class="rep-emp-meta">${emp.role} · ${shift?shift.name:'Sem turno'}</div></div></div>
+    html += `<div class="rep-emp-section"><div class="rep-emp-header"><div class="rep-emp-avatar">${emp.emoji||'👤'}</div><div><div class="rep-emp-name">${emp.name}</div><div class="rep-emp-meta">${emp.role} · ${shift?shift.name:'Sem turno'} · ${regime === 'pago' ? '💰 Pagamento' : '🏦 Banco'}</div></div></div>
       <div class="rep-summary"><div class="rep-sum-box"><div class="rsb-label">Dias Trabalhados</div><div class="rsb-val blue">${daysWorked}</div></div><div class="rep-sum-box"><div class="rsb-label">Total Trabalhado</div><div class="rsb-val green">${fmtMin(totalWorked)}</div></div>${summaryExtras}</div>
       <div class="rep-table-wrap"><table class="rep-table"><thead><tr><th>Data</th><th>Dia</th><th>Entrada 1</th><th>Saída 1</th><th>Entrada 2</th><th>Saída 2</th><th>Trab.</th><th>Jorn.</th><th>Banco</th><th>HE 50%</th><th>HE 100%</th></tr></thead><tbody>`;
     
