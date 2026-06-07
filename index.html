@@ -76,12 +76,30 @@ body::before{content:'';position:fixed;inset:0;background:
 .btn-admin:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
 
 /* ═══════════════════════════════════════════
+   SCREEN: WIZARD (ASSISTENTE)
+═══════════════════════════════════════════ */
+#s-wizard{align-items:center;justify-content:center;padding:32px 20px; background:var(--surface);}
+.wiz-card{width:100%;max-width:480px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);padding:32px 28px; position:relative; overflow:hidden;}
+.wiz-header{margin-bottom: 24px;}
+.wiz-progress{display:flex; gap:6px; margin-bottom:24px;}
+.wiz-dot{flex:1; height:6px; background:var(--surface3); border-radius:3px; transition:all 0.3s;}
+.wiz-dot.active{background:var(--green); box-shadow:0 0 8px var(--green-glow);}
+.wiz-dot.done{background:var(--blue);}
+.wiz-step{display:none; animation:fadeIn 0.4s ease forwards;}
+.wiz-step.active{display:block;}
+.wiz-title{font-size:22px; font-weight:700; margin-bottom:8px; letter-spacing:-0.5px;}
+.wiz-desc{font-size:13px; color:var(--muted2); margin-bottom:24px; line-height:1.6;}
+.wiz-icon-box{font-size:42px; text-align:center; margin-bottom:16px;}
+.wiz-actions{display:flex; gap:12px; margin-top:32px;}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════════════════════════════════════════
    SCREEN: EMPLOYEE PUNCH
 ═══════════════════════════════════════════ */
 #s-punch{padding:0}
 .punch-topbar{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center}
 .btn-back{background:none;border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
-.btn-back:hover{color:var(--red);border-color:rgba(248,113,113,.4);background:var(--red-dim)}
+.btn-back:hover{color:var(--text);border-color:var(--border2)}
 .live-clock{text-align:right}
 .live-clock .lc-time{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:1px}
 .live-clock .lc-date{font-size:11px;color:var(--muted2);margin-top:2px}
@@ -213,10 +231,12 @@ body::before{content:'';position:fixed;inset:0;background:
 .afield input,.afield select,.afield textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .afield input:focus,.afield select:focus,.afield textarea:focus{border-color:var(--blue)}
 .afield select option{background:var(--surface2)}
+.afield input:disabled{opacity:.5;cursor:not-allowed}
 .color-row{display:flex;gap:8px;flex-wrap:wrap}
 .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s}
 .color-dot.selected{border-color:#fff}
 
+/* ── TAB: SHIFTS ── */
 .shift-item{background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px}
 .shift-color{width:6px;height:36px;border-radius:3px;flex-shrink:0}
 .shift-info{flex:1}
@@ -224,6 +244,7 @@ body::before{content:'';position:fixed;inset:0;background:
 .shift-hours{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);margin-top:3px}
 .shift-journey{font-size:10px;color:var(--amber);margin-top:2px}
 
+/* ── TAB: LOCATIONS ── */
 .loc-item{background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:8px}
 .loc-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .loc-pin{font-size:22px}
@@ -377,8 +398,118 @@ body::before{content:'';position:fixed;inset:0;background:
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN: PUNCH
+     SCREEN: WIZARD (ASSISTENTE)
 ══════════════════════════════════════ -->
+<div class="screen" id="s-wizard">
+  <div class="wiz-card">
+    <div class="wiz-header">
+      <div class="wiz-progress">
+        <div class="wiz-dot active" id="w-dot-1"></div>
+        <div class="wiz-dot" id="w-dot-2"></div>
+        <div class="wiz-dot" id="w-dot-3"></div>
+        <div class="wiz-dot" id="w-dot-4"></div>
+      </div>
+    </div>
+
+    <!-- Passo 1: Segurança -->
+    <div class="wiz-step active" id="w-step-1">
+      <div class="wiz-icon-box">🔐</div>
+      <div class="wiz-title">Bem-vindo ao PontoDigital!</div>
+      <div class="wiz-desc">Para garantir a segurança da clínica, comece por criar uma <b>nova senha de Administrador</b> (a padrão é 123456).</div>
+      <div class="field">
+        <label>Nova Senha Admin</label>
+        <input type="password" id="wiz-pw" placeholder="Mínimo de 6 caracteres">
+      </div>
+      <div class="wiz-actions">
+        <button class="btn-primary" style="margin-top:0" onclick="wizNext(1)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- Passo 2: Local -->
+    <div class="wiz-step" id="w-step-2">
+      <div class="wiz-icon-box">📍</div>
+      <div class="wiz-title">Onde as pessoas trabalham?</div>
+      <div class="wiz-desc">O sistema usa GPS para garantir que a funcionária está no lugar certo. Vamos criar o seu primeiro <b>Local de Trabalho</b>.</div>
+      <div class="field">
+        <label>Nome do Local</label>
+        <input type="text" id="wiz-loc-name" placeholder="Ex: Clínica Principal">
+      </div>
+      <button class="btn-sync" style="background:var(--blue-dim);border:1px dashed var(--blue);width:100%;margin-bottom:12px;justify-content:center" onclick="wizGetGps(this)">📍 Capturar minha localização atual</button>
+      <div class="form-grid">
+        <div class="afield"><label>Latitude</label><input type="number" id="wiz-loc-lat" step="0.000001"></div>
+        <div class="afield"><label>Longitude</label><input type="number" id="wiz-loc-lng" step="0.000001"></div>
+      </div>
+      <div class="wiz-actions">
+        <button class="btn-cancel" onclick="wizPrev(2)">Voltar</button>
+        <button class="btn-primary" style="margin-top:0" onclick="wizNext(2)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- Passo 3: Turno -->
+    <div class="wiz-step" id="w-step-3">
+      <div class="wiz-icon-box">🕐</div>
+      <div class="wiz-title">Definir o Turno (Jornada)</div>
+      <div class="wiz-desc">Quantas horas a funcionária trabalha por dia? Isto serve para o sistema calcular <b>Horas Extras</b> ou <b>Atrasos</b> automaticamente.</div>
+      <div class="field">
+        <label>Nome do Turno</label>
+        <input type="text" id="wiz-shift-name" placeholder="Ex: Comercial 8h">
+      </div>
+      <div class="form-grid">
+        <div class="afield"><label>Jornada (h/dia)</label><input type="number" id="wiz-shift-h" placeholder="8"></div>
+        <div class="afield"><label>Minutos extra</label><input type="number" id="wiz-shift-m" placeholder="0"></div>
+      </div>
+      <div class="wiz-actions">
+        <button class="btn-cancel" onclick="wizPrev(3)">Voltar</button>
+        <button class="btn-primary" style="margin-top:0" onclick="wizNext(3)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- Passo 4: Funcionária -->
+    <div class="wiz-step" id="w-step-4">
+      <div class="wiz-icon-box">👩‍⚕️</div>
+      <div class="wiz-title">A primeira Funcionária</div>
+      <div class="wiz-desc">Por fim, quem vai registar o ponto? Esta pessoa será automaticamente vinculada ao Local e Turno que acabou de criar.</div>
+      <div class="field">
+        <label>Nome da Funcionária</label>
+        <input type="text" id="wiz-emp-name" placeholder="Ex: Maria Silva">
+      </div>
+      <div class="form-grid">
+        <div class="afield"><label>Cargo / Função</label><input type="text" id="wiz-emp-role" placeholder="Ex: Rececionista"></div>
+        <div class="afield">
+          <label style="color:var(--amber)">PIN (Senha de 4 dígitos)</label>
+          <input type="text" id="wiz-emp-pin" placeholder="Ex: 1234" maxlength="4" pattern="[0-9]*">
+        </div>
+      </div>
+      <div class="wiz-actions">
+        <button class="btn-cancel" onclick="wizPrev(4)">Voltar</button>
+        <button class="btn-primary" style="margin-top:0; background:linear-gradient(135deg,#065f46,#34d399); color:#022c22;" onclick="wizFinish()">Finalizar Configuração 🎉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Autenticação Wizard -->
+<div class="modal-overlay" id="wiz-auth-modal">
+  <div class="modal-box" style="max-width:340px;text-align:center;align-self:center;border-radius:24px;">
+    <div class="modal-title">Acesso Restrito</div>
+    <div class="modal-sub" style="margin-bottom:16px;">Introduza a senha atual de Administrador para iniciar a configuração.<br><br><b>(Padrão: 123456)</b></div>
+    <div class="field" style="text-align:left;">
+      <input type="password" id="wiz-auth-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')verifyWizAuth()">
+    </div>
+    <div class="login-err" id="wiz-auth-err" style="display:none;margin-top:12px;">Senha incorreta</div>
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn-cancel" onclick="closeModal('wiz-auth-modal')">Cancelar</button>
+      <button class="btn-confirm" onclick="verifyWizAuth()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+   SCREEN: PUNCH
+═══════════════════════════════════════════ */
+/* (Restante HTML dos modais e do painel admin) */
+-->
+<!-- PUNCH -->
 <div class="screen" id="s-punch">
   <div class="punch-topbar">
     <button class="btn-back" onclick="logoutEmployee()">🚪 Sair</button>
@@ -418,9 +549,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN LOGIN
-══════════════════════════════════════ -->
+<!-- ADMIN LOGIN -->
 <div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-icon">🔐</div>
@@ -436,9 +565,7 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: ADMIN
-══════════════════════════════════════ -->
+<!-- ADMIN -->
 <div class="screen" id="s-admin">
   <nav class="admin-nav">
     <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
@@ -451,166 +578,109 @@ body::before{content:'';position:fixed;inset:0;background:
     <button class="nav-exit" onclick="goChoose()">Sair ×</button>
   </nav>
 
-  <!-- ── DASHBOARD ── -->
+  <!-- DASHBOARD -->
   <div class="tab-content active" id="t-dash">
     <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
-    <div class="card">
-      <div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div>
-      <div id="today-summary"><!-- dinâmico --></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="card-title-icon">📈</span> Horas Extra Acumuladas</div>
-      <div id="ot-summary"><!-- dinâmico --></div>
-    </div>
+    <div class="card"><div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div><div id="today-summary"></div></div>
+    <div class="card"><div class="card-title"><span class="card-title-icon">📈</span> Horas Extra Acumuladas</div><div id="ot-summary"></div></div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
   </div>
 
-  <!-- ── EMPLOYEES ── -->
+  <!-- EMPLOYEES -->
   <div class="tab-content" id="t-emp">
     <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionária</button>
-    <div id="emp-list"><!-- dinâmico --></div>
+    <div id="emp-list"></div>
   </div>
 
-  <!-- ── SHIFTS ── -->
+  <!-- SHIFTS -->
   <div class="tab-content" id="t-shift">
     <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
-    <div id="shift-list"><!-- dinâmico --></div>
-    <div class="card" style="margin-top:14px">
-      <div class="card-title">ℹ️ O que é um turno?</div>
-      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
-        O turno define a <strong>carga horária diária</strong> da funcionária — usada para calcular horas extras. Ex: "CLT 44h" = 8h48m/dia.
-      </p>
-    </div>
+    <div id="shift-list"></div>
   </div>
 
-  <!-- ── LOCATIONS ── -->
+  <!-- LOCATIONS -->
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
-    <div id="loc-list"><!-- dinâmico --></div>
-    <div class="card" style="margin-top:14px">
-      <div class="card-title">📡 Como obter coordenadas manuais</div>
-      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
-        Aceda a <strong>maps.google.com</strong>, clique com o botão direito no local exato e copie as coordenadas.
-      </p>
-    </div>
+    <div id="loc-list"></div>
   </div>
 
-  <!-- ── RECORDS ── -->
+  <!-- RECORDS -->
   <div class="tab-content" id="t-rec">
     <div style="display:flex; gap:10px; margin-bottom:14px;">
       <button class="btn-export-full" style="margin-bottom:0;" onclick="exportCSV()">📊 Exportar CSV</button>
-      <button class="btn-export-full" style="margin-bottom:0; background:var(--blue-dim); color:var(--blue); border-color:rgba(96,165,250,.3);" onclick="openAbsenceModal()">➕ Lançar Ausência / Falta</button>
+      <button class="btn-export-full" style="margin-bottom:0; background:var(--blue-dim); color:var(--blue); border-color:rgba(96,165,250,.3);" onclick="openAbsenceModal()">➕ Lançar Ausência</button>
     </div>
-    <div class="rec-filters" id="rec-filters"><!-- dinâmico --></div>
-    <div id="rec-list"><!-- dinâmico --></div>
+    <div class="rec-filters" id="rec-filters"></div>
+    <div id="rec-list"></div>
   </div>
 
-  <!-- ── RELATÓRIO ── -->
+  <!-- RELATÓRIO -->
   <div class="tab-content" id="t-report">
     <div class="card">
       <div class="card-title">📄 Relatório Mensal de Ponto</div>
       <div class="form-grid" style="margin-bottom:12px">
-        <div class="afield">
-          <label>Mês</label>
-          <select id="rep-month"></select>
-        </div>
-        <div class="afield">
-          <label>Ano</label>
-          <select id="rep-year"></select>
-        </div>
+        <div class="afield"><label>Mês</label><select id="rep-month"></select></div>
+        <div class="afield"><label>Ano</label><select id="rep-year"></select></div>
       </div>
-      <div class="afield">
-        <label>Funcionária</label>
-        <select id="rep-emp"><option value="all">Todas</option></select>
-      </div>
+      <div class="afield"><label>Funcionária</label><select id="rep-emp"><option value="all">Todas</option></select></div>
       <div style="display:flex;gap:8px;margin-top:4px">
-        <button class="btn-sync" style="flex:1" onclick="buildReport()">🔍 Gerar Relatório</button>
-        <button class="btn-export-full" style="flex:1;margin-bottom:0" onclick="printReport()">🖨️ Imprimir / PDF</button>
+        <button class="btn-sync" style="flex:1" onclick="buildReport()">🔍 Gerar</button>
+        <button class="btn-export-full" style="flex:1;margin-bottom:0" onclick="printReport()">🖨️ Imprimir</button>
       </div>
     </div>
     <div id="report-preview"></div>
   </div>
 
-  <!-- ── CONFIG ── -->
+  <!-- CONFIG -->
   <div class="tab-content" id="t-cfg">
     <div class="card">
       <div class="card-title">🔗 Integração com Google Sheets</div>
-      <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
-        A URL do Apps Script é carregada automaticamente do ficheiro <strong style="color:var(--green)">config.js</strong> no servidor.<br>
-      </div>
       <div id="conn-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;word-break:break-all;margin-bottom:12px">—</div>
       <div style="display:flex;gap:8px">
-        <button class="btn-sync" style="flex:1" onclick="testCloudConnection()">🔌 Testar Conexão</button>
-        <button class="btn-sync" style="flex:1" onclick="syncCloud(true)">🔄 Sincronizar Agora</button>
+        <button class="btn-sync" style="flex:1" onclick="testCloudConnection()">🔌 Testar</button>
+        <button class="btn-sync" style="flex:1" onclick="syncCloud(true)">🔄 Sincronizar</button>
       </div>
       <div id="conn-status" style="margin-top:10px;font-size:12px;color:var(--muted2);display:none"></div>
     </div>
     
     <div class="card">
       <div class="card-title">🔒 Fechamento de Folha (Lock)</div>
-      <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
-        Tranque um mês após o pagamento. Nenhum ponto poderá ser adicionado, editado ou apagado nesse período.
-      </div>
       <div class="form-grid" style="margin-bottom:12px">
-        <div class="afield">
-          <label>Mês</label>
-          <select id="lock-month" onchange="updateLockBtn()"></select>
-        </div>
-        <div class="afield">
-          <label>Ano</label>
-          <select id="lock-year" onchange="updateLockBtn()"></select>
-        </div>
+        <div class="afield"><label>Mês</label><select id="lock-month" onchange="updateLockBtn()"></select></div>
+        <div class="afield"><label>Ano</label><select id="lock-year" onchange="updateLockBtn()"></select></div>
       </div>
       <button class="btn-sync" onclick="toggleLockMonth()" id="btn-lock-month">🔒 Trancar Mês</button>
     </div>
 
     <div class="card">
       <div class="card-title">🔒 Segurança</div>
-      <div class="afield">
-        <label>Nova Senha Administrativa</label>
-        <input type="password" id="cfg-pw" placeholder="mínimo 6 caracteres">
-      </div>
+      <div class="afield"><label>Nova Senha Admin</label><input type="password" id="cfg-pw" placeholder="mínimo 6 caracteres"></div>
       <button class="btn-sync" onclick="savePassword()">💾 Alterar Senha</button>
     </div>
     
     <div class="card">
       <div class="card-title">⚙️ Comportamento & Regras (CLT)</div>
-      
       <div class="setting-row">
-        <div><div class="setting-label">Tolerância CLT (10 min)</div><div class="setting-desc">Ignora até 10min de diferença diária na jornada (Art. 58)</div></div>
+        <div><div class="setting-label">Tolerância CLT (10 min)</div><div class="setting-desc">Art. 58</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-clt" onchange="saveBoolCfg('cltTolerance',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
-      
       <div class="setting-row">
-        <div><div class="setting-label">Intervalo Mínimo (1h)</div><div class="setting-desc">Exige 1h de descanso antes do registo da Entrada 2</div></div>
+        <div><div class="setting-label">Intervalo Mínimo (1h)</div><div class="setting-desc">Exige 1h descanso</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-interval" onchange="saveBoolCfg('minInterval',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
-      
       <div class="setting-row">
-        <div><div class="setting-label">Registo forçado</div><div class="setting-desc">Permitir bater ponto fora do raio mediante justificativa</div></div>
+        <div><div class="setting-label">Registo forçado</div><div class="setting-desc">Permitir bater ponto fora do raio com justificativa</div></div>
         <label class="toggle"><input type="checkbox" id="cfg-override" onchange="saveBoolCfg('allowOverride',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
       </div>
-      
-      <div class="setting-row">
-        <div><div class="setting-label">Mostrar distância</div><div class="setting-desc">Exibir distância do local à funcionária</div></div>
-        <label class="toggle"><input type="checkbox" id="cfg-showdist" onchange="saveBoolCfg('showDist',this.checked)"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
-      </div>
     </div>
-    
     <div class="card">
       <div class="card-title">🗑️ Dados</div>
-      <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">
-        Apagar todos os registos e configurações locais
-      </button>
+      <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">Apagar TUDO</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MODALS
-══════════════════════════════════════ -->
-
-<!-- PIN Modal (Acesso do Funcionário) -->
+<!-- MODALS SECUNDÁRIOS -->
 <div class="modal-overlay" id="pin-modal">
   <div class="modal-box" style="max-width:320px;text-align:center;align-self:center;border-radius:24px;">
     <div class="modal-title">Digite o seu PIN</div>
@@ -624,203 +694,68 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- Justification Modal -->
 <div class="modal-overlay" id="just-modal">
   <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Justificar Ponto</div>
-    <div class="modal-sub">Informe o motivo da ausência/distância e anexe um comprovativo (opcional). O gestor irá avaliar.</div>
+    <div class="modal-handle"></div><div class="modal-title">Justificar Ponto</div>
     <div class="form-grid full">
-      <div class="afield">
-        <label>Motivo</label>
-        <textarea id="just-reason" rows="3" placeholder="Ex: Consulta médica na Clínica X. Em anexo o atestado." style="resize:none;"></textarea>
-      </div>
-      <div class="afield">
-        <label>Anexar Comprovativo (Foto / Documento)</label>
-        <input type="file" id="just-file" accept="image/*,application/pdf" style="padding: 8px;">
-      </div>
+      <div class="afield"><label>Motivo</label><textarea id="just-reason" rows="3"></textarea></div>
+      <div class="afield"><label>Anexar Comprovativo</label><input type="file" id="just-file" accept="image/*,application/pdf"></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('just-modal')">Cancelar</button>
-      <button class="btn-confirm" onclick="confirmJustifiedPunch()">Enviar Pedido</button>
-    </div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('just-modal')">Cancelar</button><button class="btn-confirm" onclick="confirmJustifiedPunch()">Enviar</button></div>
   </div>
 </div>
 
-<!-- Launch Absence Modal -->
 <div class="modal-overlay" id="absence-modal">
   <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Lançar Ausência / Falta</div>
-    <div class="modal-sub">Adicione faltas inteiras ou atestados médicos para a funcionária.</div>
-    <div class="form-grid">
-      <div class="afield">
-        <label>Funcionária</label>
-        <select id="abs-emp-sel"></select>
-      </div>
-      <div class="afield">
-        <label>Data (DD/MM/AAAA)</label>
-        <input type="text" id="abs-date-inp" placeholder="Ex: 25/10/2026">
-      </div>
-    </div>
-    <div class="afield">
-      <label>Tipo de Ausência</label>
-      <select id="abs-type-sel">
-        <option value="falta_justificada">Falta Justificada (Abono / Atestado)</option>
-        <option value="falta_injustificada">Falta Injustificada (Desconto)</option>
-      </select>
-    </div>
-    <div class="afield">
-      <label>Motivo / Observação</label>
-      <input type="text" id="abs-reason-inp" placeholder="Ex: Atestado médico de 1 dia">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('absence-modal')">Cancelar</button>
-      <button class="btn-confirm" onclick="saveAbsence()">Gravar Ausência</button>
-    </div>
+    <div class="modal-handle"></div><div class="modal-title">Lançar Ausência</div>
+    <div class="form-grid"><div class="afield"><label>Func.</label><select id="abs-emp-sel"></select></div><div class="afield"><label>Data</label><input type="text" id="abs-date-inp"></div></div>
+    <div class="afield"><label>Tipo</label><select id="abs-type-sel"><option value="falta_justificada">Justificada</option><option value="falta_injustificada">Injustificada</option></select></div>
+    <div class="afield"><label>Motivo</label><input type="text" id="abs-reason-inp"></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('absence-modal')">Cancelar</button><button class="btn-confirm" onclick="saveAbsence()">Gravar</button></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="gps-modal">
-  <div class="modal-box" style="border-radius:24px;margin:24px;max-width:380px;align-self:center">
-    <div style="font-size:40px;text-align:center;margin-bottom:14px">🔒</div>
-    <div class="modal-title" style="text-align:center">Localização bloqueada</div>
-    <div class="modal-sub" style="text-align:center">O acesso à localização foi negado. Verifique as permissões do navegador.</div>
-    <button class="btn-cancel" style="width:100%" onclick="closeModal('gps-modal')">Fechar</button>
-  </div>
-</div>
+<div class="modal-overlay" id="gps-modal"><div class="modal-box" style="border-radius:24px;margin:24px;max-width:380px;align-self:center"><div class="modal-title" style="text-align:center">Localização bloqueada</div><button class="btn-cancel" style="width:100%" onclick="closeModal('gps-modal')">Fechar</button></div></div>
 
-<!-- Employee modal -->
 <div class="modal-overlay" id="emp-modal">
   <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="emp-modal-title">Novo Funcionário</div>
-    <div class="modal-sub">Preencha as informações da funcionária</div>
+    <div class="modal-handle"></div><div class="modal-title" id="emp-modal-title">Funcionária</div>
     <input type="hidden" id="emp-id-edit">
-    <div class="form-grid">
-      <div class="afield"><label>Nome</label><input type="text" id="emp-name-inp" placeholder="Ex: Maria Silva"></div>
-      <div class="afield"><label>Cargo / Função</label><input type="text" id="emp-role-inp" placeholder="Ex: Cuidadora"></div>
-    </div>
-    
-    <div class="form-grid">
-      <div class="afield">
-        <label style="color:var(--amber)">PIN de Acesso (4 dígitos)</label>
-        <input type="text" id="emp-pin-inp" placeholder="Ex: 1234" maxlength="4" pattern="\d{4}">
-      </div>
-      <div class="afield">
-        <label>Regime de Horas Extras</label>
-        <select id="emp-regime-sel">
-          <option value="banco">Banco de Horas</option>
-          <option value="pago">Horas Extras (Pagas)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-grid">
-      <div class="afield">
-        <label style="display:flex;justify-content:space-between">Turno <span style="color:var(--blue);cursor:pointer;font-weight:bold;font-size:12px;" onclick="openShiftModal()">+ Novo</span></label>
-        <select id="emp-shift-sel"></select>
-      </div>
-      <div class="afield">
-        <label style="display:flex;justify-content:space-between">Local de Trabalho <span style="color:var(--blue);cursor:pointer;font-weight:bold;font-size:12px;" onclick="openLocModal()">+ Novo</span></label>
-        <select id="emp-loc-sel"></select>
-      </div>
-    </div>
-    <div class="afield">
-      <label>Emoji / Avatar</label>
-      <input type="text" id="emp-emoji-inp" placeholder="👩‍⚕️" maxlength="4" style="font-size:24px;text-align:center">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('emp-modal')">Cancelar</button>
-      <button class="btn-confirm" onclick="saveEmployee()">Salvar</button>
-    </div>
+    <div class="form-grid"><div class="afield"><label>Nome</label><input type="text" id="emp-name-inp"></div><div class="afield"><label>Cargo</label><input type="text" id="emp-role-inp"></div></div>
+    <div class="form-grid"><div class="afield"><label style="color:var(--amber)">PIN</label><input type="text" id="emp-pin-inp" maxlength="4"></div><div class="afield"><label>Regime H.E.</label><select id="emp-regime-sel"><option value="banco">Banco de Horas</option><option value="pago">Pagas</option></select></div></div>
+    <div class="form-grid"><div class="afield"><label>Turno</label><select id="emp-shift-sel"></select></div><div class="afield"><label>Local</label><select id="emp-loc-sel"></select></div></div>
+    <div class="afield"><label>Emoji</label><input type="text" id="emp-emoji-inp" maxlength="4" style="font-size:24px;text-align:center"></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('emp-modal')">Cancelar</button><button class="btn-confirm" onclick="saveEmployee()">Salvar</button></div>
   </div>
 </div>
 
-<!-- Shift modal -->
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="shift-modal-title">Novo Turno</div>
-    <div class="modal-sub">Defina nome, jornada diária e cor identificadora</div>
+    <div class="modal-handle"></div><div class="modal-title" id="shift-modal-title">Turno</div>
     <input type="hidden" id="shift-id-edit">
-    <div class="afield"><label>Nome do Turno</label><input type="text" id="shift-name-inp" placeholder="Ex: CLT 44h"></div>
-    <div class="form-grid">
-      <div class="afield"><label>Jornada (h/dia)</label><input type="number" id="shift-hours-inp" min="1" max="24" step="0.5" placeholder="8"></div>
-      <div class="afield"><label>Minutos extra</label><input type="number" id="shift-mins-inp" min="0" max="59" placeholder="0"></div>
-    </div>
-    <div class="afield">
-      <label>Cor</label>
-      <div class="color-row" id="color-row">
-        <div class="color-dot selected" data-color="#34d399" style="background:#34d399" onclick="selectColor(this)"></div>
-        <div class="color-dot" data-color="#60a5fa" style="background:#60a5fa" onclick="selectColor(this)"></div>
-        <div class="color-dot" data-color="#fbbf24" style="background:#fbbf24" onclick="selectColor(this)"></div>
-        <div class="color-dot" data-color="#f87171" style="background:#f87171" onclick="selectColor(this)"></div>
-        <div class="color-dot" data-color="#c084fc" style="background:#c084fc" onclick="selectColor(this)"></div>
-        <div class="color-dot" data-color="#fb923c" style="background:#fb923c" onclick="selectColor(this)"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('shift-modal')">Cancelar</button>
-      <button class="btn-confirm" onclick="saveShift()">Salvar</button>
-    </div>
+    <div class="afield"><label>Nome</label><input type="text" id="shift-name-inp"></div>
+    <div class="form-grid"><div class="afield"><label>Horas</label><input type="number" id="shift-hours-inp" step="0.5"></div><div class="afield"><label>Minutos</label><input type="number" id="shift-mins-inp"></div></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('shift-modal')">Cancelar</button><button class="btn-confirm" onclick="saveShift()">Salvar</button></div>
   </div>
 </div>
 
-<!-- Location modal -->
 <div class="modal-overlay" id="loc-modal">
   <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="loc-modal-title">Novo Local</div>
-    <div class="modal-sub">Informe nome, coordenadas e raio da cerca eletrónica</div>
+    <div class="modal-handle"></div><div class="modal-title" id="loc-modal-title">Local</div>
     <input type="hidden" id="loc-id-edit">
-    <div class="form-grid">
-      <div class="afield"><label>Nome do Local</label><input type="text" id="loc-name-inp" placeholder="Ex: Casa da Ana"></div>
-      <div class="afield"><label>Emoji</label><input type="text" id="loc-emoji-inp" placeholder="🏠" maxlength="4" style="font-size:22px;text-align:center"></div>
-    </div>
-    <button id="btn-get-gps" class="btn-sync" style="margin-bottom: 14px; background: var(--blue-dim); border: 1px dashed var(--blue); width: 100%; justify-content: center;" onclick="fillCurrentLoc()">📍 Preencher com o meu GPS atual</button>
-    <div class="form-grid">
-      <div class="afield"><label>Latitude</label><input type="number" id="loc-lat-inp" step="0.000001" placeholder="-23.561414"></div>
-      <div class="afield"><label>Longitude</label><input type="number" id="loc-lng-inp" step="0.000001" placeholder="-46.656361"></div>
-    </div>
-    <div class="afield"><label>Raio da Cerca (metros)</label><input type="number" id="loc-radius-inp" min="10" max="5000" value="150" placeholder="150"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('loc-modal')">Cancelar</button>
-      <button class="btn-confirm" onclick="saveLocation()">Salvar</button>
-    </div>
+    <div class="form-grid"><div class="afield"><label>Nome</label><input type="text" id="loc-name-inp"></div><div class="afield"><label>Emoji</label><input type="text" id="loc-emoji-inp"></div></div>
+    <button class="btn-sync" style="margin-bottom:14px;width:100%;justify-content:center" onclick="fillCurrentLoc()">📍 Pegar meu GPS</button>
+    <div class="form-grid"><div class="afield"><label>Lat</label><input type="number" id="loc-lat-inp" step="0.000001"></div><div class="afield"><label>Lng</label><input type="number" id="loc-lng-inp" step="0.000001"></div></div>
+    <div class="afield"><label>Raio (m)</label><input type="number" id="loc-radius-inp"></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('loc-modal')">Cancelar</button><button class="btn-confirm" onclick="saveLocation()">Salvar</button></div>
   </div>
 </div>
 
-<!-- Edit punch modal -->
 <div class="modal-overlay" id="edit-modal">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Editar Ponto</div>
-    <div class="modal-sub">A edição fica registada no histórico</div>
-    <input type="hidden" id="edit-punch-id">
-    <div class="form-grid">
-      <div class="afield"><label>Data (DD/MM/AAAA)</label><input type="text" id="edit-date-inp"></div>
-      <div class="afield"><label>Hora (HH:MM:SS)</label><input type="text" id="edit-time-inp"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancelar</button>
-      <button class="btn-confirm" onclick="savePunchEdit()">Salvar</button>
-    </div>
-  </div>
+  <div class="modal-box"><div class="modal-handle"></div><div class="modal-title">Editar Ponto</div><input type="hidden" id="edit-punch-id"><div class="form-grid"><div class="afield"><label>Data</label><input type="text" id="edit-date-inp"></div><div class="afield"><label>Hora</label><input type="text" id="edit-time-inp"></div></div><div class="modal-actions"><button class="btn-cancel" onclick="closeModal('edit-modal')">Cancelar</button><button class="btn-confirm" onclick="savePunchEdit()">Salvar</button></div></div>
 </div>
 
-<!-- Confirm delete modal -->
-<div class="modal-overlay" id="del-modal">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Confirmar exclusão</div>
-    <div class="modal-sub" id="del-modal-sub">Tem a certeza?</div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('del-modal')">Cancelar</button>
-      <button class="btn-danger-confirm" id="del-confirm-btn">Excluir</button>
-    </div>
-  </div>
-</div>
+<div class="modal-overlay" id="del-modal"><div class="modal-box"><div class="modal-handle"></div><div class="modal-title">Confirmação</div><div class="modal-sub" id="del-modal-sub"></div><div class="modal-actions"><button class="btn-cancel" onclick="closeModal('del-modal')">Cancelar</button><button class="btn-danger-confirm" id="del-confirm-btn">Excluir</button></div></div></div>
 
 <div id="toast"></div>
 
@@ -835,32 +770,18 @@ const openModal  = id => document.getElementById(id).classList.add('show');
 const closeModal = id => document.getElementById(id).classList.remove('show');
 
 let delCallback = null;
-function openDelModal(msg, cb) {
-  document.getElementById('del-modal-sub').textContent = msg;
-  delCallback = cb;
-  openModal('del-modal');
-  document.getElementById('del-confirm-btn').onclick = () => { closeModal('del-modal'); if(delCallback) delCallback(); delCallback=null; };
-}
-
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('show'); });
-});
-
-let _tt;
-function toast(msg, type='success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.className = `show ${type}`;
-  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3500);
-}
+function openDelModal(msg, cb) { document.getElementById('del-modal-sub').textContent = msg; delCallback = cb; openModal('del-modal'); document.getElementById('del-confirm-btn').onclick = () => { closeModal('del-modal'); if(delCallback) delCallback(); delCallback=null; }; }
+document.querySelectorAll('.modal-overlay').forEach(o => { o.addEventListener('click', e => { if(e.target===o) o.classList.remove('show'); }); });
+let _tt; function toast(msg, type='success') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3500); }
 
 // ─────────────────────────────────────
-// STATE & DEFAULTS
+// STATE & DEFAULTS (BASE LIMPA)
 // ─────────────────────────────────────
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
 let employees  = LS('pd_employees')  || [];
-let shifts     = LS('pd_shifts') || [];
+let shifts     = LS('pd_shifts')     || [];
 let locations  = LS('pd_locations')  || [];
 let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
@@ -869,167 +790,113 @@ const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_UR
 let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true };
 if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
 
-let currentEmpId = null;
-let pendingRetry  = null;
-let isSending     = false;
-let clockTimer    = null;
-let recFilterEmp  = 'all';
-let cameraStream  = null;
-let activePinEmpId = null; 
+let currentEmpId = null; let pendingRetry = null; let isSending = false; let clockTimer = null; let recFilterEmp = 'all'; let cameraStream = null; let activePinEmpId = null; 
+let wizData = { loc:{}, shift:{} };
+
+const saveAll = () => { SS('pd_employees', employees); SS('pd_shifts', shifts); SS('pd_locations', locations); SS('pd_records', records); SS('pd_pending', pending); SS('pd_settings', settings); };
 
 // ─────────────────────────────────────
-// PERSIST HELPERS
+// ASSISTENTE MÁGICO (WIZARD)
 // ─────────────────────────────────────
-const saveAll = () => {
-  SS('pd_employees', employees);
-  SS('pd_shifts', shifts);
-  SS('pd_locations', locations);
-  SS('pd_records', records);
-  SS('pd_pending', pending);
-  SS('pd_settings', settings);
-};
-
-// ─────────────────────────────────────
-// LOCK LOGIC (FECHAMENTO DE MÊS)
-// ─────────────────────────────────────
-function isMonthLocked(dateStr) {
-  if (!dateStr) return false;
-  const parts = dateStr.split('/');
-  if (parts.length < 3) return false;
-  const m = parseInt(parts[1], 10);
-  const y = parseInt(parts[2], 10);
-  const key = `lock_${m}_${y}`;
-  return (settings[key] === 'true' || settings[key] === true);
+function startWizardAuth() {
+  document.getElementById('wiz-auth-pw').value = '';
+  document.getElementById('wiz-auth-err').style.display = 'none';
+  openModal('wiz-auth-modal');
 }
-
-function updateLockBtn() {
-  const mSel = document.getElementById('lock-month');
-  const ySel = document.getElementById('lock-year');
-  if(!mSel || !ySel) return;
-  const key = `lock_${mSel.value}_${ySel.value}`;
-  const isLocked = (settings[key] === 'true' || settings[key] === true);
-  const btn = document.getElementById('btn-lock-month');
-  if(isLocked) {
-    btn.textContent = "🔓 Destrancar Mês";
-    btn.style.background = "var(--red-dim)";
-    btn.style.color = "var(--red)";
-    btn.style.borderColor = "var(--red)";
+function verifyWizAuth() {
+  if (document.getElementById('wiz-auth-pw').value === String(settings.pw)) {
+    closeModal('wiz-auth-modal');
+    showScreen('s-wizard');
   } else {
-    btn.textContent = "🔒 Trancar Mês";
-    btn.style.background = "rgba(96,165,250,.1)";
-    btn.style.color = "var(--blue)";
-    btn.style.borderColor = "rgba(96,165,250,.3)";
+    document.getElementById('wiz-auth-err').style.display = 'block';
   }
 }
+function goToWizStep(n) {
+  document.querySelectorAll('.wiz-step').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.wiz-dot').forEach(d => { d.classList.remove('active'); d.classList.remove('done'); });
+  document.getElementById(`w-step-${n}`).classList.add('active');
+  for(let i=1; i<=4; i++) {
+    const d = document.getElementById(`w-dot-${i}`);
+    if(i < n) d.classList.add('done');
+    if(i === n) d.classList.add('active');
+  }
+}
+function wizNext(current) {
+  if(current === 1) {
+    const pw = document.getElementById('wiz-pw').value.trim();
+    if(pw && pw.length < 6) { toast('A nova senha deve ter no mínimo 6 caracteres','warn'); return; }
+    if(pw) { settings.pw = pw; saveAll(); toast('Senha atualizada!','success'); }
+  }
+  if(current === 2) {
+    wizData.loc.name = document.getElementById('wiz-loc-name').value.trim();
+    wizData.loc.lat = parseFloat(document.getElementById('wiz-loc-lat').value);
+    wizData.loc.lng = parseFloat(document.getElementById('wiz-loc-lng').value);
+    if(!wizData.loc.name || isNaN(wizData.loc.lat) || isNaN(wizData.loc.lng)) { toast('Preencha o nome e as coordenadas!','warn'); return; }
+  }
+  if(current === 3) {
+    wizData.shift.name = document.getElementById('wiz-shift-name').value.trim();
+    wizData.shift.h = parseFloat(document.getElementById('wiz-shift-h').value) || 8;
+    wizData.shift.m = parseInt(document.getElementById('wiz-shift-m').value) || 0;
+    if(!wizData.shift.name) { toast('Preencha o nome do turno!','warn'); return; }
+  }
+  goToWizStep(current + 1);
+}
+function wizPrev(current) { goToWizStep(current - 1); }
+async function wizGetGps(btn) {
+  btn.innerHTML = '⏳ Aguarde...'; btn.disabled = true;
+  try {
+    const pos = await getPos();
+    document.getElementById('wiz-loc-lat').value = pos.coords.latitude.toFixed(6);
+    document.getElementById('wiz-loc-lng').value = pos.coords.longitude.toFixed(6);
+    toast('✅ Coordenadas capturadas!','success');
+  } catch(e) { handleGeoErr(e); }
+  btn.innerHTML = '📍 Capturar minha localização atual'; btn.disabled = false;
+}
+async function wizFinish() {
+  const empName = document.getElementById('wiz-emp-name').value.trim();
+  const empRole = document.getElementById('wiz-emp-role').value.trim();
+  const empPin = document.getElementById('wiz-emp-pin').value.trim();
+  if(!empName || empPin.length !== 4) { toast('Preencha o nome e um PIN de 4 dígitos!','warn'); return; }
 
-function toggleLockMonth() {
-  const m = document.getElementById('lock-month').value;
-  const y = document.getElementById('lock-year').value;
-  const key = `lock_${m}_${y}`;
-  const isLocked = (settings[key] === 'true' || settings[key] === true);
-  const newVal = !isLocked;
-  settings[key] = newVal;
-  saveAll();
-  updateLockBtn();
-  toast(newVal ? '🔒 Mês trancado com sucesso!' : '🔓 Mês destrancado com sucesso!', 'success');
-  if(settings.googleUrl) pushConfigToCloud('saveConfig', {key: key, value: String(newVal)});
+  toast('A configurar o sistema...','info');
+  // Criar Local
+  const newLoc = { id:'loc_1', name: wizData.loc.name, emoji:'📍', lat: wizData.loc.lat, lng: wizData.loc.lng, radius: 150 };
+  locations.push(newLoc);
+  // Criar Turno
+  const newShift = { id:'shift_1', name: wizData.shift.name, hours: wizData.shift.h, mins: wizData.shift.m, color: '#34d399' };
+  shifts.push(newShift);
+  // Criar Func
+  const newEmp = { id:'emp_1', name: empName, role: empRole, emoji: '👤', shiftId: 'shift_1', locId: 'loc_1', pin: empPin, otRegime: 'banco' };
+  employees.push(newEmp);
+  
+  settings.setupDone = true; saveAll();
+
+  // Tenta sincronizar com nuvem silenciosamente
+  if(settings.googleUrl && navigator.onLine) {
+    pushConfigToCloud('saveLocation', newLoc);
+    pushConfigToCloud('saveShift', newShift);
+    pushConfigToCloud('saveEmployee', newEmp);
+  }
+  
+  toast('🎉 Tudo pronto!','success');
+  setTimeout(() => window.location.reload(), 1500);
 }
 
 // ─────────────────────────────────────
 // NAV & PIN LOGIC
 // ─────────────────────────────────────
-const showScreen = id => {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-};
+const showScreen = id => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); };
 
-function promptPin(empId) {
-  const emp = employees.find(e => e.id === empId);
-  if (!emp.pin && String(emp.pin) !== "0") {
-    loginEmployee(empId);
-    return;
-  }
-  
-  activePinEmpId = empId;
-  document.getElementById('pin-emp-name').textContent = emp.name;
-  document.getElementById('pin-input').value = '';
-  document.getElementById('pin-err').style.display = 'none';
-  openModal('pin-modal');
-  setTimeout(() => document.getElementById('pin-input').focus(), 100);
-}
-
-function verifyPin() {
-  const val = document.getElementById('pin-input').value;
-  const emp = employees.find(e => e.id === activePinEmpId);
-  
-  if (emp && String(emp.pin).padStart(4, '0') === val) {
-    closeModal('pin-modal');
-    loginEmployee(activePinEmpId);
-  } else {
-    document.getElementById('pin-err').style.display = 'block';
-  }
-}
-
-function loginEmployee(empId) {
-  SS('pd_logged_emp', empId); 
-  goEmployee(empId);
-}
-
-function logoutEmployee() {
-  localStorage.removeItem('pd_logged_emp'); 
-  goChoose();
-}
-
-function goChoose() {
-  clearInterval(clockTimer);
-  stopCamera();
-  buildChooseGrid();
-  showScreen('s-choose');
-  currentEmpId = null;
-}
-
-function goLogin() {
-  document.getElementById('pw-input').value = '';
-  document.getElementById('login-err').style.display = 'none';
-  showScreen('s-login');
-}
-
-function doLogin() {
-  const pw = document.getElementById('pw-input').value;
-  if (pw === String(settings.pw)) {
-    document.getElementById('login-err').style.display = 'none';
-    goAdmin();
-  } else {
-    document.getElementById('login-err').style.display = 'block';
-  }
-}
-
-function goAdmin() {
-  showScreen('s-admin');
-  renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn();
-  const urlEl = document.getElementById('conn-url-display');
-  if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada)';
-  
-  document.getElementById('cfg-override').checked = settings.allowOverride !== false;
-  document.getElementById('cfg-showdist').checked  = settings.showDist !== false;
-  document.getElementById('cfg-clt').checked       = settings.cltTolerance !== false;
-  document.getElementById('cfg-interval').checked  = settings.minInterval !== false;
-}
-
-function showTab(id, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-}
-
-// ─────────────────────────────────────
-// CHOOSE SCREEN
-// ─────────────────────────────────────
 function buildChooseGrid() {
   const grid = document.getElementById('emp-grid');
   if (!employees.length) {
-    grid.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhuma funcionária cadastrada.<br>Aceda ao painel admin para adicionar.</p></div>';
+    grid.innerHTML = `
+      <div class="empty" style="padding: 30px 0;">
+        <div class="eicon" style="font-size: 52px; opacity: 1; margin-bottom: 16px;">🚀</div>
+        <p style="font-size: 18px; font-weight: bold; color: var(--text);">Bem-vindo ao PontoDigital Pro!</p>
+        <p style="margin-top: 8px; margin-bottom: 24px; line-height: 1.5;">O seu sistema está pronto para ser configurado.</p>
+        <button class="btn-primary" style="margin: 0 auto; display: inline-flex;" onclick="startWizardAuth()">✨ Iniciar Configuração</button>
+      </div>`;
     return;
   }
   grid.innerHTML = employees.map(emp => {
@@ -1038,329 +905,120 @@ function buildChooseGrid() {
     const next = nextSlot(emp.id);
     const statusTxt = !next ? 'Todos os pontos ✓' : (next.includes('entrada') ? 'A aguardar entrada' : 'A aguardar saída');
     const isActive = todayRecs.some(r => r.slot === 'entrada1') && !todayRecs.some(r => r.slot === 'saida2');
-    
-    return `<div class="emp-card" onclick="promptPin('${emp.id}')">
-      <div class="emp-avatar-sm">${emp.emoji || '👤'}</div>
-      <div class="emp-card-info">
-        <div class="emp-card-name">${emp.name}</div>
-        <div class="emp-card-role">${emp.role}</div>
-        <div class="emp-card-badge ${isActive ? 'on' : ''}">${statusTxt}</div>
-      </div>
-      <div class="emp-card-arrow">›</div>
-    </div>`;
+    return `<div class="emp-card" onclick="promptPin('${emp.id}')"><div class="emp-avatar-sm">${emp.emoji || '👤'}</div><div class="emp-card-info"><div class="emp-card-name">${emp.name}</div><div class="emp-card-role">${emp.role}</div><div class="emp-card-badge ${isActive ? 'on' : ''}">${statusTxt}</div></div><div class="emp-card-arrow">›</div></div>`;
   }).join('');
 }
+
+function promptPin(empId) {
+  const emp = employees.find(e => e.id === empId);
+  if (!emp.pin && String(emp.pin) !== "0") { loginEmployee(empId); return; }
+  activePinEmpId = empId; document.getElementById('pin-emp-name').textContent = emp.name;
+  document.getElementById('pin-input').value = ''; document.getElementById('pin-err').style.display = 'none';
+  openModal('pin-modal'); setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+function verifyPin() {
+  const val = document.getElementById('pin-input').value; const emp = employees.find(e => e.id === activePinEmpId);
+  if (emp && String(emp.pin).padStart(4, '0') === val) { closeModal('pin-modal'); loginEmployee(activePinEmpId); } 
+  else { document.getElementById('pin-err').style.display = 'block'; }
+}
+function loginEmployee(empId) { SS('pd_logged_emp', empId); goEmployee(empId); }
+function logoutEmployee() { localStorage.removeItem('pd_logged_emp'); goChoose(); }
+
+function goChoose() { clearInterval(clockTimer); stopCamera(); buildChooseGrid(); showScreen('s-choose'); currentEmpId = null; }
+function goLogin() { document.getElementById('pw-input').value = ''; document.getElementById('login-err').style.display = 'none'; showScreen('s-login'); }
+function doLogin() { if (document.getElementById('pw-input').value === String(settings.pw)) { document.getElementById('login-err').style.display = 'none'; goAdmin(); } else { document.getElementById('login-err').style.display = 'block'; } }
+
+function goAdmin() {
+  showScreen('s-admin');
+  renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn();
+  const urlEl = document.getElementById('conn-url-display'); if (urlEl) urlEl.textContent = settings.googleUrl || '(nenhuma URL configurada)';
+  document.getElementById('cfg-override').checked = settings.allowOverride !== false; document.getElementById('cfg-showdist').checked = settings.showDist !== false; document.getElementById('cfg-clt').checked = settings.cltTolerance !== false; document.getElementById('cfg-interval').checked = settings.minInterval !== false;
+}
+
+function showTab(id, btn) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); }
+
+// ─────────────────────────────────────
+// LOCK LOGIC 
+// ─────────────────────────────────────
+function isMonthLocked(dateStr) { if (!dateStr) return false; const parts = dateStr.split('/'); if (parts.length < 3) return false; return (settings[`lock_${parseInt(parts[1], 10)}_${parseInt(parts[2], 10)}`] === 'true' || settings[`lock_${parseInt(parts[1], 10)}_${parseInt(parts[2], 10)}`] === true); }
+function updateLockBtn() { const mSel = document.getElementById('lock-month'); const ySel = document.getElementById('lock-year'); if(!mSel || !ySel) return; const isLocked = (settings[`lock_${mSel.value}_${ySel.value}`] === 'true' || settings[`lock_${mSel.value}_${ySel.value}`] === true); const btn = document.getElementById('btn-lock-month'); if(isLocked) { btn.textContent = "🔓 Destrancar Mês"; btn.style.background = "var(--red-dim)"; btn.style.color = "var(--red)"; btn.style.borderColor = "var(--red)"; } else { btn.textContent = "🔒 Trancar Mês"; btn.style.background = "rgba(96,165,250,.1)"; btn.style.color = "var(--blue)"; btn.style.borderColor = "rgba(96,165,250,.3)"; } }
+function toggleLockMonth() { const m = document.getElementById('lock-month').value; const y = document.getElementById('lock-year').value; const key = `lock_${m}_${y}`; const newVal = !(settings[key] === 'true' || settings[key] === true); settings[key] = newVal; saveAll(); updateLockBtn(); toast(newVal ? '🔒 Mês trancado!' : '🔓 Mês destrancado!', 'success'); if(settings.googleUrl) pushConfigToCloud('saveConfig', {key: key, value: String(newVal)}); }
 
 // ─────────────────────────────────────
 // EMPLOYEE SCREEN & CAMERA
 // ─────────────────────────────────────
-async function startCamera() {
-  try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-    const video = document.getElementById('cam-video');
-    video.srcObject = cameraStream;
-    video.style.display = 'block';
-    document.getElementById('p-emoji').style.display = 'none';
-  } catch(err) { toast("⚠️ Câmara indisponível para antifraude", "warn"); }
-}
-
-function stopCamera() {
-  if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; }
-  document.getElementById('cam-video').style.display = 'none';
-  document.getElementById('p-emoji').style.display = 'block';
-}
-
-function takePhoto() {
-  const video = document.getElementById('cam-video');
-  const canvas = document.getElementById('cam-canvas');
-  if (!cameraStream || !video.videoWidth) return "";
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', 0.6);
-}
+async function startCamera() { try { cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }); const video = document.getElementById('cam-video'); video.srcObject = cameraStream; video.style.display = 'block'; document.getElementById('p-emoji').style.display = 'none'; } catch(err) { toast("⚠️ Câmara indisponível", "warn"); } }
+function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; } document.getElementById('cam-video').style.display = 'none'; document.getElementById('p-emoji').style.display = 'block'; }
+function takePhoto() { const video = document.getElementById('cam-video'); const canvas = document.getElementById('cam-canvas'); if (!cameraStream || !video.videoWidth) return ""; canvas.width = video.videoWidth; canvas.height = video.videoHeight; const ctx = canvas.getContext('2d'); ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0, canvas.width, canvas.height); return canvas.toDataURL('image/jpeg', 0.6); }
 
 function goEmployee(empId) {
-  currentEmpId = empId;
-  const emp = employees.find(e => e.id === empId);
-  if (!emp) return;
-  const shift = shifts.find(s => s.id === emp.shiftId) || {};
-  const loc   = locations.find(l => l.id === emp.locId) || {};
-
-  document.getElementById('p-emoji').textContent = emp.emoji || '👤';
-  document.getElementById('p-name').textContent  = emp.name;
-  document.getElementById('p-role').textContent  = emp.role;
-  document.getElementById('p-shift').textContent = shift.name ? `${shift.name} — ${loc.name || '?'}` : 'Turno não definido';
-
-  pendingRetry = pending.find(p => p.empId === empId) || null;
-  updatePunchBtn(); updateSlots();
-
-  if (pendingRetry) setStatus('warn', `⚠️ Ponto pendente das ${pendingRetry.time.slice(0,5)} — clique para reenviar`);
-  else setStatus('checking', '🔄 A procurar registos de hoje...');
-
+  currentEmpId = empId; const emp = employees.find(e => e.id === empId); if (!emp) return;
+  const shift = shifts.find(s => s.id === emp.shiftId) || {}; const loc = locations.find(l => l.id === emp.locId) || {};
+  document.getElementById('p-emoji').textContent = emp.emoji || '👤'; document.getElementById('p-name').textContent = emp.name; document.getElementById('p-role').textContent = emp.role; document.getElementById('p-shift').textContent = shift.name ? `${shift.name} — ${loc.name || '?'}` : 'Turno não definido';
+  pendingRetry = pending.find(p => p.empId === empId) || null; updatePunchBtn(); updateSlots();
+  if (pendingRetry) setStatus('warn', `⚠️ Ponto pendente das ${pendingRetry.time.slice(0,5)} — clique para reenviar`); else setStatus('checking', '🔄 A procurar registos...');
   startClock(); startCamera(); showScreen('s-punch');
-
-  if (navigator.onLine && settings.googleUrl) {
-    syncCloud(false).then(() => { if (!pendingRetry) setStatus('idle', '📍 Clique para registar — verificaremos a sua localização'); });
-  } else {
-    if (!pendingRetry) setStatus('idle', '📍 Clique para registar — verificaremos a sua localização');
-  }
+  if (navigator.onLine && settings.googleUrl) { syncCloud(false).then(() => { if (!pendingRetry) setStatus('idle', '📍 Clique para registar'); }); } else { if (!pendingRetry) setStatus('idle', '📍 Clique para registar'); }
 }
 
-function startClock() {
-  clearInterval(clockTimer);
-  const tick = () => {
-    const now = new Date();
-    const te = document.getElementById('lc-time'); const de = document.getElementById('lc-date');
-    if (te) te.textContent = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    if (de) de.textContent = now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
-  };
-  tick(); clockTimer = setInterval(tick, 1000);
-}
-
+function startClock() { clearInterval(clockTimer); const tick = () => { const now = new Date(); const te = document.getElementById('lc-time'); const de = document.getElementById('lc-date'); if (te) te.textContent = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); if (de) de.textContent = now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'}); }; tick(); clockTimer = setInterval(tick, 1000); }
 const SLOTS = ['entrada1','saida1','entrada2','saida2'];
-function todayRecs(empId) {
-  const today = new Date().toLocaleDateString('pt-BR');
-  return records.filter(r => r.empId === empId && r.date === today && r.slot !== 'ausencia').sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
-}
-function nextSlot(empId) {
-  const done = todayRecs(empId).map(r => r.slot);
-  return SLOTS.find(s => !done.includes(s)) || null;
-}
+function todayRecs(empId) { const today = new Date().toLocaleDateString('pt-BR'); return records.filter(r => r.empId === empId && r.date === today && r.slot !== 'ausencia').sort((a,b) => new Date(a.datetime) - new Date(b.datetime)); }
+function nextSlot(empId) { const done = todayRecs(empId).map(r => r.slot); return SLOTS.find(s => !done.includes(s)) || null; }
 
-function updateSlots() {
-  if (!currentEmpId) return;
-  const today = todayRecs(currentEmpId);
-  const next  = nextSlot(currentEmpId);
-  const ids   = ['si-e1','si-s1','si-e2','si-s2'];
-  SLOTS.forEach((sk, i) => {
-    const el  = document.getElementById(ids[i]);
-    const hit = today.find(r => r.slot === sk);
-    const vEl = el.querySelector('.slot-val');
-    el.className = 'slot-item';
-    if (hit) { vEl.textContent = hit.time.slice(0,5); el.classList.add('done'); }
-    else if (sk===next && !pendingRetry) { vEl.textContent = '→'; el.classList.add('next'); }
-    else { vEl.textContent = '--:--'; }
-  });
-}
+function updateSlots() { if (!currentEmpId) return; const today = todayRecs(currentEmpId); const next = nextSlot(currentEmpId); const ids = ['si-e1','si-s1','si-e2','si-s2']; SLOTS.forEach((sk, i) => { const el = document.getElementById(ids[i]); const hit = today.find(r => r.slot === sk); const vEl = el.querySelector('.slot-val'); el.className = 'slot-item'; if (hit) { vEl.textContent = hit.time.slice(0,5); el.classList.add('done'); } else if (sk===next && !pendingRetry) { vEl.textContent = '→'; el.classList.add('next'); } else { vEl.textContent = '--:--'; } }); }
 
 function updatePunchBtn() {
-  const btn = document.getElementById('main-btn'); const override = document.getElementById('btn-override');
-  if (!currentEmpId || !btn) return;
-  override.style.display = 'none';
-
-  if (pendingRetry) {
-    btn.textContent = `🔄 Reenviar das ${pendingRetry.time.slice(0,5)}`; btn.className = 'punch-btn retry'; btn.disabled = false; btn.onclick = () => retryPunch(); return;
-  }
-  if (!navigator.onLine) {
-    btn.textContent = '❌ Sem conexão'; btn.className = 'punch-btn'; btn.disabled = true; btn.onclick = null;
-    setStatus('far','Ligue-se à internet para registar o ponto.'); return;
-  }
+  const btn = document.getElementById('main-btn'); const override = document.getElementById('btn-override'); if (!currentEmpId || !btn) return; override.style.display = 'none';
+  if (pendingRetry) { btn.textContent = `🔄 Reenviar das ${pendingRetry.time.slice(0,5)}`; btn.className = 'punch-btn retry'; btn.disabled = false; btn.onclick = () => retryPunch(); return; }
+  if (!navigator.onLine) { btn.textContent = '❌ Sem conexão'; btn.className = 'punch-btn'; btn.disabled = true; btn.onclick = null; setStatus('far','Ligue-se à internet para registar.'); return; }
   const next = nextSlot(currentEmpId);
-  if (!next) {
-    btn.textContent = '✅ Todos os pontos registados hoje'; btn.className = 'punch-btn in'; btn.disabled = true; btn.onclick = null; return;
-  }
-  btn.disabled = false;
-  const labels = { entrada1:'✅ Registar Entrada 1', saida1:'🏁 Registar Saída 1', entrada2:'✅ Registar Entrada 2', saida2:'🏁 Registar Saída 2' };
-  btn.textContent = labels[next];
-  btn.className = next.includes('entrada') ? 'punch-btn in' : 'punch-btn out';
-  btn.onclick = () => doPunch(false);
-  
+  if (!next) { btn.textContent = '✅ Todos os pontos registados hoje'; btn.className = 'punch-btn in'; btn.disabled = true; btn.onclick = null; return; }
+  btn.disabled = false; const labels = { entrada1:'✅ Registar Entrada 1', saida1:'🏁 Registar Saída 1', entrada2:'✅ Registar Entrada 2', saida2:'🏁 Registar Saída 2' }; btn.textContent = labels[next]; btn.className = next.includes('entrada') ? 'punch-btn in' : 'punch-btn out'; btn.onclick = () => doPunch(false);
   if (settings.allowOverride !== false) override.style.display = 'block';
 }
 
 // ─────────────────────────────────────
 // JUSTIFICATION E ABSENCE LOGIC
 // ─────────────────────────────────────
-async function confirmJustifiedPunch() {
-  const reason = document.getElementById('just-reason').value.trim();
-  if(!reason) { toast('Escreva um motivo para a justificação', 'warn'); return; }
-  
-  const fileInput = document.getElementById('just-file');
-  let fileB64 = "";
-  if (fileInput.files.length > 0) {
-    const file = fileInput.files[0];
-    if (file.size > 5 * 1024 * 1024) { toast('Arquivo muito grande (Máx 5MB)', 'error'); return; }
-    fileB64 = await new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(file); });
-  }
-  
-  closeModal('just-modal');
-  doPunch(true, reason, fileB64);
-  document.getElementById('just-reason').value = ""; 
-  document.getElementById('just-file').value = "";
-}
-
-function openAbsenceModal() {
-  const sel = document.getElementById('abs-emp-sel');
-  sel.innerHTML = '<option value="">-- Selecione --</option>' + employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
-  const today = new Date().toLocaleDateString('pt-BR');
-  document.getElementById('abs-date-inp').value = today;
-  document.getElementById('abs-reason-inp').value = '';
-  openModal('absence-modal');
-}
-
-async function saveAbsence() {
-  const empId = document.getElementById('abs-emp-sel').value;
-  const date = document.getElementById('abs-date-inp').value.trim();
-  const type = document.getElementById('abs-type-sel').value;
-  const reason = document.getElementById('abs-reason-inp').value.trim();
-
-  if(!empId || !date) { toast('Preencha funcionária e data', 'warn'); return; }
-  if(isMonthLocked(date)) { toast('🚫 Mês trancado. Impossível lançar faltas.', 'error'); return; }
-
-  const emp = employees.find(e => e.id === empId);
-  
-  let dtIso = new Date().toISOString();
-  const [d,m,y] = date.split('/'); 
-  if(y && m && d) dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), 0, 0, 0).toISOString();
-
-  const rec = {
-    id: Date.now() + Math.floor(Math.random()*1000),
-    empId: empId,
-    empName: emp.name,
-    slot: 'ausencia',
-    type: type, 
-    datetime: dtIso,
-    date: date,
-    time: '00:00:00',
-    lat: '', lng: '', dist: '', photo: '',
-    status: 'ok',
-    justification: reason,
-    synced: false
-  };
-
-  toast('A enviar para a folha de cálculo...', 'info');
-
-  if(settings.googleUrl && navigator.onLine) {
-    const res = await callCloud({action:'addRecord', record: rec});
-    if(res.ok) {
-      rec.synced = true;
-      records.unshift(rec);
-      saveAll();
-      renderRecords();
-      renderDash();
-      closeModal('absence-modal');
-      toast('✅ Ausência salva na folha de cálculo!', 'success');
-    } else {
-      toast('❌ Falha na conexão. A falta não foi salva.', 'error');
-    }
-  } else {
-    toast('❌ Sem conexão para enviar a falta.', 'error');
-  }
-}
+async function confirmJustifiedPunch() { const reason = document.getElementById('just-reason').value.trim(); if(!reason) { toast('Escreva um motivo', 'warn'); return; } const fileInput = document.getElementById('just-file'); let fileB64 = ""; if (fileInput.files.length > 0) { const file = fileInput.files[0]; if (file.size > 5 * 1024 * 1024) { toast('Max 5MB', 'error'); return; } fileB64 = await new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(file); }); } closeModal('just-modal'); doPunch(true, reason, fileB64); document.getElementById('just-reason').value = ""; document.getElementById('just-file').value = ""; }
+function openAbsenceModal() { const sel = document.getElementById('abs-emp-sel'); sel.innerHTML = '<option value="">-- Selecione --</option>' + employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join(''); document.getElementById('abs-date-inp').value = new Date().toLocaleDateString('pt-BR'); document.getElementById('abs-reason-inp').value = ''; openModal('absence-modal'); }
+async function saveAbsence() { const empId = document.getElementById('abs-emp-sel').value; const date = document.getElementById('abs-date-inp').value.trim(); const type = document.getElementById('abs-type-sel').value; const reason = document.getElementById('abs-reason-inp').value.trim(); if(!empId || !date) { toast('Preencha funcionária e data', 'warn'); return; } if(isMonthLocked(date)) { toast('🚫 Mês trancado.', 'error'); return; } const emp = employees.find(e => e.id === empId); let dtIso = new Date().toISOString(); const [d,m,y] = date.split('/'); if(y && m && d) dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), 0, 0, 0).toISOString(); const rec = { id: Date.now() + Math.floor(Math.random()*1000), empId: empId, empName: emp.name, slot: 'ausencia', type: type, datetime: dtIso, date: date, time: '00:00:00', lat: '', lng: '', dist: '', photo: '', status: 'ok', justification: reason, synced: false }; toast('A enviar...', 'info'); if(settings.googleUrl && navigator.onLine) { const res = await callCloud({action:'addRecord', record: rec}); if(res.ok) { rec.synced = true; records.unshift(rec); saveAll(); renderRecords(); renderDash(); closeModal('absence-modal'); toast('✅ Ausência salva!', 'success'); } else { toast('❌ Falha na conexão.', 'error'); } } else { toast('❌ Sem conexão.', 'error'); } }
 
 // ─────────────────────────────────────
 // PUNCH LOGIC
 // ─────────────────────────────────────
 async function doPunch(force=false, reason="", attachmentB64="") {
-  if (isSending || pendingRetry) return;
-  if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
-  if (!currentEmpId) return;
-  
-  const now = new Date();
-  const todayStr = now.toLocaleDateString('pt-BR');
-  if(isMonthLocked(todayStr)) { toast('🚫 Este mês já está fechado (Trancado)', 'error'); return; }
+  if (isSending || pendingRetry) return; if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; } if (!currentEmpId) return;
+  const now = new Date(); const todayStr = now.toLocaleDateString('pt-BR'); if(isMonthLocked(todayStr)) { toast('🚫 Este mês já está fechado (Trancado)', 'error'); return; }
+  const next = nextSlot(currentEmpId); if (!next) return;
+  const emp = employees.find(e => e.id === currentEmpId); const loc = locations.find(l => l.id === emp.locId); if (!loc) { toast('⚠️ Local não definido','warn'); return; }
 
-  const next = nextSlot(currentEmpId);
-  if (!next) return;
+  if (next === 'entrada2' && settings.minInterval !== false && !force) { const todayR = todayRecs(currentEmpId); const s1 = todayR.find(r => r.slot === 'saida1'); if (s1) { const diffMin = (now - new Date(s1.datetime)) / 60000; if (diffMin < 60) { setStatus('warn', `🚫 Intervalo mínimo: 1 hora. Faltam ${Math.ceil(60 - diffMin)} min.`); return; } } }
 
-  const emp = employees.find(e => e.id === currentEmpId);
-  const loc = locations.find(l => l.id === emp.locId);
-  if (!loc) { toast('⚠️ Local não definido para esta funcionária','warn'); return; }
-
-  if (next === 'entrada2' && settings.minInterval !== false && !force) {
-    const todayR = todayRecs(currentEmpId);
-    const s1 = todayR.find(r => r.slot === 'saida1');
-    if (s1) {
-      const diffMin = (now - new Date(s1.datetime)) / 60000;
-      if (diffMin < 60) {
-        setStatus('warn', `🚫 O intervalo mínimo é de 1 hora. Faltam ${Math.ceil(60 - diffMin)} minutos.`);
-        return;
-      }
-    }
-  }
-
-  isSending = true;
-  const btn = document.getElementById('main-btn');
-  btn.disabled = true;
-  document.getElementById('btn-override').style.display = 'none';
-  
-  setStatus('checking','⏱ A verificar horário oficial...');
-  const timeCheck = await checkTimeSync();
-  if (!timeCheck.ok) {
-    setStatus('far', `🚫 ${timeCheck.msg}`); toast('Ajuste o horário do telemóvel para automático.', 'error');
-    isSending = false; btn.disabled = false; return;
-  }
+  isSending = true; const btn = document.getElementById('main-btn'); btn.disabled = true; document.getElementById('btn-override').style.display = 'none';
+  setStatus('checking','⏱ A verificar horário...'); const timeCheck = await checkTimeSync(); if (!timeCheck.ok) { setStatus('far', `🚫 ${timeCheck.msg}`); toast('Ajuste o horário do telemóvel.', 'error'); isSending = false; btn.disabled = false; return; }
 
   setStatus('checking','📡 A verificar GPS...');
   try {
-    const pos  = await getPos();
-    const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
-
-    if (dist > loc.radius && !force) {
-      setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`);
-      if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block';
-      isSending = false; btn.disabled = false; return;
-    }
-
+    const pos = await getPos(); const dist = calcDist(pos.coords.latitude, pos.coords.longitude, loc.lat, loc.lng);
+    if (dist > loc.radius && !force) { setStatus('far', `🚫 Está a ${Math.round(dist)}m do local. Raio exigido: ${loc.radius}m.`); if (settings.allowOverride !== false) document.getElementById('btn-override').style.display = 'block'; isSending = false; btn.disabled = false; return; }
     const photoB64 = takePhoto();
-
-    const rec = {
-      id: Date.now(), empId: currentEmpId, empName: emp.name,
-      slot: next, type: next.includes('entrada') ? 'entrada' : 'saida',
-      datetime: now.toISOString(), date: todayStr, time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-      lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6),
-      dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist),
-      photo: photoB64, 
-      status: force ? 'pending' : 'ok', 
-      justification: reason,            
-      attachment: attachmentB64,        
-      synced: false
-    };
-
-    setStatus('checking', '📡 A enviar para a folha de cálculo...');
+    const rec = { id: Date.now(), empId: currentEmpId, empName: emp.name, slot: next, type: next.includes('entrada') ? 'entrada' : 'saida', datetime: now.toISOString(), date: todayStr, time: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}), lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6), dist: force ? `⚠️${Math.round(dist)}` : Math.round(dist), photo: photoB64, status: force ? 'pending' : 'ok', justification: reason, attachment: attachmentB64, synced: false };
+    
+    setStatus('checking', '📡 A enviar para a folha...');
     const cloudResult = await callCloud({ action: 'addRecord', record: rec }, 3);
-
-    if (cloudResult.local) {
-      rec.synced = false; records.unshift(rec); saveAll();
-      setStatus('ok', `✅ Registado localmente às ${rec.time.slice(0,5)}`);
-      toast('✅ Ponto registado! A recarregar...','success');
-      updatePunchBtn(); updateSlots(); stopCamera();
-      setTimeout(() => window.location.reload(), 1500); 
-    } else if (cloudResult.ok) {
-      const responseData = cloudResult.data?.data;
-      if (responseData && responseData.status === 'duplicate') {
-        rec.time = responseData.time; rec.synced = true;
-        records = records.filter(r => !(r.empId === rec.empId && r.date === rec.date && r.slot === rec.slot));
-        records.unshift(rec); saveAll();
-        setStatus('warn', `⚠️ Já registado por outro aparelho às ${rec.time.slice(0,5)}`);
-      } else {
-        if (responseData && responseData.time) rec.time = responseData.time;
-        rec.synced = true;
-        if (!records.find(r => String(r.id) === String(rec.id))) records.unshift(rec);
-        saveAll();
-        setStatus('ok', `✅ Registado às ${rec.time.slice(0,5)} ☁️`); toast(force ? '✅ Pedido enviado ao gestor!' : '✅ Ponto salvo! A recarregar...','success');
-      }
-      updatePunchBtn(); updateSlots(); stopCamera(); 
-      await syncCloud(false);
-      setTimeout(() => window.location.reload(), 1500);
-    } else {
-      pendingRetry = rec; pending.push(rec); saveAll();
-      setStatus('warn', `⚠️ Sem rede. Horário ${rec.time.slice(0,5)} na fila — clique Reenviar.`);
-      updatePunchBtn(); updateSlots(); stopCamera();
-    }
+    if (cloudResult.local) { rec.synced = false; records.unshift(rec); saveAll(); setStatus('ok', `✅ Local às ${rec.time.slice(0,5)}`); toast('✅ Registado! A recarregar...','success'); updatePunchBtn(); updateSlots(); stopCamera(); setTimeout(() => window.location.reload(), 1500); } 
+    else if (cloudResult.ok) { const responseData = cloudResult.data?.data; if (responseData && responseData.status === 'duplicate') { rec.time = responseData.time; rec.synced = true; records = records.filter(r => !(r.empId === rec.empId && r.date === rec.date && r.slot === rec.slot)); records.unshift(rec); saveAll(); setStatus('warn', `⚠️ Já registado`); } else { if (responseData && responseData.time) rec.time = responseData.time; rec.synced = true; if (!records.find(r => String(r.id) === String(rec.id))) records.unshift(rec); saveAll(); setStatus('ok', `✅ Salvo às ${rec.time.slice(0,5)} ☁️`); toast(force ? '✅ Pedido enviado!' : '✅ Ponto salvo!','success'); } updatePunchBtn(); updateSlots(); stopCamera(); await syncCloud(false); setTimeout(() => window.location.reload(), 1500); } 
+    else { pendingRetry = rec; pending.push(rec); saveAll(); setStatus('warn', `⚠️ Sem rede. Fila.`); updatePunchBtn(); updateSlots(); stopCamera(); }
   } catch(e) { handleGeoErr(e); }
-  
   isSending = false; if (!pendingRetry) btn.disabled = false;
 }
 
 // ─────────────────────────────────────
 // UTILS & CLOUD
 // ─────────────────────────────────────
-async function checkTimeSync() {
-  try { const res = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo'); if (!res.ok) return { ok: true }; const data = await res.json(); const diffMin = Math.abs(new Date(data.datetime).getTime() - new Date().getTime()) / 60000; if (diffMin > 3) return { ok: false, msg: `Divergência de horário: ~${Math.round(diffMin)} min.` }; return { ok: true }; } catch (e) { return { ok: true }; }
-}
+async function checkTimeSync() { try { const res = await fetch('https://worldtimeapi.org/api/timezone/America/Sao_Paulo'); if (!res.ok) return { ok: true }; const data = await res.json(); const diffMin = Math.abs(new Date(data.datetime).getTime() - new Date().getTime()) / 60000; if (diffMin > 3) return { ok: false, msg: `Divergência de horário: ~${Math.round(diffMin)} min.` }; return { ok: true }; } catch (e) { return { ok: true }; } }
 async function fillCurrentLoc() { const btn = document.getElementById('btn-get-gps'); const originalText = btn.innerHTML; btn.innerHTML = '⏳ A buscar...'; btn.disabled = true; try { const pos = await getPos(); document.getElementById('loc-lat-inp').value = pos.coords.latitude.toFixed(6); document.getElementById('loc-lng-inp').value = pos.coords.longitude.toFixed(6); toast('✅ OK','success'); } catch(e) { handleGeoErr(e); } btn.innerHTML = originalText; btn.disabled = false; }
 async function callCloud(payload, tries=3) { const url = settings.googleUrl; if (!url) return { ok: true, local: true }; for (let i=0; i<tries; i++) { try { const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 25000); const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow', signal: controller.signal }); clearTimeout(timeout); const text = await res.text(); let json = {}; try { json = JSON.parse(text); } catch(e) {} return { ok: true, data: json }; } catch(e) { if (i === tries - 1) return { ok: false }; await sleep(2000); } } }
 const getPos = () => new Promise((res,rej) => { if (!navigator.geolocation) { const e=new Error('unsupported'); e.code=-1; rej(e); } else navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:15000,maximumAge:0}); });
@@ -1369,178 +1027,66 @@ function calcDist(la1,ln1,la2,ln2) { const R=6371000,dL=(la2-la1)*Math.PI/180,dN
 const setStatus = (state,msg) => { const el=document.getElementById('punch-status'); if(el){el.className='status-bar '+state; el.textContent=msg||'';} };
 const sleep = ms => new Promise(r => setTimeout(r,ms));
 
-async function retryPunch() {
-  if (isSending || !pendingRetry) return;
-  if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; }
-  isSending = true; const btn = document.getElementById('main-btn'); btn.disabled = true;
-  setStatus('checking',`📡 A reenviar ponto das ${pendingRetry.time.slice(0,5)}...`);
-  const r = await callCloud({ action:'addRecord', record: pendingRetry }, 3);
-  if (r.ok) {
-    pendingRetry.synced = true;
-    if (!records.find(x => String(x.id) === String(pendingRetry.id))) { records.unshift(pendingRetry); }
-    pending = pending.filter(p => p.id !== pendingRetry.id);
-    const t = pendingRetry.time.slice(0,5); pendingRetry = null; saveAll();
-    setStatus('ok', `✅ Ponto salvo ☁️`); 
-    toast('✅ Reenvio concluído! A recarregar...','success');
-    updatePunchBtn(); updateSlots(); 
-    
-    await syncCloud(false); 
-    setTimeout(() => window.location.reload(), 1500); 
-  } else { setStatus('far', `⚠️ Tente novamente.`); toast('❌ Falha.','error'); updatePunchBtn(); }
-  isSending = false; btn.disabled = false;
-}
+async function retryPunch() { if (isSending || !pendingRetry) return; if (!navigator.onLine) { toast('❌ Sem internet!','error'); return; } isSending = true; const btn = document.getElementById('main-btn'); btn.disabled = true; setStatus('checking',`📡 A reenviar...`); const r = await callCloud({ action:'addRecord', record: pendingRetry }, 3); if (r.ok) { pendingRetry.synced = true; if (!records.find(x => String(x.id) === String(pendingRetry.id))) { records.unshift(pendingRetry); } pending = pending.filter(p => p.id !== pendingRetry.id); pendingRetry = null; saveAll(); setStatus('ok', `✅ Salvo ☁️`); toast('✅ Reenvio concluído!','success'); await syncCloud(false); setTimeout(() => window.location.reload(), 1500); } else { setStatus('far', `⚠️ Tente novamente.`); toast('❌ Falha.','error'); updatePunchBtn(); } isSending = false; btn.disabled = false; }
 
 async function syncCloud(manual=false) {
   const url = settings.googleUrl; if (!url) return; if (!navigator.onLine) return;
   if (manual) toast('🔄 A sincronizar...','info');
   try {
     const res  = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' });
-    const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { return; }
-    let changed = false;
+    const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { return; } let changed = false;
     
-    if (data?.config && !data.config.error) { 
-      const c = data.config; 
-      if (c.pw) settings.pw = String(c.pw).trim(); 
-      Object.keys(c).forEach(k => { if(k.startsWith('lock_')) settings[k] = (c[k] === 'true' || c[k] === true); });
-      SS('pd_settings', settings); 
-    }
-    
+    if (data?.config && !data.config.error) { const c = data.config; if (c.pw) settings.pw = String(c.pw).trim(); Object.keys(c).forEach(k => { if(k.startsWith('lock_')) settings[k] = (c[k] === 'true' || c[k] === true); }); SS('pd_settings', settings); }
     if (Array.isArray(data?.employees)) { data.employees.forEach(ce => { if (!ce.id) return; const idx = employees.findIndex(e => e.id === ce.id); if (idx >= 0) employees[idx] = { ...employees[idx], ...ce }; else employees.push(ce); changed = true; }); SS('pd_employees', employees); }
     if (Array.isArray(data?.shifts)) { data.shifts.forEach(cs => { if (!cs.id) return; const idx = shifts.findIndex(s => s.id === cs.id); if (idx >= 0) shifts[idx] = { ...shifts[idx], ...cs }; else shifts.push(cs); changed = true; }); SS('pd_shifts', shifts); }
     if (Array.isArray(data?.locations)) { data.locations.forEach(cl => { if (!cl.id) return; const idx = locations.findIndex(l => l.id === cl.id); if (idx >= 0) locations[idx] = { ...locations[idx], ...cl }; else locations.push(cl); changed = true; }); SS('pd_locations', locations); }
-    if (Array.isArray(data?.records)) {
-      data.records.forEach(cr => {
-        if (!cr.id) return;
-        const existIdx = records.findIndex(r => String(r.id) === String(cr.id));
-        let dtIso = new Date().toISOString();
-        if (cr.date && cr.time) { const [d,m,y] = cr.date.split('/'); const [h,mn,s] = (cr.time||'00:00:00').split(':'); dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), parseInt(h), parseInt(mn), parseInt(s||0)).toISOString(); }
-        const obj = { id:cr.id, empId:cr.empId||'', empName:cr.empName||'', slot:cr.slot, type:cr.type, datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true, photoUrl:cr.photoUrl||'', status:cr.status||'ok', justification:cr.justification||'', attachmentUrl:cr.attachmentUrl||'' };
-        
-        if (existIdx >= 0) {
-          records[existIdx] = obj; 
-        } else {
-          records.push(obj);
-        }
-        changed = true;
-      });
-      if (changed) records.sort((a,b) => new Date(b.datetime)-new Date(a.datetime));
-      SS('pd_records', records);
-    }
-    if (changed) {
-      if (document.getElementById('s-admin').classList.contains('active')) { 
-        renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn(); 
-      } else {
-         const loggedEmpSync = LS('pd_logged_emp');
-         if (loggedEmpSync && employees.find(e => e.id === loggedEmpSync)) {
-           if (document.getElementById('s-punch').classList.contains('active')) { updateSlots(); updatePunchBtn(); }
-         } else {
-           buildChooseGrid();
-         }
-      }
-    }
+    if (Array.isArray(data?.records)) { data.records.forEach(cr => { if (!cr.id) return; const existIdx = records.findIndex(r => String(r.id) === String(cr.id)); let dtIso = new Date().toISOString(); if (cr.date && cr.time) { const [d,m,y] = cr.date.split('/'); const [h,mn,s] = (cr.time||'00:00:00').split(':'); dtIso = new Date(parseInt(y), parseInt(m)-1, parseInt(d), parseInt(h), parseInt(mn), parseInt(s||0)).toISOString(); } const obj = { id:cr.id, empId:cr.empId||'', empName:cr.empName||'', slot:cr.slot, type:cr.type, datetime:dtIso, date:cr.date, time:cr.time, lat:cr.lat, lng:cr.lng, dist:cr.dist, synced:true, photoUrl:cr.photoUrl||'', status:cr.status||'ok', justification:cr.justification||'', attachmentUrl:cr.attachmentUrl||'' }; if (existIdx >= 0) { records[existIdx] = obj; } else { records.push(obj); } changed = true; }); if (changed) records.sort((a,b) => new Date(b.datetime)-new Date(a.datetime)); SS('pd_records', records); }
+    if (changed) { if (document.getElementById('s-admin').classList.contains('active')) { renderDash(); renderEmpList(); renderShiftList(); renderLocList(); renderRecords(); updateLockBtn(); } else { const loggedEmpSync = LS('pd_logged_emp'); if (loggedEmpSync && employees.find(e => e.id === loggedEmpSync)) { if (document.getElementById('s-punch').classList.contains('active')) { updateSlots(); updatePunchBtn(); } } else { buildChooseGrid(); } } }
     if (manual) toast('✅ Dados sincronizados!','success');
-  } catch(e) { if (manual) toast('❌ Falha ao ligar à folha de cálculo','error'); }
+  } catch(e) { if (manual) toast('❌ Falha ao ligar à folha','error'); }
 }
 
-async function pushConfigToCloud(action, payload) {
-  if (!settings.googleUrl) return true;
-  const result = await callCloud({ action, payload });
-  return result.ok;
-}
+async function pushConfigToCloud(action, payload) { if (!settings.googleUrl) return true; const result = await callCloud({ action, payload }); return result.ok; }
 
 // ─────────────────────────────────────
 // ADMIN: DASHBOARD & WORKFLOW
 // ─────────────────────────────────────
 function fmtMin(m) { const h=Math.floor(m/60),mm=Math.floor(m%60); return `${h}h ${String(mm).padStart(2,'0')}m`; }
 
-function workedMin(empId, date) {
-  const day = records.filter(r => r.empId===empId && r.date===date && r.status !== 'rejected').sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
-  const e1=day.find(r=>r.slot==='entrada1'), s1=day.find(r=>r.slot==='saida1');
-  const e2=day.find(r=>r.slot==='entrada2'), s2=day.find(r=>r.slot==='saida2');
-  let m=0;
-  if(e1&&s1) m+=(new Date(s1.datetime)-new Date(e1.datetime))/60000;
-  if(e2&&s2) m+=(new Date(s2.datetime)-new Date(e2.datetime))/60000;
-  return Math.max(0,m);
-}
-function journeyMin(empId) {
-  const emp = employees.find(e=>e.id===empId);
-  if (!emp) return 480;
-  const shift = shifts.find(s=>s.id===emp.shiftId);
-  return shift ? (shift.hours*60 + (shift.mins||0)) : 480;
-}
+function workedMin(empId, date) { const day = records.filter(r => r.empId===empId && r.date===date && r.status !== 'rejected').sort((a,b) => new Date(a.datetime)-new Date(b.datetime)); const e1=day.find(r=>r.slot==='entrada1'), s1=day.find(r=>r.slot==='saida1'); const e2=day.find(r=>r.slot==='entrada2'), s2=day.find(r=>r.slot==='saida2'); let m=0; if(e1&&s1) m+=(new Date(s1.datetime)-new Date(e1.datetime))/60000; if(e2&&s2) m+=(new Date(s2.datetime)-new Date(e2.datetime))/60000; return Math.max(0,m); }
+function journeyMin(empId) { const emp = employees.find(e=>e.id===empId); if (!emp) return 480; const shift = shifts.find(s=>s.id===emp.shiftId); return shift ? (shift.hours*60 + (shift.mins||0)) : 480; }
 
 function renderDash() {
   const today = new Date().toLocaleDateString('pt-BR');
-  const totalWorking = employees.filter(emp => {
-    const tr = todayRecs(emp.id).filter(r => r.status !== 'rejected');
-    return tr.some(r=>r.slot==='entrada1') && !tr.some(r=>r.slot==='saida2');
-  }).length;
+  const totalWorking = employees.filter(emp => { const tr = todayRecs(emp.id).filter(r => r.status !== 'rejected'); return tr.some(r=>r.slot==='entrada1') && !tr.some(r=>r.slot==='saida2'); }).length;
   const totalPunches = records.filter(r=>r.date===today && r.status !== 'rejected').length;
   
   let totalOTToday = 0;
-  employees.forEach(emp => {
-      const w=workedMin(emp.id,today), j=journeyMin(emp.id);
-      const dow = new Date().getDay();
-      const isWE = dow === 0 || dow === 6;
-      let ot = isWE ? w : w - j;
-      if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
-      if(ot>0) totalOTToday += ot; 
-  });
+  employees.forEach(emp => { const w=workedMin(emp.id,today), j=journeyMin(emp.id); const dow = new Date().getDay(); const isWE = dow === 0 || dow === 6; let ot = isWE ? w : w - j; if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0; if(ot>0) totalOTToday += ot; });
 
   const numPending = records.filter(r => r.status === 'pending').length;
 
-  document.getElementById('stats-row').innerHTML = `
-    <div class="stat-box"><div class="stat-label">A Trabalhar</div><div class="stat-value green">${totalWorking}</div><div class="stat-sub">de ${employees.length} func.</div></div>
-    <div class="stat-box"><div class="stat-label">Pontos hoje</div><div class="stat-value blue">${totalPunches}</div><div class="stat-sub">válidos</div></div>
-    <div class="stat-box"><div class="stat-label">HE total hoje</div><div class="stat-value amber">${fmtMin(totalOTToday)}</div><div class="stat-sub">no dia</div></div>
-    <div class="stat-box" ${numPending>0?'onclick="showTab(\'t-rec\', document.querySelectorAll(\'.nav-tab\')[4]);" style="cursor:pointer; border-color:var(--amber);"':''}><div class="stat-label">P/ Aprovar</div><div class="stat-value ${numPending>0?'amber':'green'}">${numPending}</div><div class="stat-sub">justificativas</div></div>
-  `;
+  document.getElementById('stats-row').innerHTML = `<div class="stat-box"><div class="stat-label">A Trabalhar</div><div class="stat-value green">${totalWorking}</div><div class="stat-sub">de ${employees.length} func.</div></div><div class="stat-box"><div class="stat-label">Pontos hoje</div><div class="stat-value blue">${totalPunches}</div><div class="stat-sub">válidos</div></div><div class="stat-box"><div class="stat-label">HE total hoje</div><div class="stat-value amber">${fmtMin(totalOTToday)}</div><div class="stat-sub">no dia</div></div><div class="stat-box" ${numPending>0?'onclick="showTab(\'t-rec\', document.querySelectorAll(\'.nav-tab\')[4]);" style="cursor:pointer; border-color:var(--amber);"':''}><div class="stat-label">P/ Aprovar</div><div class="stat-value ${numPending>0?'amber':'green'}">${numPending}</div><div class="stat-sub">justificativas</div></div>`;
 
   document.getElementById('today-summary').innerHTML = employees.map(emp => {
-    const w = workedMin(emp.id,today); const j = journeyMin(emp.id); const pct = Math.min(100,w/j*100);
-    const shift = shifts.find(s=>s.id===emp.shiftId) || {}; const color = shift.color || '#34d399';
-    return `<div class="worker-summary">
-      <div class="ws-avatar">${emp.emoji||'👤'}</div>
-      <div class="ws-info"><div class="ws-name">${emp.name}</div><div class="ws-role">${emp.role} · ${shift.name||'?'}</div>
-      <div class="ws-bars"><div class="ws-bar-row"><div class="ws-bar-label">Trab.</div><div class="ws-bar-track"><div class="ws-bar-fill green" style="width:${pct}%;background:${color}"></div></div><div class="ws-time">${fmtMin(w)}</div></div></div></div></div>`;
+    const w = workedMin(emp.id,today); const j = journeyMin(emp.id); const pct = Math.min(100,w/j*100); const shift = shifts.find(s=>s.id===emp.shiftId) || {}; const color = shift.color || '#34d399';
+    return `<div class="worker-summary"><div class="ws-avatar">${emp.emoji||'👤'}</div><div class="ws-info"><div class="ws-name">${emp.name}</div><div class="ws-role">${emp.role} · ${shift.name||'?'}</div><div class="ws-bars"><div class="ws-bar-row"><div class="ws-bar-label">Trab.</div><div class="ws-bar-track"><div class="ws-bar-fill green" style="width:${pct}%;background:${color}"></div></div><div class="ws-time">${fmtMin(w)}</div></div></div></div></div>`;
   }).join('') || '<div class="empty"><p>Nenhum funcionário</p></div>';
 
   document.getElementById('ot-summary').innerHTML = employees.map(emp => {
-    let tot50 = 0, tot100 = 0, balance = 0;
-    const dates = [...new Set(records.filter(r=>r.empId===emp.id).map(r=>r.date))];
-    const regime = emp.otRegime || 'banco';
+    let tot50 = 0, tot100 = 0, balance = 0; const dates = [...new Set(records.filter(r=>r.empId===emp.id).map(r=>r.date))]; const regime = emp.otRegime || 'banco';
     dates.forEach(d => {
-      const w=workedMin(emp.id,d), j=journeyMin(emp.id);
-      const dow = new Date(d.split('/')[2], d.split('/')[1]-1, d.split('/')[0]).getDay();
-      const isWE = dow === 0 || dow === 6;
-      let ot = 0;
-      const dayRecs = records.filter(r=>r.empId===emp.id && r.date===d && r.status !== 'rejected');
-      const absence = dayRecs.find(r => r.slot === 'ausencia');
-      if (absence) {
-          if (absence.type === 'falta_injustificada') ot = -j;
-      } else {
-          ot = isWE ? w : w - j;
-          if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
-      }
-      balance += ot;
-      if (ot > 0) {
-          if (dow === 0) tot100 += ot;
-          else tot50 += ot;
-      }
+      const w=workedMin(emp.id,d), j=journeyMin(emp.id); const dow = new Date(d.split('/')[2], d.split('/')[1]-1, d.split('/')[0]).getDay(); const isWE = dow === 0 || dow === 6; let ot = 0;
+      const dayRecs = records.filter(r=>r.empId===emp.id && r.date===d && r.status !== 'rejected'); const absence = dayRecs.find(r => r.slot === 'ausencia');
+      if (absence) { if (absence.type === 'falta_injustificada') ot = -j; } else { ot = isWE ? w : w - j; if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0; }
+      balance += ot; if (ot > 0) { if (dow === 0) tot100 += ot; else tot50 += ot; }
     });
 
     let valDisplay = '';
-    if (regime === 'pago') {
-        valDisplay = `<div style="font-size:11px;color:var(--amber);text-align:right;">50%: <b>${fmtMin(tot50)}</b><br><span style="color:var(--red)">100%: <b>${fmtMin(tot100)}</b></span></div>`;
-    } else {
-        valDisplay = `<div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:${balance>0?'var(--amber)':balance<0?'var(--red)':'var(--muted)'};flex-shrink:0">${balance>0?'+':''}${fmtMin(balance)}</div>`;
-    }
+    if (regime === 'pago') { valDisplay = `<div style="font-size:11px;color:var(--amber);text-align:right;">50%: <b>${fmtMin(tot50)}</b><br><span style="color:var(--red)">100%: <b>${fmtMin(tot100)}</b></span></div>`; } 
+    else { valDisplay = `<div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:600;color:${balance>0?'var(--amber)':balance<0?'var(--red)':'var(--muted)'};flex-shrink:0">${balance>0?'+':''}${fmtMin(balance)}</div>`; }
 
-    return `<div class="worker-summary">
-      <div class="ws-avatar">${emp.emoji||'👤'}</div>
-      <div class="ws-info"><div class="ws-name">${emp.name}</div><div class="ws-role">Jornada: ${fmtMin(journeyMin(emp.id))}/dia</div></div>
-      ${valDisplay}
-    </div>`;
+    return `<div class="worker-summary"><div class="ws-avatar">${emp.emoji||'👤'}</div><div class="ws-info"><div class="ws-name">${emp.name}</div><div class="ws-role">Jornada: ${fmtMin(journeyMin(emp.id))}/dia</div></div>${valDisplay}</div>`;
   }).join('');
 }
 
@@ -1549,205 +1095,70 @@ function renderDash() {
 // ─────────────────────────────────────
 function renderRecords() {
   const fc = document.getElementById('rec-filters');
-  fc.innerHTML = `<button class="filter-chip ${recFilterEmp==='all'?'active':''}" onclick="setRecFilter('all',this)">Todos</button>` +
-    employees.map(e=>`<button class="filter-chip ${recFilterEmp===e.id?'active':''}" onclick="setRecFilter('${e.id}',this)">${e.emoji||''} ${e.name}</button>`).join('');
+  fc.innerHTML = `<button class="filter-chip ${recFilterEmp==='all'?'active':''}" onclick="setRecFilter('all',this)">Todos</button>` + employees.map(e=>`<button class="filter-chip ${recFilterEmp===e.id?'active':''}" onclick="setRecFilter('${e.id}',this)">${e.emoji||''} ${e.name}</button>`).join('');
 
-  const filtered = recFilterEmp==='all' ? records : records.filter(r=>r.empId===recFilterEmp);
-  const el = document.getElementById('rec-list');
+  const filtered = recFilterEmp==='all' ? records : records.filter(r=>r.empId===recFilterEmp); const el = document.getElementById('rec-list');
   if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="eicon">🗒️</div><p>Nenhum registo</p></div>'; return; }
 
-  const keys = [...new Set(filtered.map(r=>`${r.empId}__${r.date}`))];
-  const slotLabel = { entrada1:'E1', saida1:'S1', entrada2:'E2', saida2:'S2' };
+  const keys = [...new Set(filtered.map(r=>`${r.empId}__${r.date}`))]; const slotLabel = { entrada1:'E1', saida1:'S1', entrada2:'E2', saida2:'S2' };
   
   el.innerHTML = keys.slice(0,60).map(k => {
-    const [empId, date] = k.split('__');
-    const emp  = employees.find(e=>e.id===empId);
-    const day  = filtered.filter(r=>r.empId===empId && r.date===date).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
-    
-    let w = workedMin(empId,date);
-    const j = journeyMin(empId);
-    
-    let ot = 0;
-    const absence = day.find(r => r.slot === 'ausencia');
-    if (absence) {
-      if (absence.type === 'falta_injustificada') ot = -j;
-      else ot = 0; 
-    } else {
-      const dow = new Date(date.split('/')[2], date.split('/')[1]-1, date.split('/')[0]).getDay();
-      const isWE = dow === 0 || dow === 6;
-      ot = isWE ? w : w - j;
-      if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
-    }
+    const [empId, date] = k.split('__'); const emp  = employees.find(e=>e.id===empId); const day  = filtered.filter(r=>r.empId===empId && r.date===date).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+    let w = workedMin(empId,date); const j = journeyMin(empId); let ot = 0; const absence = day.find(r => r.slot === 'ausencia');
+    if (absence) { if (absence.type === 'falta_injustificada') ot = -j; else ot = 0; } else { const dow = new Date(date.split('/')[2], date.split('/')[1]-1, date.split('/')[0]).getDay(); const isWE = dow === 0 || dow === 6; ot = isWE ? w : w - j; if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0; }
     
     const punches = day.map(r => {
       if (r.slot === 'ausencia') {
         const isJust = r.type === 'falta_justificada';
-        return `<div class="punch-tag" style="flex-direction:column; align-items:stretch; border: 1px solid ${isJust?'var(--blue)':'var(--red)'};">
-          <div style="display:flex;align-items:center;gap:6px;width:100%;">
-            <span style="font-weight:bold;font-size:10px;color:${isJust?'var(--blue)':'var(--red)'}">${isJust?'🩺 FALTA JUSTIFICADA':'❌ FALTA INJUSTIFICADA'}</span>
-            ${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5;margin-left:auto">☁️</span>' : '<span title="Pendente envio" style="font-size:10px;opacity:.5;margin-left:auto">⏳</span>'}
-            <div class="punch-tag-actions">
-              <button onclick="deletePunch('${r.id}')">🗑️</button>
-            </div>
-          </div>
-          ${r.justification ? `<div class="punch-just-info" style="margin-left:0;margin-top:4px;">"${r.justification}"</div>` : ''}
-        </div>`;
+        return `<div class="punch-tag" style="flex-direction:column; align-items:stretch; border: 1px solid ${isJust?'var(--blue)':'var(--red)'};"><div style="display:flex;align-items:center;gap:6px;width:100%;"><span style="font-weight:bold;font-size:10px;color:${isJust?'var(--blue)':'var(--red)'}">${isJust?'🩺 FALTA JUSTIFICADA':'❌ FALTA INJUSTIFICADA'}</span>${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5;margin-left:auto">☁️</span>' : '<span title="Pendente envio" style="font-size:10px;opacity:.5;margin-left:auto">⏳</span>'}<div class="punch-tag-actions"><button onclick="deletePunch('${r.id}')">🗑️</button></div></div>${r.justification ? `<div class="punch-just-info" style="margin-left:0;margin-top:4px;">"${r.justification}"</div>` : ''}</div>`;
       }
-
-      let stateClass = '';
-      if(r.status === 'pending') stateClass = 'pending';
-      if(r.status === 'rejected') stateClass = 'rejected';
-      
-      let approvalBtns = '';
-      if(r.status === 'pending') {
-         approvalBtns = `<button onclick="changeStatus('${r.id}', 'ok')" style="color:var(--green);font-weight:bold;">✓ Aprovar</button>
-                         <button onclick="changeStatus('${r.id}', 'rejected')" style="color:var(--red);font-weight:bold;">× Recusar</button>`;
-      } else if (r.status === 'rejected') {
-         approvalBtns = `<span style="color:var(--red);font-size:10px;font-weight:bold;margin-right:6px">RECUSADO</span>`;
-      }
-      
-      let justifyInfo = '';
-      if (r.justification) justifyInfo = `<div class="punch-just-info">"${r.justification}"</div>`;
-      if (r.attachmentUrl) justifyInfo += `<a href="${r.attachmentUrl}" target="_blank" style="font-size:11px; margin-left:8px; color:var(--blue);">📄 Ver Anexo</a>`;
-
-      return `<div class="punch-tag ${stateClass}" style="flex-direction:column; align-items:stretch;">
-        <div style="display:flex;align-items:center;gap:6px;width:100%;">
-          <span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span>
-          <span class="ptime">${r.time.slice(0,5)}</span>
-          ${settings.showDist!==false ? `<span class="pdist">📍${r.dist??'?'}m</span>` : ''}
-          ${r.photoUrl ? `<a href="${r.photoUrl}" target="_blank" style="text-decoration:none;font-size:12px;" title="Ver Foto da Câmara">📷</a>` : ''}
-          ${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5">☁️</span>' : '<span title="Pendente envio" style="font-size:10px;opacity:.5">⏳</span>'}
-          <div class="punch-tag-actions">
-            ${approvalBtns}
-            <button onclick="openEditPunch('${r.id}')">✏️</button>
-            <button onclick="deletePunch('${r.id}')">🗑️</button>
-          </div>
-        </div>
-        ${justifyInfo ? `<div style="margin-top:6px; display:flex; align-items:center;">${justifyInfo}</div>` : ''}
-      </div>`;
+      let stateClass = ''; if(r.status === 'pending') stateClass = 'pending'; if(r.status === 'rejected') stateClass = 'rejected';
+      let approvalBtns = ''; if(r.status === 'pending') { approvalBtns = `<button onclick="changeStatus('${r.id}', 'ok')" style="color:var(--green);font-weight:bold;">✓ Aprovar</button><button onclick="changeStatus('${r.id}', 'rejected')" style="color:var(--red);font-weight:bold;">× Recusar</button>`; } else if (r.status === 'rejected') { approvalBtns = `<span style="color:var(--red);font-size:10px;font-weight:bold;margin-right:6px">RECUSADO</span>`; }
+      let justifyInfo = ''; if (r.justification) justifyInfo = `<div class="punch-just-info">"${r.justification}"</div>`; if (r.attachmentUrl) justifyInfo += `<a href="${r.attachmentUrl}" target="_blank" style="font-size:11px; margin-left:8px; color:var(--blue);">📄 Ver Anexo</a>`;
+      return `<div class="punch-tag ${stateClass}" style="flex-direction:column; align-items:stretch;"><div style="display:flex;align-items:center;gap:6px;width:100%;"><span class="type ${r.type==='entrada'?'in':'out'}">${slotLabel[r.slot]||r.slot}</span><span class="ptime">${r.time.slice(0,5)}</span>${settings.showDist!==false ? `<span class="pdist">📍${r.dist??'?'}m</span>` : ''}${r.photoUrl ? `<a href="${r.photoUrl}" target="_blank" style="text-decoration:none;font-size:12px;" title="Ver Foto da Câmara">📷</a>` : ''}${r.synced ? '<span title="Sincronizado" style="font-size:10px;opacity:.5">☁️</span>' : '<span title="Pendente envio" style="font-size:10px;opacity:.5">⏳</span>'}<div class="punch-tag-actions">${approvalBtns}<button onclick="openEditPunch('${r.id}')">✏️</button><button onclick="deletePunch('${r.id}')">🗑️</button></div></div>${justifyInfo ? `<div style="margin-top:6px; display:flex; align-items:center;">${justifyInfo}</div>` : ''}</div>`;
     }).join('');
     
-    return `<div class="day-card">
-      <div class="day-card-header">
-        <div><div class="day-worker">${emp?.name||empId}</div><div class="day-date">${date}</div></div>
-        <div class="day-meta">
-          <div class="day-worked">${fmtMin(w)} trab.</div>
-          <div class="day-ot ${ot>0?'pos':ot<0?'neg':'zero'}">${ot>0?'+'+fmtMin(ot):ot<0?'−'+fmtMin(-ot):'na jornada'}</div>
-        </div>
-      </div>
-      <div class="day-card-punches">${punches}</div>
-    </div>`;
+    return `<div class="day-card"><div class="day-card-header"><div><div class="day-worker">${emp?.name||empId}</div><div class="day-date">${date}</div></div><div class="day-meta"><div class="day-worked">${fmtMin(w)} trab.</div><div class="day-ot ${ot>0?'pos':ot<0?'neg':'zero'}">${ot>0?'+'+fmtMin(ot):ot<0?'−'+fmtMin(-ot):'na jornada'}</div></div></div><div class="day-card-punches">${punches}</div></div>`;
   }).join('');
 }
 
 function setRecFilter(id, btn) { recFilterEmp = id; document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderRecords(); }
 
-async function changeStatus(recordId, newStatus) {
-  const i = records.findIndex(r => String(r.id) === String(recordId));
-  if (i === -1) return;
-  const dateStr = records[i].date;
-  if(isMonthLocked(dateStr)) { toast('🚫 Mês trancado. Não pode alterar status.', 'error'); return; }
-
-  records[i].status = newStatus;
-  saveAll(); renderRecords(); renderDash();
-  toast(newStatus === 'ok' ? '✅ Aprovado!' : '❌ Recusado', 'success');
-  if (settings.googleUrl) callCloud({action:'changeRecordStatus', payload: {id: recordId, status: newStatus}});
-}
-
-function openEditPunch(id) {
-  const r = records.find(r=>String(r.id)===String(id)); if (!r) return;
-  document.getElementById('edit-punch-id').value = id;
-  document.getElementById('edit-date-inp').value = r.date;
-  document.getElementById('edit-time-inp').value = r.time;
-  openModal('edit-modal');
-}
-function savePunchEdit() {
-  const id   = document.getElementById('edit-punch-id').value;
-  const date = document.getElementById('edit-date-inp').value;
-  const time = document.getElementById('edit-time-inp').value;
-  const i    = records.findIndex(r=>String(r.id)===String(id)); if (i===-1) return;
-  if(isMonthLocked(date)) { toast('🚫 Mês trancado. Edição não permitida.', 'error'); return; }
-
-  const [d,m,y] = date.split('/'); const [h,mn,s] = time.split(':');
-  records[i].date = date; records[i].time = time; records[i].datetime = new Date(y,m-1,d,h,mn,s||0).toISOString();
-  saveAll(); closeModal('edit-modal'); renderRecords(); renderDash(); toast('✅ Atualizado','success');
-  if (settings.googleUrl) callCloud({action:'editRecord', record: records[i]});
-}
-function deletePunch(id) {
-  const r = records.find(r=>String(r.id)===String(id));
-  if(r && isMonthLocked(r.date)) { toast('🚫 Mês trancado. Exclusão não permitida.', 'error'); return; }
-
-  openDelModal('Excluir este registo?', () => {
-    records = records.filter(r=>String(r.id)!==String(id));
-    saveAll(); renderRecords(); renderDash(); toast('🗑️ Excluído','success');
-    if (settings.googleUrl) callCloud({action:'deleteRecord', id});
-  });
-}
+async function changeStatus(recordId, newStatus) { const i = records.findIndex(r => String(r.id) === String(recordId)); if (i === -1) return; const dateStr = records[i].date; if(isMonthLocked(dateStr)) { toast('🚫 Mês trancado. Não pode alterar status.', 'error'); return; } records[i].status = newStatus; saveAll(); renderRecords(); renderDash(); toast(newStatus === 'ok' ? '✅ Aprovado!' : '❌ Recusado', 'success'); if (settings.googleUrl) callCloud({action:'changeRecordStatus', payload: {id: recordId, status: newStatus}}); }
+function openEditPunch(id) { const r = records.find(r=>String(r.id)===String(id)); if (!r) return; document.getElementById('edit-punch-id').value = id; document.getElementById('edit-date-inp').value = r.date; document.getElementById('edit-time-inp').value = r.time; openModal('edit-modal'); }
+function savePunchEdit() { const id = document.getElementById('edit-punch-id').value; const date = document.getElementById('edit-date-inp').value; const time = document.getElementById('edit-time-inp').value; const i = records.findIndex(r=>String(r.id)===String(id)); if (i===-1) return; if(isMonthLocked(date)) { toast('🚫 Mês trancado.', 'error'); return; } const [d,m,y] = date.split('/'); const [h,mn,s] = time.split(':'); records[i].date = date; records[i].time = time; records[i].datetime = new Date(y,m-1,d,h,mn,s||0).toISOString(); saveAll(); closeModal('edit-modal'); renderRecords(); renderDash(); toast('✅ Atualizado','success'); if (settings.googleUrl) callCloud({action:'editRecord', record: records[i]}); }
+function deletePunch(id) { const r = records.find(r=>String(r.id)===String(id)); if(r && isMonthLocked(r.date)) { toast('🚫 Mês trancado.', 'error'); return; } openDelModal('Excluir este registo?', () => { records = records.filter(r=>String(r.id)!==String(id)); saveAll(); renderRecords(); renderDash(); toast('🗑️ Excluído','success'); if (settings.googleUrl) callCloud({action:'deleteRecord', id}); }); }
 
 function exportCSV() {
-  if (!records.length) return;
-  const keys = [...new Set(records.map(r=>`${r.empId}__${r.date}`))];
+  if (!records.length) return; const keys = [...new Set(records.map(r=>`${r.empId}__${r.date}`))];
   const rows = [['Funcionária','Cargo','Turno','Data','Entrada 1','Saída 1','Entrada 2','Saída 2','Trabalhado','Jornada','Saldo(min)','Saldo','HE 50%','HE 100%']];
   keys.forEach(k => {
-    const [empId,date] = k.split('__');
-    const emp   = employees.find(e=>e.id===empId);
-    const shift = shifts.find(s=>s.id===emp?.shiftId);
-    const day   = records.filter(r=>r.empId===empId && r.date===date && r.status !== 'rejected');
-    const get   = s => (day.find(r=>r.slot===s)||{}).time || '';
-    const w     = workedMin(empId,date);
-    const j     = journeyMin(empId);
-    
-    let ot = 0, ot50 = 0, ot100 = 0;
-    const absence = day.find(r => r.slot === 'ausencia');
+    const [empId,date] = k.split('__'); const emp = employees.find(e=>e.id===empId); const shift = shifts.find(s=>s.id===emp?.shiftId);
+    const day = records.filter(r=>r.empId===empId && r.date===date && r.status !== 'rejected'); const get = s => (day.find(r=>r.slot===s)||{}).time || '';
+    const w = workedMin(empId,date); const j = journeyMin(empId); let ot = 0, ot50 = 0, ot100 = 0; const absence = day.find(r => r.slot === 'ausencia');
     if (absence) {
-      if (absence.type === 'falta_injustificada') {
-         ot = -j;
-         rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'INJUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), -j, '-'+fmtMin(j), '0h 00m', '0h 00m']);
-      } else {
-         rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'JUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), 0, '0h 00m', '0h 00m', '0h 00m']);
-      }
+      if (absence.type === 'falta_injustificada') { ot = -j; rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'INJUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), -j, '-'+fmtMin(j), '0h 00m', '0h 00m']); } 
+      else { rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, 'FALTA', 'JUSTIFICADA', '-', '-', '0h 00m', fmtMin(j), 0, '0h 00m', '0h 00m', '0h 00m']); }
     } else {
-      const dow = new Date(date.split('/')[2], date.split('/')[1]-1, date.split('/')[0]).getDay();
-      const isWE = dow === 0 || dow === 6;
-      ot = isWE ? w : w - j;
+      const dow = new Date(date.split('/')[2], date.split('/')[1]-1, date.split('/')[0]).getDay(); const isWE = dow === 0 || dow === 6; ot = isWE ? w : w - j;
       if (settings.cltTolerance !== false && Math.abs(ot) <= 10) ot = 0;
-      
-      if (ot > 0) {
-          if (dow === 0) ot100 = ot;
-          else ot50 = ot;
-      }
+      if (ot > 0) { if (dow === 0) ot100 = ot; else ot50 = ot; }
       rows.push([emp?.name||empId, emp?.role||'', shift?.name||'', date, get('entrada1'), get('saida1'), get('entrada2'), get('saida2'), fmtMin(w), fmtMin(j), Math.round(ot), ot>0?'+'+fmtMin(ot):ot<0?'-'+fmtMin(-ot):'0h 00m', fmtMin(ot50), fmtMin(ot100)]);
     }
   });
-  const csv  = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a'); a.href=url; a.download='ponto_export.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-// ─────────────────────────────────────
-// HELPER FUNC: REFRESH EMP MODAL SELECTS
-// ─────────────────────────────────────
-function refreshEmpModalSelects() {
-  const shiftSel = document.getElementById('emp-shift-sel');
-  const locSel = document.getElementById('emp-loc-sel');
-  if (shiftSel) {
-    const curS = shiftSel.value;
-    shiftSel.innerHTML = '<option value="">-- Selecione --</option>' + shifts.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-    if (curS && shifts.find(s=>s.id===curS)) shiftSel.value = curS;
-    else if (shifts.length) shiftSel.value = shifts[shifts.length-1].id;
-  }
-  if (locSel) {
-    const curL = locSel.value;
-    locSel.innerHTML = '<option value="">-- Selecione --</option>' + locations.map(l=>`<option value="${l.id}">${l.emoji||'📍'} ${l.name}</option>`).join('');
-    if (curL && locations.find(l=>l.id===curL)) locSel.value = curL;
-    else if (locations.length) locSel.value = locations[locations.length-1].id;
-  }
+  const csv  = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n'); const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='ponto_export.csv'; a.click(); URL.revokeObjectURL(url);
 }
 
 // ─────────────────────────────────────
 // CRUD Funcionários / Turnos / Locais
 // ─────────────────────────────────────
+function refreshEmpModalSelects() {
+  const shiftSel = document.getElementById('emp-shift-sel'); const locSel = document.getElementById('emp-loc-sel');
+  if (shiftSel) { const curS = shiftSel.value; shiftSel.innerHTML = '<option value="">-- Selecione --</option>' + shifts.map(s=>`<option value="${s.id}">${s.name}</option>`).join(''); if (curS && shifts.find(s=>s.id===curS)) shiftSel.value = curS; else if (shifts.length) shiftSel.value = shifts[shifts.length-1].id; }
+  if (locSel) { const curL = locSel.value; locSel.innerHTML = '<option value="">-- Selecione --</option>' + locations.map(l=>`<option value="${l.id}">${l.emoji||'📍'} ${l.name}</option>`).join(''); if (curL && locations.find(l=>l.id===curL)) locSel.value = curL; else if (locations.length) locSel.value = locations[locations.length-1].id; }
+}
+
 function renderEmpList() { const el = document.getElementById('emp-list'); if (!employees.length) { el.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhum funcionário</p></div>'; return; } el.innerHTML = employees.map(emp => { const shift = shifts.find(s=>s.id===emp.shiftId); const loc = locations.find(l=>l.id===emp.locId); return `<div class="emp-list-item"><div class="eli-avatar">${emp.emoji||'👤'}</div><div class="eli-info"><div class="eli-name">${emp.name}</div><div class="eli-meta">${emp.role} · ${shift?.name||'Sem turno'} · ${emp.otRegime === 'pago' ? '💰 Extras Pagas' : '🏦 Banco de Horas'}</div></div><div class="eli-actions"><button class="btn-icon" onclick="openEmpModal('${emp.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteEmp('${emp.id}')">🗑️</button></div></div>`; }).join(''); }
 function openEmpModal(id=null) { document.getElementById('emp-modal-title').textContent = id ? 'Editar Funcionário' : 'Novo Funcionário'; document.getElementById('emp-id-edit').value = id || ''; const emp = id ? employees.find(e=>e.id===id) : null; document.getElementById('emp-name-inp').value = emp?.name || ''; document.getElementById('emp-role-inp').value = emp?.role || ''; document.getElementById('emp-emoji-inp').value = emp?.emoji || ''; document.getElementById('emp-pin-inp').value = emp?.pin || ''; document.getElementById('emp-regime-sel').value = emp?.otRegime || 'banco'; refreshEmpModalSelects(); if(emp) { document.getElementById('emp-shift-sel').value = emp.shiftId; document.getElementById('emp-loc-sel').value = emp.locId; } openModal('emp-modal'); }
 function saveEmployee() { const name = document.getElementById('emp-name-inp').value.trim(); const role = document.getElementById('emp-role-inp').value.trim(); const emoji = document.getElementById('emp-emoji-inp').value.trim(); const pin = document.getElementById('emp-pin-inp').value.trim(); const otRegime = document.getElementById('emp-regime-sel').value; const shiftId = document.getElementById('emp-shift-sel').value; const locId = document.getElementById('emp-loc-sel').value; if (!name) { toast('⚠️ Nome obrigatório','warn'); return; } const editId = document.getElementById('emp-id-edit').value; if (editId) { const i = employees.findIndex(e=>e.id===editId); employees[i] = { ...employees[i], name, role, emoji, shiftId, locId, pin, otRegime }; } else { employees.push({ id:'emp_'+Date.now(), name, role, emoji, shiftId, locId, pin, otRegime }); } saveAll(); renderEmpList(); toast('💾 Salvando...','info'); pushConfigToCloud('saveEmployee', employees.find(e => e.id === (editId || employees[employees.length-1].id))).then(ok => toast(ok ? '✅ Salvo!' : '⚠️ Salvo localmente','success')); closeModal('emp-modal'); }
@@ -1759,7 +1170,7 @@ function saveShift() { const name = document.getElementById('shift-name-inp').va
 function confirmDeleteShift(id) { openDelModal('Excluir turno?', () => { shifts = shifts.filter(s=>s.id!==id); employees.forEach(e => { if(e.shiftId===id) e.shiftId=''; }); saveAll(); renderShiftList(); renderEmpList(); pushConfigToCloud('deleteShift', {id}); }); }
 function renderLocList() { const el = document.getElementById('loc-list'); if (!locations.length) { el.innerHTML = '<div class="empty"><p>Nenhum local</p></div>'; return; } el.innerHTML = locations.map(l => `<div class="loc-item"><div class="loc-header"><div class="loc-pin">${l.emoji||'📍'}</div><div class="loc-name">${l.name}</div><div class="eli-actions"><button class="btn-icon" onclick="openLocModal('${l.id}')">✏️</button><button class="btn-icon danger" onclick="confirmDeleteLoc('${l.id}')">🗑️</button></div></div><div class="loc-coords"><div class="coord-box"><div class="coord-label">Lat</div><div class="coord-val">${l.lat}</div></div><div class="coord-box"><div class="coord-label">Lng</div><div class="coord-val">${l.lng}</div></div><div class="coord-box"><div class="coord-label">Raio</div><div class="coord-val">${l.radius}m</div></div></div></div>`).join(''); }
 function openLocModal(id=null) { document.getElementById('loc-modal-title').textContent = id ? 'Editar Local' : 'Novo Local'; document.getElementById('loc-id-edit').value = id || ''; const l = id ? locations.find(lc=>lc.id===id) : null; document.getElementById('loc-name-inp').value = l?.name || ''; document.getElementById('loc-emoji-inp').value = l?.emoji || '📍'; document.getElementById('loc-lat-inp').value = l?.lat || ''; document.getElementById('loc-lng-inp').value = l?.lng || ''; document.getElementById('loc-radius-inp').value = l?.radius || 150; openModal('loc-modal'); }
-function saveLocation() { const name = document.getElementById('loc-name-inp').value.trim(); const emoji = document.getElementById('loc-emoji-inp').value.trim() || '📍'; const lat = parseFloat(document.getElementById('loc-lat-inp').value); const lng = parseFloat(document.getElementById('loc-lng-inp').value); const radius = parseInt(document.getElementById('loc-radius-inp').value) || 150; if (!name || isNaN(lat)) return; const editId = document.getElementById('loc-id-edit').value; if (editId) { const i = locations.findIndex(l=>l.id===editId); locations[i] = { ...locations[i], name, emoji, lat, lng, radius }; } else { locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius }); } const savedLoc = editId ? locations.find(l=>l.id===editId) : locations[locations.length-1]; saveAll(); renderLocList(); refreshEmpModalSelects(); pushConfigToCloud('saveLocation', savedLoc).then(ok => toast('✅ Salvo!','success')); closeModal('loc-modal'); }
+function saveLocation() { const name = document.getElementById('loc-name-inp').value.trim(); const emoji = document.getElementById('loc-emoji-inp').value.trim() || '📍'; const lat = parseFloat(document.getElementById('loc-lat-inp').value); const lng = parseFloat(document.getElementById('loc-lng-inp').value); const radius = parseInt(document.getElementById('loc-radius-inp').value) || 150; if (!name || isNaN(lat) || isNaN(lng)) return; const editId = document.getElementById('loc-id-edit').value; if (editId) { const i = locations.findIndex(l=>l.id===editId); locations[i] = { ...locations[i], name, emoji, lat, lng, radius }; } else { locations.push({ id:'loc_'+Date.now(), name, emoji, lat, lng, radius }); } const savedLoc = editId ? locations.find(l=>l.id===editId) : locations[locations.length-1]; saveAll(); renderLocList(); refreshEmpModalSelects(); pushConfigToCloud('saveLocation', savedLoc).then(ok => toast('✅ Salvo!','success')); closeModal('loc-modal'); }
 function confirmDeleteLoc(id) { openDelModal('Excluir local?', () => { locations = locations.filter(l=>l.id!==id); employees.forEach(e => { if(e.locId===id) e.locId=''; }); saveAll(); renderLocList(); renderEmpList(); pushConfigToCloud('deleteLocation', {id}); }); }
 async function testCloudConnection() { const url = settings.googleUrl || _CLOUD_URL; const el = document.getElementById('conn-status'); if (!url) return; el.style.display = 'block'; el.style.color = 'var(--muted2)'; el.textContent = '🔌 A testar...'; try { const res = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' }); const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { data=null; } if (data && !data.error) { el.style.color = 'var(--green)'; el.textContent = `✅ Ligação OK!`; toast('✅ OK!','success'); } else { el.style.color = 'var(--red)'; el.textContent = '❌ Erro.'; } } catch(e) { el.style.color = 'var(--red)'; el.textContent = '❌ Falha: ' + e.message; } }
 function savePassword() { const pw = document.getElementById('cfg-pw').value.trim(); if (pw.length < 6) return; settings.pw = pw; saveAll(); toast('✅ Senha alterada','success'); pushConfigToCloud('saveConfig', {key:'pw', value:pw}); }
@@ -1901,7 +1312,12 @@ function printReport() { window.print(); }
 window.onload = async () => {
   initReportSelects();
   
-  // VERIFICA SE HÁ SESSÃO GRAVADA ("LEMBRAR DE MIM")
+  // VERIFICA SE HÁ SESSÃO GRAVADA ("LEMBRAR DE MIM") E SE O WIZARD JÁ FOI FEITO
+  if(!settings.setupDone && employees.length === 0) {
+    buildChooseGrid();
+    return;
+  }
+
   const loggedEmp = LS('pd_logged_emp');
   if (loggedEmp && employees.find(e => e.id === loggedEmp)) {
     goEmployee(loggedEmp);
