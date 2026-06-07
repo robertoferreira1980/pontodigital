@@ -5,21 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PontoDigital Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-<style>/* Use o mesmo CSS da mensagem anterior para manter o design */</style>
+<style>
+/* (Mantenha o CSS anterior) */
+</style>
 <script src="config.js"></script>
 </head>
 <body>
 <script>
-// 1. CARREGAMENTO ESSENCIAL - DEVE FICAR NO TOPO DO SCRIPT
+// 1. FUNÇÕES DE NAVEGAÇÃO E MODAIS (DEVEM ESTAR NO TOPO)
+const showScreen = (id) => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById(id);
+    if(screen) screen.classList.add('active');
+};
+
 const openModal = (id) => document.getElementById(id).classList.add('show');
 const closeModal = (id) => document.getElementById(id).classList.remove('show');
-
-// Garante que os modais fecham se clicar fora
-window.onclick = function(event) {
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        if (event.target == modal) modal.classList.remove('show');
-    });
-}
 
 function showTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
@@ -28,20 +29,46 @@ function showTab(tabId, btn) {
     btn.classList.add('active');
 }
 
-// 2. FUNÇÕES DE APOIO (TOAST)
 function toast(msg, type='success') {
     const el = document.getElementById('toast');
+    if(!el) return;
     el.textContent = msg; el.className = `show ${type}`;
     setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-// 3. AGORA, O RESTANTE DA LÓGICA (STATE, SAVE, PUNCH, SYNC...)
-// ... (Cole aqui toda a lógica das funções que enviámos anteriormente: saveAll, initApp, doPunch, syncCloud, etc) ...
+// 2. LÓGICA DE ESTADO
+const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
+const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+let employees = LS('pd_employees') || [];
+let shifts = LS('pd_shifts') || [];
+let locations = LS('pd_locations') || [];
+let records = LS('pd_records') || [];
+let pending = LS('pd_pending') || [];
+let settings = LS('pd_settings') || { pw:'123456', setupDone: false };
 
-// INICIALIZAÇÃO
+// 3. INICIALIZAÇÃO
+function initApp() {
+    if (!settings.googleUrl) {
+        showScreen('s-welcome');
+    } else {
+        const loggedEmp = LS('pd_logged_emp');
+        if (loggedEmp && employees.find(e => e.id === loggedEmp)) {
+            goEmployee(loggedEmp);
+        } else {
+            buildChooseGrid();
+        }
+    }
+}
+
+// 4. FUNÇÕES DOS BOTÕES QUE ESTAVAM A DAR ERRO
+function showAdminSetup() { showScreen('s-admin-setup'); }
+function cancelSetup() { showScreen('s-welcome'); }
+function showEmpSetup() { showScreen('s-emp-setup'); /* logica da camera aqui */ }
+
+// --- COLE O RESTANTE DAS SUAS FUNÇÕES AQUI (doPunch, syncCloud, etc) ---
+// Certifique-se de que nada fica acima da função showScreen que definimos no topo.
+
 window.onload = () => {
-    // Configura abas iniciais
-    document.getElementById('t-dash').style.display = 'block';
     initApp();
 };
 </script>
