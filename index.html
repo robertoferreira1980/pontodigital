@@ -6,6 +6,8 @@
 <title>PontoDigital Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
 <style>
 /* ── TOKENS ── */
 :root {
@@ -46,11 +48,34 @@ body::before{content:'';position:fixed;inset:0;background:
 .screen.active{display:flex;flex-direction:column;min-height:100vh}
 
 /* ═══════════════════════════════════════════
+   SCREEN: BOAS-VINDAS (NOVO - SETUP)
+═══════════════════════════════════════════ */
+#s-welcome{align-items:center;justify-content:center;padding:32px 20px}
+.welcome-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:40px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.welcome-icon{font-size:52px;margin-bottom:16px;}
+.welcome-title{font-size:24px;font-weight:700;margin-bottom:8px;letter-spacing:-.5px}
+.welcome-title span{color:var(--green)}
+.welcome-sub{font-size:14px;color:var(--muted2);margin-bottom:32px;line-height:1.5}
+
+/* ═══════════════════════════════════════════
+   SCREEN: ADMIN SETUP (COLAR URL)
+═══════════════════════════════════════════ */
+#s-admin-setup{align-items:center;justify-content:center;padding:32px 20px}
+
+/* ═══════════════════════════════════════════
+   SCREEN: EMP SETUP (LER QR CODE OU COLAR CÓDIGO)
+═══════════════════════════════════════════ */
+#s-emp-setup{align-items:center;justify-content:center;padding:32px 20px}
+.qr-scanner-box{width:100%;max-width:340px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px;text-align:center;}
+.qr-video-wrap{position:relative;width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:#000;margin-bottom:16px; border:2px dashed var(--green);}
+#qr-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.manual-code-wrap {margin-top:16px; padding-top:16px; border-top:1px solid var(--border2); text-align:left;}
+
+/* ═══════════════════════════════════════════
    SCREEN: CHOOSE
 ═══════════════════════════════════════════ */
 #s-choose{align-items:center;justify-content:center;padding:32px 20px}
 .choose-wrap{width:100%;max-width:400px}
-
 .brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px}
 .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green-glow)}
 .brand-name{font-size:22px;font-weight:700;letter-spacing:-.5px}
@@ -231,12 +256,10 @@ body::before{content:'';position:fixed;inset:0;background:
 .afield input,.afield select,.afield textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .afield input:focus,.afield select:focus,.afield textarea:focus{border-color:var(--blue)}
 .afield select option{background:var(--surface2)}
-.afield input:disabled{opacity:.5;cursor:not-allowed}
 .color-row{display:flex;gap:8px;flex-wrap:wrap}
 .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s}
 .color-dot.selected{border-color:#fff}
 
-/* ── TAB: SHIFTS ── */
 .shift-item{background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px}
 .shift-color{width:6px;height:36px;border-radius:3px;flex-shrink:0}
 .shift-info{flex:1}
@@ -244,7 +267,6 @@ body::before{content:'';position:fixed;inset:0;background:
 .shift-hours{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);margin-top:3px}
 .shift-journey{font-size:10px;color:var(--amber);margin-top:2px}
 
-/* ── TAB: LOCATIONS ── */
 .loc-item{background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:8px}
 .loc-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .loc-pin{font-size:22px}
@@ -379,29 +401,67 @@ body::before{content:'';position:fixed;inset:0;background:
   #print-area{position:fixed;top:0;left:0;width:100%;background:#fff;z-index:99999}
   .report-wrap{border-radius:0!important}
   .rep-table tbody tr:hover{background:transparent!important}
-}</style>
+}
+</style>
 <script src="config.js"></script>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     SCREEN: CHOOSE EMPLOYEE
-══════════════════════════════════════ -->
-<div class="screen active" id="s-choose">
+<div class="screen active" id="s-welcome">
+  <div class="welcome-card" style="margin:auto">
+    <div class="welcome-icon">👋</div>
+    <div class="welcome-title">Ponto<span>Digital</span> Pro</div>
+    <div class="welcome-sub">Bem-vindo(a)! Como deseja configurar este dispositivo?</div>
+    <button class="btn-primary" style="margin-bottom:14px; padding:16px; font-size:16px;" onclick="showAdminSetup()">🏢 Sou Administrador</button>
+    <button class="btn-primary" style="background:var(--surface2);color:var(--text);border:1px solid var(--border2); padding:16px; font-size:16px;" onclick="showEmpSetup()">👩‍⚕️ Sou Funcionária</button>
+  </div>
+</div>
+
+<div class="screen" id="s-admin-setup">
+  <div class="welcome-card" style="margin:auto">
+    <div class="welcome-icon">🔗</div>
+    <div class="welcome-title">Ligar à Folha</div>
+    <div class="welcome-sub">Cole aqui o URL gerado no Google Apps Script para ser o dono do sistema.</div>
+    <div class="field text-left">
+      <input type="text" id="setup-url-inp" placeholder="https://script.google.com/macros/s/..." style="text-align:center">
+    </div>
+    <button class="btn-primary" onclick="saveAdminUrl()">Ligar Servidor</button>
+    <button class="btn-link" onclick="showScreen('s-welcome')">← Voltar</button>
+  </div>
+</div>
+
+<div class="screen" id="s-emp-setup">
+  <div class="welcome-card" style="margin:auto; padding-top:24px;">
+    <div class="welcome-title">Ligar à Clínica</div>
+    <div class="welcome-sub" style="margin-bottom:16px;">Aponte a câmara para o QR Code no ecrã do seu gestor para sincronizar.</div>
+    
+    <div class="qr-video-wrap">
+      <video id="qr-video" autoplay playsinline></video>
+      <canvas id="qr-canvas" style="display:none;"></canvas>
+    </div>
+    
+    <div class="manual-code-wrap">
+      <div style="font-size:12px; color:var(--muted2); margin-bottom:8px; text-align:center;">Ou cole o código recebido no WhatsApp:</div>
+      <input type="text" id="manual-code-inp" placeholder="Cole o código aqui..." style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); margin-bottom:10px;">
+      <button class="btn-primary" style="background:var(--blue); margin-top:0;" onclick="connectManualCode()">Ligar com Código</button>
+    </div>
+
+    <button class="btn-link" onclick="cancelEmpSetup()">← Cancelar</button>
+  </div>
+</div>
+
+<div class="screen" id="s-choose">
   <div class="choose-wrap">
     <div class="brand"><div class="brand-dot"></div><div class="brand-name">Ponto<span>Digital</span></div></div>
     <div class="brand-sub" id="choose-sub">Quem está a registar o ponto?</div>
-    <div class="emp-grid" id="emp-grid"><!-- dinâmico --></div>
+    <div class="emp-grid" id="emp-grid"></div>
     <div class="choose-divider">área restrita</div>
     <button class="btn-admin" onclick="goLogin()">🔒 Painel Administrativo</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN: WIZARD (ASSISTENTE)
-══════════════════════════════════════ -->
 <div class="screen" id="s-wizard">
-  <div class="wiz-card">
+  <div class="wiz-card" style="margin:auto;">
     <div class="wiz-header">
       <div class="wiz-progress">
         <div class="wiz-dot active" id="w-dot-1"></div>
@@ -411,11 +471,10 @@ body::before{content:'';position:fixed;inset:0;background:
       </div>
     </div>
 
-    <!-- Passo 1: Segurança -->
     <div class="wiz-step active" id="w-step-1">
       <div class="wiz-icon-box">🔐</div>
-      <div class="wiz-title">Bem-vindo ao PontoDigital!</div>
-      <div class="wiz-desc">Para garantir a segurança da clínica, comece por criar uma <b>nova senha de Administrador</b> (a padrão é 123456).</div>
+      <div class="wiz-title">Segurança primeiro</div>
+      <div class="wiz-desc">Para garantir a privacidade da clínica, comece por criar uma <b>nova senha de Administrador</b> (a padrão é 123456).</div>
       <div class="field">
         <label>Nova Senha Admin</label>
         <input type="password" id="wiz-pw" placeholder="Mínimo de 6 caracteres">
@@ -425,11 +484,10 @@ body::before{content:'';position:fixed;inset:0;background:
       </div>
     </div>
 
-    <!-- Passo 2: Local -->
     <div class="wiz-step" id="w-step-2">
       <div class="wiz-icon-box">📍</div>
       <div class="wiz-title">Onde as pessoas trabalham?</div>
-      <div class="wiz-desc">O sistema usa GPS para garantir que a funcionária está no lugar certo. Vamos criar o seu primeiro <b>Local de Trabalho</b>.</div>
+      <div class="wiz-desc">O sistema usa GPS para garantir que a equipa está no lugar certo. Vamos criar o primeiro <b>Local de Trabalho</b>.</div>
       <div class="field">
         <label>Nome do Local</label>
         <input type="text" id="wiz-loc-name" placeholder="Ex: Clínica Principal">
@@ -445,18 +503,17 @@ body::before{content:'';position:fixed;inset:0;background:
       </div>
     </div>
 
-    <!-- Passo 3: Turno -->
     <div class="wiz-step" id="w-step-3">
       <div class="wiz-icon-box">🕐</div>
-      <div class="wiz-title">Definir o Turno (Jornada)</div>
-      <div class="wiz-desc">Quantas horas a funcionária trabalha por dia? Isto serve para o sistema calcular <b>Horas Extras</b> ou <b>Atrasos</b> automaticamente.</div>
+      <div class="wiz-title">Definir a Jornada</div>
+      <div class="wiz-desc">Quantas horas trabalham por dia? Isto serve para calcular <b>Horas Extras</b> ou <b>Atrasos</b> automaticamente.</div>
       <div class="field">
         <label>Nome do Turno</label>
         <input type="text" id="wiz-shift-name" placeholder="Ex: Comercial 8h">
       </div>
       <div class="form-grid">
-        <div class="afield"><label>Jornada (h/dia)</label><input type="number" id="wiz-shift-h" placeholder="8"></div>
-        <div class="afield"><label>Minutos extra</label><input type="number" id="wiz-shift-m" placeholder="0"></div>
+        <div class="afield"><label>Jornada (h/dia)</label><input type="number" id="wiz-shift-h" value="8"></div>
+        <div class="afield"><label>Minutos extra</label><input type="number" id="wiz-shift-m" value="0"></div>
       </div>
       <div class="wiz-actions">
         <button class="btn-cancel" onclick="wizPrev(3)">Voltar</button>
@@ -464,11 +521,10 @@ body::before{content:'';position:fixed;inset:0;background:
       </div>
     </div>
 
-    <!-- Passo 4: Funcionária -->
     <div class="wiz-step" id="w-step-4">
       <div class="wiz-icon-box">👩‍⚕️</div>
       <div class="wiz-title">A primeira Funcionária</div>
-      <div class="wiz-desc">Por fim, quem vai registar o ponto? Esta pessoa será automaticamente vinculada ao Local e Turno que acabou de criar.</div>
+      <div class="wiz-desc">Por fim, quem vai registar o ponto? Esta pessoa será vinculada ao Local e Turno que acabou de criar.</div>
       <div class="field">
         <label>Nome da Funcionária</label>
         <input type="text" id="wiz-emp-name" placeholder="Ex: Maria Silva">
@@ -476,23 +532,22 @@ body::before{content:'';position:fixed;inset:0;background:
       <div class="form-grid">
         <div class="afield"><label>Cargo / Função</label><input type="text" id="wiz-emp-role" placeholder="Ex: Rececionista"></div>
         <div class="afield">
-          <label style="color:var(--amber)">PIN (Senha de 4 dígitos)</label>
-          <input type="text" id="wiz-emp-pin" placeholder="Ex: 1234" maxlength="4" pattern="[0-9]*">
+          <label style="color:var(--amber)">PIN (Senha 4 dígitos)</label>
+          <input type="text" id="wiz-emp-pin" placeholder="1234" maxlength="4" pattern="[0-9]*" value="1234">
         </div>
       </div>
       <div class="wiz-actions">
         <button class="btn-cancel" onclick="wizPrev(4)">Voltar</button>
-        <button class="btn-primary" style="margin-top:0; background:linear-gradient(135deg,#065f46,#34d399); color:#022c22;" onclick="wizFinish()">Finalizar Configuração 🎉</button>
+        <button class="btn-primary" style="margin-top:0; background:linear-gradient(135deg,#065f46,#34d399); color:#022c22;" onclick="wizFinish()">Finalizar 🎉</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Autenticação Wizard -->
 <div class="modal-overlay" id="wiz-auth-modal">
   <div class="modal-box" style="max-width:340px;text-align:center;align-self:center;border-radius:24px;">
     <div class="modal-title">Acesso Restrito</div>
-    <div class="modal-sub" style="margin-bottom:16px;">Introduza a senha atual de Administrador para iniciar a configuração.<br><br><b>(Padrão: 123456)</b></div>
+    <div class="modal-sub" style="margin-bottom:16px;">Introduza a senha de Administrador para iniciar a configuração.<br><br><b>(Padrão: 123456)</b></div>
     <div class="field" style="text-align:left;">
       <input type="password" id="wiz-auth-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')verifyWizAuth()">
     </div>
@@ -504,12 +559,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-   SCREEN: PUNCH
-═══════════════════════════════════════════ */
-/* (Restante HTML dos modais e do painel admin) */
--->
-<!-- PUNCH -->
 <div class="screen" id="s-punch">
   <div class="punch-topbar">
     <button class="btn-back" onclick="logoutEmployee()">🚪 Sair</button>
@@ -549,7 +598,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ADMIN LOGIN -->
 <div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-icon">🔐</div>
@@ -565,7 +613,6 @@ body::before{content:'';position:fixed;inset:0;background:
   </div>
 </div>
 
-<!-- ADMIN -->
 <div class="screen" id="s-admin">
   <nav class="admin-nav">
     <button class="nav-tab active" onclick="showTab('t-dash',this)">📊 Dashboard</button>
@@ -578,33 +625,40 @@ body::before{content:'';position:fixed;inset:0;background:
     <button class="nav-exit" onclick="goChoose()">Sair ×</button>
   </nav>
 
-  <!-- DASHBOARD -->
   <div class="tab-content active" id="t-dash">
-    <div class="stats-row" id="stats-row"><!-- dinâmico --></div>
+    <div class="stats-row" id="stats-row"></div>
     <div class="card"><div class="card-title"><span class="card-title-icon">👤</span> Resumo Hoje</div><div id="today-summary"></div></div>
     <div class="card"><div class="card-title"><span class="card-title-icon">📈</span> Horas Extra Acumuladas</div><div id="ot-summary"></div></div>
     <button class="btn-sync" onclick="syncCloud(true)">🔄 Sincronizar com Google Sheets</button>
   </div>
 
-  <!-- EMPLOYEES -->
   <div class="tab-content" id="t-emp">
     <button class="btn-add" onclick="openEmpModal()">＋ Adicionar Funcionária</button>
     <div id="emp-list"></div>
   </div>
 
-  <!-- SHIFTS -->
   <div class="tab-content" id="t-shift">
     <button class="btn-add" onclick="openShiftModal()">＋ Adicionar Turno</button>
     <div id="shift-list"></div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">ℹ️ O que é um turno?</div>
+      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
+        O turno define a <strong>carga horária diária</strong> da funcionária — usada para calcular horas extras. Ex: "CLT 44h" = 8h48m/dia.
+      </p>
+    </div>
   </div>
 
-  <!-- LOCATIONS -->
   <div class="tab-content" id="t-loc">
     <button class="btn-add" onclick="openLocModal()">＋ Adicionar Local</button>
     <div id="loc-list"></div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">📡 Como obter coordenadas manuais</div>
+      <p style="font-size:12px;color:var(--muted2);line-height:1.6">
+        Aceda a <strong>maps.google.com</strong>, clique com o botão direito no local exato e copie as coordenadas.
+      </p>
+    </div>
   </div>
 
-  <!-- RECORDS -->
   <div class="tab-content" id="t-rec">
     <div style="display:flex; gap:10px; margin-bottom:14px;">
       <button class="btn-export-full" style="margin-bottom:0;" onclick="exportCSV()">📊 Exportar CSV</button>
@@ -614,7 +668,6 @@ body::before{content:'';position:fixed;inset:0;background:
     <div id="rec-list"></div>
   </div>
 
-  <!-- RELATÓRIO -->
   <div class="tab-content" id="t-report">
     <div class="card">
       <div class="card-title">📄 Relatório Mensal de Ponto</div>
@@ -631,10 +684,15 @@ body::before{content:'';position:fixed;inset:0;background:
     <div id="report-preview"></div>
   </div>
 
-  <!-- CONFIG -->
   <div class="tab-content" id="t-cfg">
     <div class="card">
-      <div class="card-title">🔗 Integração com Google Sheets</div>
+      <div class="card-title">🔗 Integração com App da Equipa</div>
+      <div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-bottom:12px">
+        Para adicionar um telemóvel à distância, envie o código pelo WhatsApp ou peça para ler o QR Code presencialmente.
+      </div>
+      <button class="btn-sync" style="margin-bottom:12px; background:var(--green-dim); color:var(--green); border-color:rgba(52,211,153,.3);" onclick="showInviteModal()">📲 Convidar Funcionária (QR / Código)</button>
+      
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">URL do Servidor (Google Apps Script):</div>
       <div id="conn-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;word-break:break-all;margin-bottom:12px">—</div>
       <div style="display:flex;gap:8px">
         <button class="btn-sync" style="flex:1" onclick="testCloudConnection()">🔌 Testar</button>
@@ -675,12 +733,23 @@ body::before{content:'';position:fixed;inset:0;background:
     </div>
     <div class="card">
       <div class="card-title">🗑️ Dados</div>
-      <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">Apagar TUDO</button>
+      <button style="width:100%;background:var(--red-dim);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer" onclick="confirmReset()">Apagar TUDO (Desemparelhar App)</button>
     </div>
   </div>
 </div>
 
-<!-- MODALS SECUNDÁRIOS -->
+<div class="modal-overlay" id="invite-modal">
+  <div class="modal-box" style="text-align:center;align-self:center;border-radius:24px;">
+    <div class="modal-title">Convite de Acesso</div>
+    <div class="modal-sub">Peça à funcionária para ler este código na aplicação dela, ou envie pelo WhatsApp.</div>
+    <div style="background:#fff; padding:16px; border-radius:16px; display:inline-block; margin-bottom:20px;">
+      <img id="invite-qr" src="" alt="QR Code" style="width:200px; height:200px; display:block;">
+    </div>
+    <button class="btn-sync" style="background:var(--blue-dim);border:1px dashed var(--blue);width:100%;margin-bottom:12px;justify-content:center" onclick="shareInviteCode()">Enviar no WhatsApp / Copiar Código</button>
+    <button class="btn-cancel" style="width:100%" onclick="closeModal('invite-modal')">Fechar</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="pin-modal">
   <div class="modal-box" style="max-width:320px;text-align:center;align-self:center;border-radius:24px;">
     <div class="modal-title">Digite o seu PIN</div>
@@ -759,23 +828,19 @@ body::before{content:'';position:fixed;inset:0;background:
 
 <div id="toast"></div>
 
-<!-- ══════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════ -->
 <script>
 // ─────────────────────────────────────
 // MODAL HELPERS
 // ─────────────────────────────────────
 const openModal  = id => document.getElementById(id).classList.add('show');
 const closeModal = id => document.getElementById(id).classList.remove('show');
-
 let delCallback = null;
 function openDelModal(msg, cb) { document.getElementById('del-modal-sub').textContent = msg; delCallback = cb; openModal('del-modal'); document.getElementById('del-confirm-btn').onclick = () => { closeModal('del-modal'); if(delCallback) delCallback(); delCallback=null; }; }
-document.querySelectorAll('.modal-overlay').forEach(o => { o.addEventListener('click', e => { if(e.target===o) o.classList.remove('show'); }); });
+document.querySelectorAll('.modal-overlay').forEach(o => { o.addEventListener('click', e => { if(e.target===o && o.id !== 'invite-modal') o.classList.remove('show'); }); });
 let _tt; function toast(msg, type='success') { const el = document.getElementById('toast'); el.textContent = msg; el.className = `show ${type}`; clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3500); }
 
 // ─────────────────────────────────────
-// STATE & DEFAULTS (BASE LIMPA)
+// STATE & DEFAULTS
 // ─────────────────────────────────────
 const LS = k => JSON.parse(localStorage.getItem(k) || 'null');
 const SS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
@@ -786,14 +851,161 @@ let locations  = LS('pd_locations')  || [];
 let records    = LS('pd_records')    || [];
 let pending    = LS('pd_pending')    || [];
 
-const _CLOUD_URL = (typeof GOOGLE_URL !== 'undefined' && GOOGLE_URL) ? GOOGLE_URL : '';
-let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true };
-if (_CLOUD_URL) settings.googleUrl = _CLOUD_URL;
+let settings = LS('pd_settings') || { pw:'123456', googleUrl:'', allowOverride:true, showDist:true, cltTolerance:true, minInterval:true, setupDone: false };
 
 let currentEmpId = null; let pendingRetry = null; let isSending = false; let clockTimer = null; let recFilterEmp = 'all'; let cameraStream = null; let activePinEmpId = null; 
 let wizData = { loc:{}, shift:{} };
 
 const saveAll = () => { SS('pd_employees', employees); SS('pd_shifts', shifts); SS('pd_locations', locations); SS('pd_records', records); SS('pd_pending', pending); SS('pd_settings', settings); };
+
+// ─────────────────────────────────────
+// INICIALIZAÇÃO / WELCOME SCREEN
+// ─────────────────────────────────────
+function initApp() {
+  // Se ainda não tiver URL gravada, mostra ecrã de setup
+  if (!settings.googleUrl) {
+    showScreen('s-welcome');
+    return;
+  }
+  
+  initReportSelects();
+  const loggedEmp = LS('pd_logged_emp');
+  if (loggedEmp && employees.find(e => e.id === loggedEmp)) {
+    goEmployee(loggedEmp);
+  } else {
+    buildChooseGrid();
+  }
+
+  if (navigator.onLine) {
+    syncCloud(false).then(() => {
+      const loggedEmpSync = LS('pd_logged_emp');
+      if (!document.getElementById('s-admin').classList.contains('active')) {
+        if (loggedEmpSync && employees.find(e => e.id === loggedEmpSync)) {
+          if (!document.getElementById('s-punch').classList.contains('active')) goEmployee(loggedEmpSync);
+        } else {
+          buildChooseGrid();
+        }
+      }
+    });
+  }
+}
+
+// ─────────────────────────────────────
+// SETUP (ADMIN & EMPREGADO)
+// ─────────────────────────────────────
+function showAdminSetup() { showScreen('s-admin-setup'); }
+
+async function saveAdminUrl() {
+  const url = document.getElementById('setup-url-inp').value.trim();
+  if(!url.includes('script.google.com')) { toast('URL inválido. Deve ser do Google Scripts.', 'error'); return; }
+  
+  settings.googleUrl = url;
+  saveAll();
+  toast('A ligar à nuvem...', 'info');
+  await syncCloud(false);
+  
+  // Se após a sincronização ainda estiver vazio, vai pro Wizard. Se já tiver dados, vai pro Login.
+  if(employees.length === 0) {
+    startWizardAuth();
+  } else {
+    settings.setupDone = true;
+    saveAll();
+    goLogin();
+  }
+}
+
+// EMPREGADO QR SCANNER E CÓDIGO MANUAL
+let qrScanStream = null;
+let qrScanLoop = null;
+
+async function showEmpSetup() {
+  showScreen('s-emp-setup');
+  const video = document.getElementById('qr-video');
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+  
+  try {
+    qrScanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = qrScanStream;
+    video.setAttribute("playsinline", true);
+    video.play();
+    
+    const tickQr = () => {
+      if(video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+        
+        if (code && code.data.includes("script.google.com")) {
+          cancelEmpSetup();
+          handleQrSuccess(code.data);
+          return;
+        }
+      }
+      qrScanLoop = requestAnimationFrame(tickQr);
+    };
+    qrScanLoop = requestAnimationFrame(tickQr);
+  } catch(e) {
+    toast('Câmara indisponível. Cole o código abaixo.', 'warn');
+    // Não cancela o setup para que a pessoa possa colar o código manualmente
+  }
+}
+
+function cancelEmpSetup() {
+  if (qrScanStream) { qrScanStream.getTracks().forEach(t => t.stop()); qrScanStream = null; }
+  if (qrScanLoop) { cancelAnimationFrame(qrScanLoop); qrScanLoop = null; }
+  showScreen('s-welcome');
+}
+
+function connectManualCode() {
+  const code = document.getElementById('manual-code-inp').value.trim();
+  if(code.includes('script.google.com')) {
+    cancelEmpSetup();
+    handleQrSuccess(code);
+  } else {
+    toast('O código colado não é válido.', 'error');
+  }
+}
+
+async function handleQrSuccess(url) {
+  settings.googleUrl = url;
+  settings.setupDone = true;
+  saveAll();
+  toast('✅ Ligado à Empresa! A transferir dados...', 'success');
+  
+  showScreen('s-choose'); 
+  document.getElementById('emp-grid').innerHTML = '<div class="empty">A sincronizar com a clínica...</div>';
+  await syncCloud(true);
+  buildChooseGrid();
+}
+
+function showInviteModal() {
+  const url = settings.googleUrl;
+  if(!url) { toast('Configure o URL primeiro!','warn'); return; }
+  document.getElementById('invite-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+  openModal('invite-modal');
+}
+
+function shareInviteCode() {
+  const url = settings.googleUrl;
+  const msg = `Olá! Para registar o seu ponto, instale a app PontoDigital Pro e cole o seguinte código:\n\n${url}`;
+  
+  if (navigator.share) {
+    navigator.share({ title: 'Convite PontoDigital', text: msg }).catch(() => copyToClip(url));
+  } else {
+    copyToClip(url);
+  }
+}
+
+function copyToClip(txt) {
+  navigator.clipboard.writeText(txt).then(() => {
+    toast('Código copiado! Pode colar no WhatsApp.', 'success');
+  }).catch(() => {
+    toast('Erro ao copiar. Tente selecionar o texto.', 'error');
+  });
+}
 
 // ─────────────────────────────────────
 // ASSISTENTE MÁGICO (WIZARD)
@@ -883,20 +1095,12 @@ async function wizFinish() {
 }
 
 // ─────────────────────────────────────
-// NAV & PIN LOGIC
+// NAV & PIN LOGIC (NORMAL)
 // ─────────────────────────────────────
-const showScreen = id => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); };
-
 function buildChooseGrid() {
   const grid = document.getElementById('emp-grid');
   if (!employees.length) {
-    grid.innerHTML = `
-      <div class="empty" style="padding: 30px 0;">
-        <div class="eicon" style="font-size: 52px; opacity: 1; margin-bottom: 16px;">🚀</div>
-        <p style="font-size: 18px; font-weight: bold; color: var(--text);">Bem-vindo ao PontoDigital Pro!</p>
-        <p style="margin-top: 8px; margin-bottom: 24px; line-height: 1.5;">O seu sistema está pronto para ser configurado.</p>
-        <button class="btn-primary" style="margin: 0 auto; display: inline-flex;" onclick="startWizardAuth()">✨ Iniciar Configuração</button>
-      </div>`;
+    grid.innerHTML = '<div class="empty"><div class="eicon">👥</div><p>Nenhuma funcionária cadastrada.<br>Aceda ao painel admin para adicionar.</p></div>';
     return;
   }
   grid.innerHTML = employees.map(emp => {
@@ -908,7 +1112,6 @@ function buildChooseGrid() {
     return `<div class="emp-card" onclick="promptPin('${emp.id}')"><div class="emp-avatar-sm">${emp.emoji || '👤'}</div><div class="emp-card-info"><div class="emp-card-name">${emp.name}</div><div class="emp-card-role">${emp.role}</div><div class="emp-card-badge ${isActive ? 'on' : ''}">${statusTxt}</div></div><div class="emp-card-arrow">›</div></div>`;
   }).join('');
 }
-
 function promptPin(empId) {
   const emp = employees.find(e => e.id === empId);
   if (!emp.pin && String(emp.pin) !== "0") { loginEmployee(empId); return; }
@@ -1175,7 +1378,7 @@ function confirmDeleteLoc(id) { openDelModal('Excluir local?', () => { locations
 async function testCloudConnection() { const url = settings.googleUrl || _CLOUD_URL; const el = document.getElementById('conn-status'); if (!url) return; el.style.display = 'block'; el.style.color = 'var(--muted2)'; el.textContent = '🔌 A testar...'; try { const res = await fetch(url + '?action=getAll', { method:'GET', redirect:'follow' }); const text = await res.text(); let data; try { data = JSON.parse(text); } catch(e) { data=null; } if (data && !data.error) { el.style.color = 'var(--green)'; el.textContent = `✅ Ligação OK!`; toast('✅ OK!','success'); } else { el.style.color = 'var(--red)'; el.textContent = '❌ Erro.'; } } catch(e) { el.style.color = 'var(--red)'; el.textContent = '❌ Falha: ' + e.message; } }
 function savePassword() { const pw = document.getElementById('cfg-pw').value.trim(); if (pw.length < 6) return; settings.pw = pw; saveAll(); toast('✅ Senha alterada','success'); pushConfigToCloud('saveConfig', {key:'pw', value:pw}); }
 function saveBoolCfg(key, val) { settings[key]=val; saveAll(); }
-function confirmReset() { openDelModal('Apagar TODOS os registos?', () => { records=[]; pending=[]; saveAll(); renderDash(); renderRecords(); toast('🗑️ Apagado','success'); }); }
+function confirmReset() { openDelModal('Apagar TODOS os registos (Isto desemparelha a App)?', () => { records=[]; pending=[]; employees=[]; shifts=[]; locations=[]; settings={pw:'123456'}; saveAll(); toast('🗑️ Apagado','success'); setTimeout(()=>window.location.reload(), 1500); }); }
 
 // ─────────────────────────────────────
 // REPORT 
@@ -1275,10 +1478,10 @@ async function buildReport() {
         html += `<tr${day.isWE?' class="td-weekend"':''}>
           <td>${day.date}</td><td>${WEEK_PT[day.dow]}</td>
           <td colspan="4" style="color:${isJust?'#2563eb':'#dc2626'}; font-weight:700; letter-spacing:0.5px;">${isJust ? 'FALTA JUSTIFICADA / ATESTADO' : 'FALTA INJUSTIFICADA'}</td>
-          <td>0h 00m</td>
+          <td class="td-empty">—</td>
           <td>${fmtMin(journMin)}</td>
           <td style="color:${isJust?'#94a3b8':'#dc2626'}; font-weight:700">${isJust ? '0h 00m' : '-'+fmtMin(journMin)}</td>
-          <td>—</td><td>—</td>
+          <td class="td-empty">—</td><td class="td-empty">—</td>
         </tr>`;
       } else {
         const bancoCell = `<td style="color:${day.ot>0?'#d97706':day.ot<0?'#dc2626':'#94a3b8'};font-weight:700">${day.ot>0?'+'+fmtMin(day.ot):day.ot<0?'-'+fmtMin(-day.ot):'0h 00m'}</td>`;
@@ -1309,39 +1512,8 @@ function printReport() { window.print(); }
 // ─────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────
-window.onload = async () => {
-  initReportSelects();
-  
-  // VERIFICA SE HÁ SESSÃO GRAVADA ("LEMBRAR DE MIM") E SE O WIZARD JÁ FOI FEITO
-  if(!settings.setupDone && employees.length === 0) {
-    buildChooseGrid();
-    return;
-  }
-
-  const loggedEmp = LS('pd_logged_emp');
-  if (loggedEmp && employees.find(e => e.id === loggedEmp)) {
-    goEmployee(loggedEmp);
-  } else {
-    buildChooseGrid();
-  }
-
-  if (_CLOUD_URL && navigator.onLine) {
-    await syncCloud(false);
-    
-    // Após sincronizar as novas alterações da nuvem, revê a ecrã inicial
-    const loggedEmpSync = LS('pd_logged_emp');
-    if (!document.getElementById('s-admin').classList.contains('active')) {
-      if (loggedEmpSync && employees.find(e => e.id === loggedEmpSync)) {
-        if (!document.getElementById('s-punch').classList.contains('active')) {
-           goEmployee(loggedEmpSync);
-        }
-      } else {
-        buildChooseGrid();
-      }
-    }
-  } else if (!_CLOUD_URL) {
-    console.warn('PontoDigital: config.js sem GOOGLE_URL definida.');
-  }
+window.onload = () => {
+  initApp();
 };
 </script>
 </body>
