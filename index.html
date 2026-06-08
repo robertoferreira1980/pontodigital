@@ -1433,6 +1433,7 @@ window.onload = async () => {
   // Se já houver banco, mas está vazio, força o Assistente Mágico
   if (!settings.setupDone && employees.length === 0) {
     buildChooseGrid();
+    showScreen('s-choose'); // <-- CORREÇÃO: Comando para exibir a tela
     return;
   }
 
@@ -1442,6 +1443,7 @@ window.onload = async () => {
     goEmployee(loggedEmp);
   } else {
     buildChooseGrid();
+    showScreen('s-choose'); // <-- CORREÇÃO: Comando para exibir a tela
   }
 
   // Sincroniza silenciosamente com o banco de dados daquela clínica em específico
@@ -1456,6 +1458,7 @@ window.onload = async () => {
         }
       } else {
         buildChooseGrid();
+        showScreen('s-choose'); // <-- CORREÇÃO: Comando para exibir a tela
       }
     }
   }
